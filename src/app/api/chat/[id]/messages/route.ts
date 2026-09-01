@@ -2,12 +2,11 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { auth } from "@/auth";
-import { db } from "@/lib/db";
 import { getConversationForUser, createMessage } from "@/lib/chat";
-import { publishToConversation } from "@/lib/chat-bus";
 import { getRestriction, restrictionText } from "@/lib/restriction";
 import { getSupportUserId } from "@/lib/support";
-import { toClientMessage, toSerializedMessage } from "@/lib/chat-messages";
+import { toClientMessage } from "@/lib/chat-messages";
+import { deliverMessage } from "@/lib/chat-notify";
 
 const schema = z.object({
   body: z.string().trim().max(8000).optional(),
@@ -65,10 +64,7 @@ export async function POST(
     file: parsed.data.file ?? null,
   });
 
-  publishToConversation(id, {
-    type: "message",
-    message: await toSerializedMessage(msg),
-  });
+  await deliverMessage(msg);
 
   return NextResponse.json({ message: await toClientMessage(msg, me) });
 }

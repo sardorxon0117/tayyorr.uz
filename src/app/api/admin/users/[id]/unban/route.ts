@@ -4,8 +4,7 @@ import { db } from "@/lib/db";
 import { adminApiGuard } from "@/lib/admin";
 import { createMessage, getOrCreateConversation } from "@/lib/chat";
 import { getSupportUserId } from "@/lib/support";
-import { publishToConversation } from "@/lib/chat-bus";
-import { toSerializedMessage } from "@/lib/chat-messages";
+import { deliverMessage } from "@/lib/chat-notify";
 
 export async function POST(
   _req: Request,
@@ -31,10 +30,7 @@ export async function POST(
     body: "Hisobingizdagi cheklov bekor qilindi. Platformadan to'liq foydalanishingiz mumkin.",
     system: true,
   });
-  publishToConversation(conv.id, {
-    type: "message",
-    message: await toSerializedMessage(m),
-  });
+  await deliverMessage(m);
 
   return NextResponse.json({ ok: true });
 }

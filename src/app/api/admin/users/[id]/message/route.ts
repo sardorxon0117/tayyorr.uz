@@ -5,8 +5,7 @@ import { db } from "@/lib/db";
 import { adminApiGuard } from "@/lib/admin";
 import { createMessage, getOrCreateConversation } from "@/lib/chat";
 import { getSupportUserId } from "@/lib/support";
-import { publishToConversation } from "@/lib/chat-bus";
-import { toSerializedMessage } from "@/lib/chat-messages";
+import { deliverMessage } from "@/lib/chat-notify";
 
 const schema = z.object({ body: z.string().trim().min(1).max(4000) });
 
@@ -34,10 +33,7 @@ export async function POST(
     body: parsed.data.body,
     system: true,
   });
-  publishToConversation(conv.id, {
-    type: "message",
-    message: await toSerializedMessage(m),
-  });
+  await deliverMessage(m);
 
   return NextResponse.json({ ok: true, conversationId: conv.id });
 }

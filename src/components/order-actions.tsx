@@ -35,6 +35,15 @@ interface Props {
   myReview: { stars: number; comment: string | null } | null;
   myOffer: { id: string; price: number; message: string | null; status: string } | null;
   offers: OfferView[];
+  meId: string;
+  contracts: {
+    id: string;
+    preparerId: string;
+    preparerName: string;
+    amount: number;
+    note: string | null;
+    status: string;
+  }[];
 }
 
 export function OrderActions(props: Props) {
@@ -50,12 +59,39 @@ export function OrderActions(props: Props) {
     myReview,
     myOffer,
     offers,
+    meId,
+    contracts,
   } = props;
 
   const [price, setPrice] = useState(myOffer?.price?.toString() ?? "");
   const [message, setMessage] = useState(myOffer?.message ?? "");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+
+  // shartnoma yuborish formasi (qaysi tayyorlovchiga)
+  const [contractFor, setContractFor] = useState<string | null>(null);
+  const [cAmount, setCAmount] = useState("");
+  const [cNote, setCNote] = useState("");
+
+  const sentContract = contracts.find((c) => c.status === "SENT") ?? null;
+  const acceptedContract = contracts.find((c) => c.status === "ACCEPTED") ?? null;
+  const myIncomingContract =
+    isPreparer && sentContract?.preparerId === meId ? sentContract : null;
+
+  async function sendContract(preparerId: string) {
+    if (!cAmount || Number(cAmount) <= 0) {
+      setErr("Summani kiriting");
+      return;
+    }
+    await call(`/api/orders/${orderId}/contract`, "POST", {
+      preparerId,
+      amount: Number(cAmount),
+      note: cNote || undefined,
+    });
+    setContractFor(null);
+    setCAmount("");
+    setCNote("");
+  }
 
   async function startChat(userId: string) {
     setBusy(true);
@@ -107,6 +143,65 @@ export function OrderActions(props: Props) {
         >
           💬 Buyurtmachi bilan yozishish
         </button>
+      )}
+
+      {/* Tayyorlovchiga kelgan shartnoma */}
+      {myIncomingContract && (
+        <div className="card border-indigo-400/30 bg-indigo-500/5">
+          <h2 className="font-semibold text-white">📄 Sizga shartnoma yuborildi</h2>
+          <p className="mt-1 text-sm text-zinc-300">
+            Kelishilgan summa:{" "}
+            <b>{myIncomingContract.amount.toLocaleString()} so'm</b>
+          </p>
+          {myIncomingContract.note && (
+            <p className="mt-1 text-sm text-zinc-400">
+              Izoh: {myIncomingContract.note}
+            </p>
+          )}
+          <div className="mt-3 flex gap-2">
+            <button
+              className="btn-primary"
+              disabled={busy}
+              onClick={() =>
+                call(`/api/contracts/${myIncomingContract.id}`, "POST", {
+                  action: "ACCEPT",
+                })
+              }
+            >
+              Qabul qilish va boshlash
+            </button>
+            <button
+              className="btn-ghost"
+              disabled={busy}
+              onClick={() =>
+                call(`/api/contracts/${myIncomingContract.id}`, "POST", {
+                  action: "DECLINE",
+                })
+              }
+            >
+              Rad etish
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Buyurtmachi: yuborilgan shartnoma holati */}
+      {isOrderer && sentContract && (
+        <div className="card border-indigo-400/30 bg-indigo-500/5">
+          <p className="text-sm text-zinc-300">
+            📄 <b>{sentContract.preparerName}</b> ga shartnoma yuborildi —{" "}
+            {sentContract.amount.toLocaleString()} so'm. Javob kutilmoqda.
+          </p>
+          <button
+            className="btn-ghost mt-2"
+            disabled={busy}
+            onClick={() =>
+              call(`/api/contracts/${sentContract.id}`, "POST", { action: "CANCEL" })
+            }
+          >
+            Bekor qilish
+          </button>
+        </div>
       )}
 
       {/* Tayyorlovchi: taklif yuborish */}
@@ -216,16 +311,20 @@ export function OrderActions(props: Props) {
                   orderId={orderId}
                   label="Shikoyat"
                 />
-                {status === "OPEN" && o.status === "PENDING" && (
+                {status === "OPEN" && o.status === "PENDING" && !sentContract && (
                   <>
                     <button
                       className="btn-primary"
                       disabled={busy}
-                      onClick={() =>
-                        call(`/api/offers/${o.id}`, "PATCH", { action: "ACCEPT" })
-                      }
+                      onClick={() => {
+                        setContractFor(
+                          contractFor === o.preparerId ? null : o.preparerId,
+                        );
+                        setCAmount(String(o.price));
+                        setCNote("");
+                      }}
                     >
-                      Tanlash
+                      📄 Shartnoma tuzish
                     </button>
                     <button
                       className="btn-ghost"
@@ -244,6 +343,40 @@ export function OrderActions(props: Props) {
                   </span>
                 )}
               </div>
+
+              {contractFor === o.preparerId && (
+                <div className="mt-1 flex flex-col gap-2 rounded-lg border border-white/10 bg-white/[0.03] p-3">
+                  <div className="text-sm font-medium text-white">
+                    Kelishilgan shartnoma
+                  </div>
+                  <div>
+                    <label className="label">Kelishilgan summa (so'm)</label>
+                    <input
+                      className="input"
+                      type="number"
+                      min={1}
+                      value={cAmount}
+                      onChange={(e) => setCAmount(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label className="label">Izoh / shartlar (ixtiyoriy)</label>
+                    <textarea
+                      className="input"
+                      rows={2}
+                      value={cNote}
+                      onChange={(e) => setCNote(e.target.value)}
+                    />
+                  </div>
+                  <button
+                    className="btn-primary w-fit"
+                    disabled={busy}
+                    onClick={() => sendContract(o.preparerId)}
+                  >
+                    Shartnoma yuborish
+                  </button>
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -263,6 +396,45 @@ export function OrderActions(props: Props) {
           <ReviewForm orderId={orderId} />
         ))}
 
+      {/* Shartnoma bo'yicha yakunlash (faqat buyurtmachi) */}
+      {isOrderer && acceptedContract &&
+        (status === "IN_PROGRESS" || status === "DELIVERED") && (
+          <div className="card border-emerald-400/25 bg-emerald-500/5">
+            <p className="text-sm text-zinc-300">
+              Ish tayyor bo'lsa yakunlang — <b>
+                {acceptedContract.amount.toLocaleString()} so'm
+              </b>{" "}
+              dan 5% sayt komissiyasi ushlanib, qolgani tayyorlovchi hisobiga o'tadi.
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button
+                className="btn-primary"
+                disabled={busy}
+                onClick={() => call(`/api/orders/${orderId}/finalize`, "POST")}
+              >
+                ✅ Buyurtmani yakunlash
+              </button>
+              <button
+                className="btn-ghost"
+                disabled={busy}
+                onClick={() => {
+                  if (
+                    window.confirm(
+                      "Shartnoma bekor qilinadi. 2% sayt komissiyasi ushlanadi, qolgani sizga qaytadi. Davom etilsinmi?",
+                    )
+                  ) {
+                    call(`/api/contracts/${acceptedContract.id}`, "POST", {
+                      action: "CANCEL",
+                    });
+                  }
+                }}
+              >
+                ✖ Shartnomani bekor qilish
+              </button>
+            </div>
+          </div>
+        )}
+
       {/* Status o'zgartirish */}
       <div className="flex flex-wrap gap-2">
         {isAssigned && status === "IN_PROGRESS" && (
@@ -273,21 +445,10 @@ export function OrderActions(props: Props) {
               call(`/api/orders/${orderId}`, "PATCH", { status: "DELIVERED" })
             }
           >
-            Ishni topshirish
+            Ishni topshirdim (buyurtmachi yakunlaydi)
           </button>
         )}
-        {isOrderer && status === "DELIVERED" && (
-          <button
-            className="btn-primary"
-            disabled={busy}
-            onClick={() =>
-              call(`/api/orders/${orderId}`, "PATCH", { status: "DONE" })
-            }
-          >
-            Qabul qilish (yakunlash)
-          </button>
-        )}
-        {isOrderer && (status === "OPEN" || status === "IN_PROGRESS") && (
+        {isOrderer && status === "OPEN" && (
           <button
             className="btn-ghost"
             disabled={busy}
@@ -295,7 +456,7 @@ export function OrderActions(props: Props) {
               call(`/api/orders/${orderId}`, "PATCH", { status: "CANCELLED" })
             }
           >
-            Bekor qilish
+            Buyurtmani bekor qilish
           </button>
         )}
       </div>

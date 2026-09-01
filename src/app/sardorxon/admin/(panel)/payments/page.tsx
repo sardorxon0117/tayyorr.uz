@@ -10,6 +10,9 @@ const TYPE_LABEL: Record<string, string> = {
   TRANSFER_OUT: "Chiqim",
   PAYOUT: "Yechish",
   REFUND: "Qaytarish",
+  HOLD: "Bloklandi",
+  RELEASE: "Ish haqi",
+  COMMISSION: "Komissiya",
 };
 
 export default async function AdminPayments() {

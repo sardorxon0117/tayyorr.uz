@@ -39,11 +39,12 @@ export default async function PublicProfile({
       ratingSum: true,
       ratingCount: true,
       isSupport: true,
+      isPlatform: true,
       createdAt: true,
       _count: { select: { ordersCreated: true, ordersTaken: true } },
     },
   });
-  if (!user || user.isSupport) notFound();
+  if (!user || user.isSupport || user.isPlatform) notFound();
 
   const avg = user.ratingCount ? user.ratingSum / user.ratingCount : 0;
 

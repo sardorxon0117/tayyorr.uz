@@ -125,6 +125,26 @@ API: [messages GET](src/app/api/admin/chats/[id]/messages/route.ts), [reply POST
 - Ko'rsatish: har yuklashda 1 soatlik presigned GET ([chat-messages.ts](src/lib/chat-messages.ts)); rasm — inline, boshqa — yuklab olish chipi ([chat-file.tsx](src/components/chat-file.tsx)).
 - Cheklangan foydalanuvchi faqat support thread'ida fayl yubora oladi. Limit: 25MB.
 
+## Shartnoma + eskrou (escrow)
+
+Buyurtmachi tayyorlovchi bilan kelishgach:
+1. **Shartnoma yuboradi** ([/api/orders/[id]/contract](src/app/api/orders/[id]/contract/route.ts)) — kelishilgan summa + batafsil tavsif. Hisobда yetarli mablag' bo'lsa **darhol bloklanadi (HOLD)**, o'rtada turadi.
+2. Tayyorlovchi shartlarni o'qib **qabul qiladi** ([/api/contracts/[id]](src/app/api/contracts/[id]/route.ts), action ACCEPT) — buyurtma `IN_PROGRESS`. Yakuniga qadar chatда gaplashadilar.
+3. **Yakunlash** (faqat buyurtmачi, [/api/orders/[id]/finalize](src/app/api/orders/[id]/finalize/route.ts)) — eskroudan **95%** tayyorlovchi hisobiga (`RELEASE`), **5%** saytga (`COMMISSION`). Buyurtma `DONE` → baholash.
+4. Yakunlash oldida **bekor qilish** — shartnoma bekor, **2%** saytда qoladi, qolgani buyurtmачiga qaytadi. Qabul qilinmаган shartnomani bekor qilса/rad etса — to'liq qaytadi.
+
+Komissiya **`tayyorr.uz` platform hisobiga** yig'iladi ([lib/platform.ts](src/lib/platform.ts)). Yechib olish keyinroq.
+Wallet turlari: `HOLD`, `RELEASE`, `COMMISSION` (barchasi `method: "ESCROW"`).
+
+## Push bildirishnomalar
+
+Yangi chat xabari kelganда brauzer bildirishnomasi (Web Push + service worker).
+- [public/sw.js](public/sw.js) — `push` / `notificationclick`; suhbat oynasi ochiq+ko'rinib tursa bildirishnoma bermaydi.
+- [PushSetup](src/components/push-setup.tsx) — SW ni ro'yxatga oladi, "Yoqish" tugmasi bilan ruxsat so'raydi, obunani [/api/push/subscribe](src/app/api/push/subscribe/route.ts) ga yuboradi.
+- [deliverMessage](src/lib/chat-notify.ts) — har yangi xabarда SSE + qabul qiluvchiga web-push.
+- **VAPID kalitlari** kerak: `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` (`npx web-push generate-vapid-keys --json`). Vercel'ga ham qo'shing.
+- iOS'da faqat "Add to Home Screen" (PWA) rejimида ishlaydi; Android/desktop Chrome to'g'ridан ishlaydi.
+
 ## Messenger (real-time chat)
 
 - **[/messages](src/app/(app)/messages/page.tsx)** — suhbatlar ro'yxati (oxirgi xabar, o'qilmaganlar soni).

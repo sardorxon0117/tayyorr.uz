@@ -12,8 +12,11 @@ const TXN_LABEL: Record<string, string> = {
   TRANSFER_OUT: "Chiqim o'tkazma",
   PAYOUT: "Kartaga yechish",
   REFUND: "Qaytarish",
+  HOLD: "Shartnoma uchun bloklandi",
+  RELEASE: "Ish haqi (yakunlangan)",
+  COMMISSION: "Sayt komissiyasi",
 };
-const OUTFLOW = new Set(["SPEND", "TRANSFER_OUT", "PAYOUT"]);
+const OUTFLOW = new Set(["SPEND", "TRANSFER_OUT", "PAYOUT", "HOLD"]);
 
 export default async function WalletPage() {
   const session = await auth();

@@ -51,6 +51,9 @@ enum WalletTxnType {
   TRANSFER_OUT // boshqa foydalanuvchiga
   PAYOUT // kartaga yechib olish
   REFUND // qaytarish
+  HOLD // shartnoma bo'yicha eskrouga bloklandi
+  RELEASE // eskroudan tayyorlovchiga o'tkazildi
+  COMMISSION // sayt komissiyasi (5% / 2%)
 }
 
 enum WalletTxnStatus {
@@ -64,6 +67,13 @@ enum ComplaintStatus {
   REVIEWING // ko'rib chiqilmoqda
   RESOLVED // hal qilindi
   DISMISSED // rad etildi
+}
+
+enum ContractStatus {
+  SENT // buyurtmachi yubordi
+  ACCEPTED // tayyorlovchi qabul qildi — ish boshlandi
+  DECLINED // tayyorlovchi rad etdi
+  CANCELLED // buyurtmachi bekor qildi
 }
 
 // ----------------- Foydalanuvchi -----------------
@@ -98,7 +108,8 @@ model User {
   bannedUntil DateTime? // shu sanagacha cheklangan; null = cheklanmagan
   banReason   String?
 
-  isSupport Boolean @default(false) // "tayyorr.uz support" tizim hisobi
+  isSupport  Boolean @default(false) // "tayyorr.uz support" tizim hisobi
+  isPlatform Boolean @default(false) // sayt komissiya hisobi
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -117,8 +128,49 @@ model User {
   complaintsAgainst Complaint[]         @relation("ComplaintsAgainst")
   reviewsGiven      Review[]            @relation("ReviewsGiven")
   reviewsReceived   Review[]            @relation("ReviewsReceived")
+  contractsSent     Contract[]          @relation("ContractsSent")
+  contractsGot      Contract[]          @relation("ContractsGot")
+  pushSubscriptions PushSubscription[]
 
   @@index([role, isAvailable])
+}
+
+model Contract {
+  id         String         @id @default(cuid())
+  orderId    String
+  order      Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  ordererId  String
+  orderer    User           @relation("ContractsSent", fields: [ordererId], references: [id], onDelete: Cascade)
+  preparerId String
+  preparer   User           @relation("ContractsGot", fields: [preparerId], references: [id], onDelete: Cascade)
+  amount     Int // kelishilgan summa (so'm) — buyurtmachidan eskrouga bloklanadi
+  note       String? // batafsil tavsif / shartlar
+  deadline   DateTime?
+  status     ContractStatus @default(SENT)
+
+  // yakuniy taqsimot (hal qilinganda to'ldiriladi)
+  commissionAmount Int? // saytga
+  payoutAmount     Int? // tayyorlovchiga
+  refundAmount     Int? // buyurtmachiga qaytdi
+
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  resolvedAt DateTime?
+
+  @@index([orderId, status])
+  @@index([preparerId, status])
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }
 
 model Review {
@@ -297,6 +349,7 @@ model Order {
   files         FileObject[]
   conversations Conversation[]
   review        Review?
+  contracts     Contract[]
 
   @@index([status, createdAt])
 }

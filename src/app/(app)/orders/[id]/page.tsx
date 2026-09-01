@@ -57,6 +57,12 @@ export default async function OrderDetailPage({
       },
       files: true,
       review: true,
+      contracts: {
+        orderBy: { createdAt: "desc" },
+        include: {
+          preparer: { select: { name: true, login: true } },
+        },
+      },
     },
   });
 
@@ -145,6 +151,15 @@ export default async function OrderDetailPage({
         isPreparer={isPreparer}
         isAssigned={isAssigned}
         ordererId={order.ordererId}
+        meId={me.id}
+        contracts={order.contracts.map((c) => ({
+          id: c.id,
+          preparerId: c.preparerId,
+          preparerName: c.preparer.name ?? c.preparer.login ?? "tayyorlovchi",
+          amount: c.amount,
+          note: c.note,
+          status: c.status,
+        }))}
         reviewed={!!order.review}
         myReview={
           order.review
