@@ -17,6 +17,12 @@ export interface SerializedMessage {
   updatedAt: string;
   edited: boolean;
   deleted: boolean;
+  replyTo: null | {
+    id: string;
+    authorId: string;
+    text: string;
+    deleted: boolean;
+  };
   file: null | {
     name: string;
     type: string;

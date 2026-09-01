@@ -1,5 +1,13 @@
 import type { Message } from "@prisma/client";
+import { db } from "@/lib/db";
 import { PRIVATE_BUCKET, presignGet } from "@/lib/r2";
+
+export interface ReplyPreview {
+  id: string;
+  authorId: string;
+  text: string;
+  deleted: boolean;
+}
 
 export interface ClientMessage {
   id: string;
@@ -11,12 +19,34 @@ export interface ClientMessage {
   mine: boolean;
   edited: boolean;
   deleted: boolean;
+  replyTo: ReplyPreview | null;
   file: null | {
     name: string;
     type: string;
     size: number;
     url: string; // vaqtinchalik presigned GET
   };
+}
+
+function snippet(m: {
+  body: string;
+  fileName: string | null;
+  deletedAt: Date | null;
+}): string {
+  if (m.deletedAt) return "o'chirilgan xabar";
+  if (m.body) return m.body.length > 90 ? m.body.slice(0, 90) + "…" : m.body;
+  if (m.fileName) return `📎 ${m.fileName}`;
+  return "xabar";
+}
+
+async function replyPreview(replyToId: string | null): Promise<ReplyPreview | null> {
+  if (!replyToId) return null;
+  const p = await db.message.findUnique({
+    where: { id: replyToId },
+    select: { id: true, senderId: true, body: true, fileName: true, deletedAt: true },
+  });
+  if (!p) return null;
+  return { id: p.id, authorId: p.senderId, text: snippet(p), deleted: !!p.deletedAt };
 }
 
 /**
@@ -51,6 +81,7 @@ export async function toClientMessage(
     mine: m.senderId === meId,
     edited: !!m.editedAt,
     deleted,
+    replyTo: await replyPreview(m.replyToId),
     file,
   };
 }
@@ -85,6 +116,7 @@ export async function toSerializedMessage(m: Message) {
     updatedAt: m.updatedAt.toISOString(),
     edited: !!m.editedAt,
     deleted,
+    replyTo: await replyPreview(m.replyToId),
     file,
   };
 }

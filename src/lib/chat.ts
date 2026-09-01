@@ -53,6 +53,7 @@ export async function createMessage(opts: {
   senderId: string;
   body?: string;
   system?: boolean;
+  replyToId?: string | null;
   file?: {
     key: string;
     name: string;
@@ -60,6 +61,16 @@ export async function createMessage(opts: {
     size: number;
   } | null;
 }) {
+  // reply faqat shu suhbatdagi xabarga bo'lsin
+  let replyToId: string | null = null;
+  if (opts.replyToId) {
+    const parent = await db.message.findUnique({
+      where: { id: opts.replyToId },
+      select: { conversationId: true },
+    });
+    if (parent?.conversationId === opts.conversationId) replyToId = opts.replyToId;
+  }
+
   return db.$transaction(async (tx) => {
     const m = await tx.message.create({
       data: {
@@ -67,6 +78,7 @@ export async function createMessage(opts: {
         senderId: opts.senderId,
         body: opts.body ?? "",
         system: opts.system ?? false,
+        replyToId,
         fileKey: opts.file?.key ?? null,
         fileName: opts.file?.name ?? null,
         fileType: opts.file?.type ?? null,

@@ -179,6 +179,11 @@ model Message {
   editedAt  DateTime? // oxirgi tahrirlangan vaqt
   deletedAt DateTime? // "hamma uchun o'chirish" — foydalanuvchilarga ko'rinmaydi, adminда qoladi
 
+  // javob (reply)
+  replyToId String?
+  replyTo   Message?  @relation("MessageReplies", fields: [replyToId], references: [id], onDelete: SetNull)
+  replies   Message[] @relation("MessageReplies")
+
   createdAt DateTime  @default(now())
   updatedAt DateTime  @default(now()) @updatedAt
   readAt    DateTime?

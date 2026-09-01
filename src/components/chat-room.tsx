@@ -7,6 +7,13 @@ import { ReportButton } from "@/components/report-button";
 import { ChatFileView, humanSize, type ChatFile } from "@/components/chat-file";
 import { prepareChatFile, type PreparedChatFile } from "@/lib/upload-client";
 
+interface ReplyPreview {
+  id: string;
+  authorId: string;
+  text: string;
+  deleted: boolean;
+}
+
 interface Msg {
   id: string;
   senderId: string;
@@ -18,6 +25,7 @@ interface Msg {
   edited?: boolean;
   deleted?: boolean;
   pending?: boolean;
+  replyTo?: ReplyPreview | null;
   file?: ChatFile | null;
 }
 
@@ -63,6 +71,7 @@ export function ChatRoom({
   const [uploadName, setUploadName] = useState("");
 
   const [editing, setEditing] = useState<{ id: string } | null>(null);
+  const [replyingTo, setReplyingTo] = useState<ReplyPreview | null>(null);
   const [menuFor, setMenuFor] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -115,6 +124,7 @@ export function ChatRoom({
               mine: m.senderId === meId,
               edited: m.edited,
               deleted: m.deleted,
+              replyTo: m.replyTo ?? null,
               file: m.file ?? null,
             },
           ]);
@@ -191,6 +201,7 @@ export function ChatRoom({
 
   function startEdit(m: Msg) {
     setEditing({ id: m.id });
+    setReplyingTo(null);
     setText(m.body);
     setMenuFor(null);
     setAttachment(null);
@@ -199,6 +210,28 @@ export function ChatRoom({
   function cancelEdit() {
     setEditing(null);
     setText("");
+  }
+
+  function startReply(m: Msg) {
+    setMenuFor(null);
+    setEditing(null);
+    setReplyingTo({
+      id: m.id,
+      authorId: m.senderId,
+      text: m.deleted
+        ? "o'chirilgan xabar"
+        : m.body || (m.file ? `📎 ${m.file.name}` : "xabar"),
+      deleted: !!m.deleted,
+    });
+  }
+
+  function scrollToMessage(id: string) {
+    const el = document.getElementById(`msg-${id}`);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      el.classList.add("ring-2", "ring-indigo-400/70");
+      setTimeout(() => el.classList.remove("ring-2", "ring-indigo-400/70"), 1400);
+    }
   }
 
   async function del(m: Msg) {
@@ -246,8 +279,10 @@ export function ChatRoom({
     if (uploading) return;
 
     const sentFile = attachment;
+    const replyTo = replyingTo;
     setText("");
     setAttachment(null);
+    setReplyingTo(null);
     setPeerRead(false);
 
     const tmpId = `tmp-${Date.now()}`;
@@ -260,6 +295,7 @@ export function ChatRoom({
         updatedAt: Date.now(),
         mine: true,
         pending: true,
+        replyTo,
         file: sentFile
           ? { name: sentFile.name, type: sentFile.type, size: sentFile.size, url: "" }
           : null,
@@ -272,6 +308,7 @@ export function ChatRoom({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           body: body || undefined,
+          replyToId: replyTo?.id,
           file: sentFile
             ? {
                 key: sentFile.key,
@@ -378,45 +415,66 @@ export function ChatRoom({
                   </div>
                 );
               }
+              const showMenu = !m.pending && !m.deleted;
+              const MenuBtn = showMenu ? (
+                <div className="relative shrink-0 self-end">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setMenuFor(menuFor === m.id ? null : m.id);
+                    }}
+                    className="mb-1 flex h-7 w-7 items-center justify-center rounded-lg border border-white/15 bg-white/10 text-zinc-300 transition hover:bg-white/20 hover:text-white"
+                    aria-label="Xabar menyusi"
+                  >
+                    ⋮
+                  </button>
+                  {menuFor === m.id && (
+                    <div
+                      className={`menu-panel absolute bottom-8 z-30 w-36 overflow-hidden rounded-xl border border-white/10 bg-[#14141b]/95 text-sm shadow-xl backdrop-blur-xl ${
+                        m.mine ? "right-0" : "left-0"
+                      }`}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => startReply(m)}
+                        className="block w-full px-3 py-2 text-left text-zinc-200 hover:bg-white/5"
+                      >
+                        ↩︎ Javob berish
+                      </button>
+                      {m.mine && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => startEdit(m)}
+                            className="block w-full px-3 py-2 text-left text-zinc-200 hover:bg-white/5"
+                          >
+                            ✎ Tahrirlash
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => del(m)}
+                            className="block w-full px-3 py-2 text-left text-red-400 hover:bg-white/5"
+                          >
+                            🗑 O'chirish
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ) : null;
+
               return (
                 <div
                   key={m.id}
-                  className={`group flex ${m.mine ? "justify-end" : "justify-start"}`}
+                  id={`msg-${m.id}`}
+                  className={`flex rounded-2xl transition ${
+                    m.mine ? "justify-end" : "justify-start"
+                  }`}
                 >
-                  <div className="relative flex max-w-[82%] items-end gap-1">
-                    {m.mine && !m.pending && !m.deleted && (
-                      <div className="relative">
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setMenuFor(menuFor === m.id ? null : m.id);
-                          }}
-                          className="mb-1 rounded px-1 text-zinc-500 opacity-0 transition hover:text-white group-hover:opacity-100"
-                          aria-label="Menyu"
-                        >
-                          ⋮
-                        </button>
-                        {menuFor === m.id && (
-                          <div className="menu-panel absolute bottom-6 right-0 z-30 w-32 overflow-hidden rounded-xl border border-white/10 bg-[#14141b]/95 text-sm shadow-xl backdrop-blur-xl">
-                            <button
-                              type="button"
-                              onClick={() => startEdit(m)}
-                              className="block w-full px-3 py-2 text-left text-zinc-200 hover:bg-white/5"
-                            >
-                              Tahrirlash
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => del(m)}
-                              className="block w-full px-3 py-2 text-left text-red-400 hover:bg-white/5"
-                            >
-                              O'chirish
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    )}
+                  <div className="flex max-w-[86%] items-end gap-1.5">
+                    {m.mine && MenuBtn}
 
                     <div
                       className={`space-y-1.5 rounded-2xl px-3.5 py-2 text-sm ${
@@ -425,6 +483,22 @@ export function ChatRoom({
                           : "border border-white/10 bg-white/5 text-zinc-100"
                       } ${m.pending ? "opacity-60" : ""}`}
                     >
+                      {m.replyTo && (
+                        <button
+                          type="button"
+                          onClick={() => scrollToMessage(m.replyTo!.id)}
+                          className={`block w-full rounded-md border-l-2 py-1 pl-2 pr-1 text-left text-xs ${
+                            m.mine
+                              ? "border-white/50 bg-white/10"
+                              : "border-indigo-400/60 bg-white/5"
+                          }`}
+                        >
+                          <div className="font-medium opacity-90">
+                            {m.replyTo.authorId === meId ? "Siz" : other.name}
+                          </div>
+                          <div className="truncate opacity-75">{m.replyTo.text}</div>
+                        </button>
+                      )}
                       {m.file && m.file.url && (
                         <ChatFileView file={m.file} mine={m.mine} />
                       )}
@@ -446,6 +520,8 @@ export function ChatRoom({
                         {m.mine && m.id === lastMineId && peerRead ? " · o'qildi" : ""}
                       </div>
                     </div>
+
+                    {!m.mine && MenuBtn}
                   </div>
                 </div>
               );
@@ -470,6 +546,25 @@ export function ChatRoom({
                   className="text-zinc-500 hover:text-white"
                 >
                   bekor ✕
+                </button>
+              </div>
+            )}
+
+            {replyingTo && !editing && (
+              <div className="mb-2 flex items-center justify-between gap-2 rounded-lg border-l-2 border-indigo-400/70 bg-white/5 px-3 py-1.5 text-xs">
+                <div className="min-w-0">
+                  <div className="text-indigo-300">
+                    Javob:{" "}
+                    {replyingTo.authorId === meId ? "Siz" : other.name}
+                  </div>
+                  <div className="truncate text-zinc-400">{replyingTo.text}</div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setReplyingTo(null)}
+                  className="shrink-0 text-zinc-500 hover:text-white"
+                >
+                  ✕
                 </button>
               </div>
             )}

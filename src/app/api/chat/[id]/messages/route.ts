@@ -11,6 +11,7 @@ import { toClientMessage, toSerializedMessage } from "@/lib/chat-messages";
 
 const schema = z.object({
   body: z.string().trim().max(8000).optional(),
+  replyToId: z.string().optional(),
   file: z
     .object({
       key: z.string().min(1),
@@ -60,6 +61,7 @@ export async function POST(
     conversationId: id,
     senderId: me,
     body: parsed.data.body ?? "",
+    replyToId: parsed.data.replyToId ?? null,
     file: parsed.data.file ?? null,
   });
 
