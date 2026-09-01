@@ -5,8 +5,6 @@ import Link from "next/link";
 
 import { ReportButton } from "@/components/report-button";
 import { ChatFileView, humanSize, type ChatFile } from "@/components/chat-file";
-import { NavMenu } from "@/components/nav-menu";
-import { APP_NAV } from "@/lib/nav";
 import { prepareChatFile, type PreparedChatFile } from "@/lib/upload-client";
 
 interface Msg {
@@ -26,7 +24,6 @@ interface Msg {
 interface Props {
   conversationId: string;
   meId: string;
-  myImage: string | null;
   orderId: string | null;
   other: {
     id: string;
@@ -47,7 +44,6 @@ const MAX_FILE = 100 * 1024 * 1024;
 export function ChatRoom({
   conversationId,
   meId,
-  myImage,
   orderId,
   other,
   initialMessages,
@@ -360,17 +356,6 @@ export function ChatRoom({
               className="shrink-0 rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-zinc-300 transition hover:bg-white/10"
             />
           )}
-          <Link
-            href="/profile"
-            className="h-9 w-9 shrink-0 overflow-hidden rounded-full border border-white/15 bg-white/5 transition hover:border-white/30"
-            aria-label="Profil"
-          >
-            {myImage && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={myImage} alt="" className="h-full w-full object-cover" />
-            )}
-          </Link>
-          <NavMenu links={APP_NAV} />
         </div>
       </header>
 

@@ -41,7 +41,6 @@ export default async function ChatPage({
     <ChatRoom
       conversationId={id}
       meId={me}
-      myImage={session!.user.image ?? null}
       orderId={conv.orderId}
       other={{
         id: other?.id ?? "",
