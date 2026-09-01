@@ -93,7 +93,7 @@ export function ChatRoom({
   function openMenu(m: Msg, btn: HTMLElement) {
     const r = btn.getBoundingClientRect();
     const W = 184;
-    const H = m.mine ? 150 : 96;
+    const H = (m.mine ? 150 : 96) + 44; // + reaksiya paneli
     const M = 8;
     let left = r.right - W;
     if (left < M) left = M;
@@ -520,11 +520,13 @@ export function ChatRoom({
                 );
               }
               const showMenu = !m.pending && !m.deleted;
+              const hasReactions =
+                (m.reactions?.like ?? 0) > 0 || (m.reactions?.dislike ?? 0) > 0;
               const MenuBtn = showMenu ? (
                 <button
                   type="button"
                   onClick={(e) => openMenu(m, e.currentTarget)}
-                  className="mb-1 flex h-7 w-7 shrink-0 items-center justify-center self-end rounded-lg border border-white/15 bg-white/10 text-zinc-300 transition hover:bg-white/20 hover:text-white"
+                  className="flex h-7 w-7 shrink-0 items-center justify-center self-center rounded-lg border border-white/15 bg-white/10 text-zinc-300 transition hover:bg-white/20 hover:text-white"
                   aria-label="Xabar menyusi"
                 >
                   ⋮
@@ -539,12 +541,11 @@ export function ChatRoom({
                     m.mine ? "justify-end" : "justify-start"
                   }`}
                 >
-                  <div className="flex max-w-[86%] items-end gap-1.5">
+                  <div className="flex max-w-[86%] items-center gap-1.5">
                     {m.mine && MenuBtn}
 
-                    <div className={`flex flex-col ${m.mine ? "items-end" : "items-start"}`}>
                     <div
-                      className={`space-y-1.5 rounded-2xl px-3.5 py-2 text-sm ${
+                      className={`space-y-1 rounded-2xl px-3.5 py-2 text-sm ${
                         m.mine
                           ? "bg-indigo-600 text-white"
                           : "border border-white/10 bg-white/5 text-zinc-100"
@@ -577,6 +578,38 @@ export function ChatRoom({
                       {m.body && (
                         <div className="whitespace-pre-wrap break-words">{m.body}</div>
                       )}
+
+                      {hasReactions && (
+                        <div className="flex flex-wrap gap-1 pt-0.5">
+                          {(["LIKE", "DISLIKE"] as const).map((v) => {
+                            const n =
+                              v === "LIKE"
+                                ? m.reactions?.like ?? 0
+                                : m.reactions?.dislike ?? 0;
+                            if (n === 0) return null;
+                            const on = m.reactions?.mine === v;
+                            return (
+                              <button
+                                key={v}
+                                type="button"
+                                onClick={() => react(m, v)}
+                                className={`flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[11px] leading-none transition ${
+                                  on
+                                    ? m.mine
+                                      ? "bg-white/25 text-white"
+                                      : "bg-indigo-500/25 text-white"
+                                    : m.mine
+                                      ? "bg-white/10 text-indigo-100"
+                                      : "bg-white/10 text-zinc-300"
+                                }`}
+                              >
+                                {v === "LIKE" ? "👍" : "👎"} {n}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+
                       <div
                         className={`text-right text-[10px] ${
                           m.mine ? "text-indigo-200" : "text-zinc-500"
@@ -586,34 +619,6 @@ export function ChatRoom({
                         {fmtTime(m.createdAt)}
                         {m.mine && m.id === lastMineId && peerRead ? " · o'qildi" : ""}
                       </div>
-                    </div>
-
-                    {!m.pending && !m.deleted && (
-                      <div className="mt-1 flex gap-1">
-                        {(["LIKE", "DISLIKE"] as const).map((v) => {
-                          const on = m.reactions?.mine === v;
-                          const n =
-                            v === "LIKE"
-                              ? m.reactions?.like ?? 0
-                              : m.reactions?.dislike ?? 0;
-                          return (
-                            <button
-                              key={v}
-                              type="button"
-                              onClick={() => react(m, v)}
-                              className={`flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs transition ${
-                                on
-                                  ? "border-indigo-400/60 bg-indigo-500/20 text-white"
-                                  : "border-white/10 bg-white/5 text-zinc-400 hover:bg-white/10"
-                              }`}
-                            >
-                              {v === "LIKE" ? "👍" : "👎"}
-                              {n > 0 && <span>{n}</span>}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
                     </div>
 
                     {!m.mine && MenuBtn}
@@ -755,9 +760,29 @@ export function ChatRoom({
               onClick={() => setMenu(null)}
             />
             <div
-              className="menu-panel fixed z-[71] w-[184px] overflow-hidden rounded-xl border border-white/10 bg-[#14141b]/97 text-sm shadow-2xl shadow-black/50 backdrop-blur-2xl"
+              className="menu-panel fixed z-[71] w-[184px] overflow-hidden rounded-xl border border-white/10 bg-[#14141b] text-sm shadow-2xl shadow-black/50"
               style={{ left: menu.left, top: menu.top }}
             >
+              <div className="flex gap-1 border-b border-white/10 p-1.5">
+                {(["LIKE", "DISLIKE"] as const).map((v) => {
+                  const on = menu.msg.reactions?.mine === v;
+                  return (
+                    <button
+                      key={v}
+                      type="button"
+                      onClick={() => {
+                        react(menu.msg, v);
+                        setMenu(null);
+                      }}
+                      className={`flex-1 rounded-lg py-1.5 text-lg transition ${
+                        on ? "bg-indigo-500/30" : "hover:bg-white/10"
+                      }`}
+                    >
+                      {v === "LIKE" ? "👍" : "👎"}
+                    </button>
+                  );
+                })}
+              </div>
               <button
                 type="button"
                 onClick={() => startReply(menu.msg)}
