@@ -115,8 +115,25 @@ model User {
   messages          Message[]
   complaintsMade    Complaint[]         @relation("ComplaintsMade")
   complaintsAgainst Complaint[]         @relation("ComplaintsAgainst")
+  reviewsGiven      Review[]            @relation("ReviewsGiven")
+  reviewsReceived   Review[]            @relation("ReviewsReceived")
 
   @@index([role, isAvailable])
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  orderId   String   @unique
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  raterId   String // buyurtma beruvchi
+  rater     User     @relation("ReviewsGiven", fields: [raterId], references: [id], onDelete: Cascade)
+  targetId  String // tayyorlovchi
+  target    User     @relation("ReviewsReceived", fields: [targetId], references: [id], onDelete: Cascade)
+  stars     Int // 1..5
+  comment   String?
+  createdAt DateTime @default(now())
+
+  @@index([targetId, createdAt])
 }
 
 model WalletTransaction {
@@ -279,6 +296,7 @@ model Order {
   offers        Offer[]
   files         FileObject[]
   conversations Conversation[]
+  review        Review?
 
   @@index([status, createdAt])
 }

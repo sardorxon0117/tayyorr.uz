@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 
 import { ReportButton } from "@/components/report-button";
@@ -72,7 +73,23 @@ export function ChatRoom({
 
   const [editing, setEditing] = useState<{ id: string } | null>(null);
   const [replyingTo, setReplyingTo] = useState<ReplyPreview | null>(null);
-  const [menuFor, setMenuFor] = useState<string | null>(null);
+  const [menu, setMenu] = useState<{ msg: Msg; left: number; top: number } | null>(
+    null,
+  );
+
+  function openMenu(m: Msg, btn: HTMLElement) {
+    const r = btn.getBoundingClientRect();
+    const W = 184;
+    const H = m.mine ? 148 : 52;
+    const M = 8;
+    let left = r.right - W;
+    if (left < M) left = M;
+    if (left + W > window.innerWidth - M) left = window.innerWidth - M - W;
+    let top = r.bottom + 6;
+    if (top + H > window.innerHeight - M) top = r.top - H - 6;
+    if (top < M) top = M;
+    setMenu({ msg: m, left, top });
+  }
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -179,7 +196,7 @@ export function ChatRoom({
 
   async function onPickFile(file: File) {
     setErr(null);
-    setMenuFor(null);
+    setMenu(null);
     if (file.size > MAX_FILE) {
       setErr("Fayl 100MB dan katta");
       return;
@@ -203,7 +220,7 @@ export function ChatRoom({
     setEditing({ id: m.id });
     setReplyingTo(null);
     setText(m.body);
-    setMenuFor(null);
+    setMenu(null);
     setAttachment(null);
   }
 
@@ -213,7 +230,7 @@ export function ChatRoom({
   }
 
   function startReply(m: Msg) {
-    setMenuFor(null);
+    setMenu(null);
     setEditing(null);
     setReplyingTo({
       id: m.id,
@@ -235,7 +252,7 @@ export function ChatRoom({
   }
 
   async function del(m: Msg) {
-    setMenuFor(null);
+    setMenu(null);
     if (!window.confirm("Xabar ikkala tomondan ham o'chirilsinmi?")) return;
     applyDelete(m.id, Date.now());
     try {
@@ -347,10 +364,7 @@ export function ChatRoom({
     !uploading && (editing ? !!text.trim() : !!text.trim() || !!attachment);
 
   return (
-    <div
-      className="fixed inset-0 z-40 flex flex-col"
-      onClick={() => menuFor && setMenuFor(null)}
-    >
+    <div className="fixed inset-0 z-40 flex flex-col">
       {/* ---- birlashgan header (sayt + suhbat) ---- */}
       <header className="shrink-0 border-b border-white/10 bg-[#0b0b12]/80 backdrop-blur-2xl">
         <div className="mx-auto flex max-w-3xl items-center gap-2.5 px-3 py-2.5 sm:px-4">
@@ -361,29 +375,23 @@ export function ChatRoom({
           >
             ‹
           </Link>
-          <div className="h-9 w-9 shrink-0 overflow-hidden rounded-full border border-white/10 bg-white/5">
-            {other.image && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={other.image} alt="" className="h-full w-full object-cover" />
-            )}
-          </div>
-          <div className="min-w-0 flex-1">
-            <div className="truncate font-medium text-white">{other.name}</div>
-            <div className="truncate text-xs text-zinc-500">
-              {live ? "onlayn" : "ulanmoqda…"}
-              {orderId && (
-                <>
-                  {" · "}
-                  <Link
-                    href={`/orders/${orderId}`}
-                    className="text-indigo-400 hover:underline"
-                  >
-                    buyurtma
-                  </Link>
-                </>
+          <Link
+            href={other.isSupport || !other.id ? "#" : `/u/${other.id}`}
+            className="flex min-w-0 flex-1 items-center gap-2.5"
+          >
+            <div className="h-9 w-9 shrink-0 overflow-hidden rounded-full border border-white/10 bg-white/5">
+              {other.image && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={other.image} alt="" className="h-full w-full object-cover" />
               )}
             </div>
-          </div>
+            <div className="min-w-0">
+              <div className="truncate font-medium text-white">{other.name}</div>
+              <div className="truncate text-xs text-zinc-500">
+                {live ? "onlayn" : "ulanmoqda…"}
+              </div>
+            </div>
+          </Link>
 
           {!other.isSupport && other.id && (
             <ReportButton
@@ -417,52 +425,14 @@ export function ChatRoom({
               }
               const showMenu = !m.pending && !m.deleted;
               const MenuBtn = showMenu ? (
-                <div className="relative shrink-0 self-end">
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setMenuFor(menuFor === m.id ? null : m.id);
-                    }}
-                    className="mb-1 flex h-7 w-7 items-center justify-center rounded-lg border border-white/15 bg-white/10 text-zinc-300 transition hover:bg-white/20 hover:text-white"
-                    aria-label="Xabar menyusi"
-                  >
-                    ⋮
-                  </button>
-                  {menuFor === m.id && (
-                    <div
-                      className={`menu-panel absolute bottom-8 z-30 w-36 overflow-hidden rounded-xl border border-white/10 bg-[#14141b]/95 text-sm shadow-xl backdrop-blur-xl ${
-                        m.mine ? "right-0" : "left-0"
-                      }`}
-                    >
-                      <button
-                        type="button"
-                        onClick={() => startReply(m)}
-                        className="block w-full px-3 py-2 text-left text-zinc-200 hover:bg-white/5"
-                      >
-                        ↩︎ Javob berish
-                      </button>
-                      {m.mine && (
-                        <>
-                          <button
-                            type="button"
-                            onClick={() => startEdit(m)}
-                            className="block w-full px-3 py-2 text-left text-zinc-200 hover:bg-white/5"
-                          >
-                            ✎ Tahrirlash
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => del(m)}
-                            className="block w-full px-3 py-2 text-left text-red-400 hover:bg-white/5"
-                          >
-                            🗑 O'chirish
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  )}
-                </div>
+                <button
+                  type="button"
+                  onClick={(e) => openMenu(m, e.currentTarget)}
+                  className="mb-1 flex h-7 w-7 shrink-0 items-center justify-center self-end rounded-lg border border-white/15 bg-white/10 text-zinc-300 transition hover:bg-white/20 hover:text-white"
+                  aria-label="Xabar menyusi"
+                >
+                  ⋮
+                </button>
               ) : null;
 
               return (
@@ -638,13 +608,60 @@ export function ChatRoom({
                   }
                 }}
               />
-              <button className="btn-primary shrink-0" disabled={!canSend}>
-                {editing ? "Saqlash" : "Yuborish"}
+              <button
+                className="btn-primary h-[42px] w-[42px] shrink-0 !px-0 text-lg"
+                disabled={!canSend}
+                aria-label={editing ? "Saqlash" : "Yuborish"}
+                title={editing ? "Saqlash" : "Yuborish"}
+              >
+                {editing ? "✓" : "🚀"}
               </button>
             </form>
           </div>
         </div>
       </div>
+
+      {/* xabar menyusi — ekranga moslashadigan popup */}
+      {menu &&
+        createPortal(
+          <>
+            <div
+              className="fixed inset-0 z-[70]"
+              onClick={() => setMenu(null)}
+            />
+            <div
+              className="menu-panel fixed z-[71] w-[184px] overflow-hidden rounded-xl border border-white/10 bg-[#14141b]/97 text-sm shadow-2xl shadow-black/50 backdrop-blur-2xl"
+              style={{ left: menu.left, top: menu.top }}
+            >
+              <button
+                type="button"
+                onClick={() => startReply(menu.msg)}
+                className="block w-full px-3 py-2.5 text-left text-zinc-200 hover:bg-white/5"
+              >
+                ↩︎ Javob berish
+              </button>
+              {menu.msg.mine && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => startEdit(menu.msg)}
+                    className="block w-full px-3 py-2.5 text-left text-zinc-200 hover:bg-white/5"
+                  >
+                    ✎ Tahrirlash
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => del(menu.msg)}
+                    className="block w-full px-3 py-2.5 text-left text-red-400 hover:bg-white/5"
+                  >
+                    🗑 O'chirish
+                  </button>
+                </>
+              )}
+            </div>
+          </>,
+          document.body,
+        )}
     </div>
   );
 }

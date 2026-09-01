@@ -2,8 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 import { ReportButton } from "@/components/report-button";
+import { ReviewForm } from "@/components/review-form";
+import { Stars } from "@/components/stars";
 
 interface OfferView {
   id: string;
@@ -17,6 +20,7 @@ interface OfferView {
     about: string | null;
     isAvailable: boolean;
     rating: number | null;
+    ratingCount: number;
   };
 }
 
@@ -27,6 +31,8 @@ interface Props {
   isPreparer: boolean;
   isAssigned: boolean;
   ordererId: string;
+  reviewed: boolean;
+  myReview: { stars: number; comment: string | null } | null;
   myOffer: { id: string; price: number; message: string | null; status: string } | null;
   offers: OfferView[];
 }
@@ -40,6 +46,8 @@ export function OrderActions(props: Props) {
     isPreparer,
     isAssigned,
     ordererId,
+    reviewed,
+    myReview,
     myOffer,
     offers,
   } = props;
@@ -156,28 +164,41 @@ export function OrderActions(props: Props) {
           )}
           {offers.map((o) => (
             <div key={o.id} className="card flex flex-col gap-2">
-              <div className="flex items-center justify-between">
-                <div className="font-medium">
+              <div className="flex items-center justify-between gap-3">
+                <Link
+                  href={`/u/${o.preparerId}`}
+                  className="min-w-0 font-medium text-white hover:underline"
+                >
                   {o.preparer.name}
                   {o.preparer.login && (
                     <span className="text-zinc-400"> @{o.preparer.login}</span>
                   )}
-                </div>
+                </Link>
                 <span
-                  className={`text-xs ${
+                  className={`shrink-0 text-xs ${
                     o.preparer.isAvailable ? "text-emerald-400" : "text-amber-400"
                   }`}
                 >
                   {o.preparer.isAvailable ? "bo'sh" : "band"}
                 </span>
               </div>
+              <Link
+                href={`/u/${o.preparerId}`}
+                className="flex items-center gap-2 text-sm"
+              >
+                <Stars value={o.preparer.rating ?? 0} />
+                <span className="text-zinc-300">
+                  {o.preparer.rating != null ? o.preparer.rating.toFixed(1) : "yangi"}
+                </span>
+                <span className="text-xs text-zinc-500">
+                  ({o.preparer.ratingCount} baho)
+                </span>
+              </Link>
               {o.preparer.about && (
                 <p className="text-xs text-zinc-500">{o.preparer.about}</p>
               )}
               <div className="text-sm">
                 Narx: <b>{o.price.toLocaleString()} so'm</b>
-                {o.preparer.rating != null &&
-                  ` · reyting ${o.preparer.rating.toFixed(1)}`}
               </div>
               {o.message && <p className="text-sm text-zinc-300">{o.message}</p>}
 
@@ -227,6 +248,20 @@ export function OrderActions(props: Props) {
           ))}
         </div>
       )}
+
+      {/* Baholash (ish yakunlangач buyurtmachi) */}
+      {isOrderer && status === "DONE" &&
+        (reviewed ? (
+          <div className="card">
+            <h2 className="mb-1 font-semibold text-white">Sizning bahoyingiz</h2>
+            <Stars value={myReview?.stars ?? 0} size="md" />
+            {myReview?.comment && (
+              <p className="mt-2 text-sm text-zinc-400">«{myReview.comment}»</p>
+            )}
+          </div>
+        ) : (
+          <ReviewForm orderId={orderId} />
+        ))}
 
       {/* Status o'zgartirish */}
       <div className="flex flex-wrap gap-2">

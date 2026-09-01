@@ -77,8 +77,9 @@ function Lightbox({ file, onClose }: { file: ChatFile; onClose: () => void }) {
           <video
             src={file.url}
             controls
+            autoPlay
             playsInline
-            preload="metadata"
+            preload="auto"
             className="max-h-[86vh] max-w-[92vw] rounded-lg bg-black"
           />
         ) : (
@@ -101,47 +102,40 @@ export function ChatFileView({ file, mine }: { file: ChatFile; mine: boolean }) 
   const isVideo = file.type.startsWith("video/");
   const isAudio = file.type.startsWith("audio/");
 
-  if (isImage) {
+  if (isImage || isVideo) {
     return (
       <>
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="block max-w-full overflow-hidden rounded-lg"
+          className="relative block w-[min(260px,64vw)] max-w-full overflow-hidden rounded-lg bg-black"
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={file.url}
-            alt={file.name}
-            className="max-h-60 max-w-full rounded-lg object-cover"
-          />
+          {isImage ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={file.url}
+              alt={file.name}
+              className="max-h-56 w-full rounded-lg object-cover"
+            />
+          ) : (
+            <>
+              <video
+                src={`${file.url}#t=0.1`}
+                preload="metadata"
+                muted
+                playsInline
+                className="max-h-56 w-full rounded-lg object-cover"
+              />
+              <span className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-black/55 text-xl text-white">
+                  ▶
+                </span>
+              </span>
+            </>
+          )}
         </button>
         {open && <Lightbox file={file} onClose={() => setOpen(false)} />}
       </>
-    );
-  }
-
-  if (isVideo) {
-    return (
-      <div className="w-[min(280px,72vw)] max-w-full space-y-1">
-        <video
-          src={file.url}
-          controls
-          playsInline
-          preload="metadata"
-          className="max-h-64 w-full rounded-lg bg-black"
-        />
-        <div className="flex items-center justify-between text-[10px] opacity-70">
-          <span className="min-w-0 truncate">{file.name}</span>
-          <button
-            type="button"
-            onClick={() => downloadFile(file.url, file.name)}
-            className="shrink-0 hover:underline"
-          >
-            ↓ yuklab olish
-          </button>
-        </div>
-      </div>
     );
   }
 

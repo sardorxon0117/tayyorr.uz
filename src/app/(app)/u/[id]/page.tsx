@@ -1,0 +1,190 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+
+import { auth } from "@/auth";
+import { db } from "@/lib/db";
+import { Stars } from "@/components/stars";
+
+const TYPE_LABEL: Record<string, string> = {
+  PRESENTATION: "Prezentatsiya",
+  COURSE_WORK: "Kurs ishi",
+  REFERAT: "Referat",
+  ESSAY: "Esse",
+  DIPLOMA: "Diplom ishi",
+  OTHER: "Boshqa",
+};
+
+export default async function PublicProfile({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  await auth();
+
+  const user = await db.user.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      name: true,
+      firstName: true,
+      lastName: true,
+      login: true,
+      email: true,
+      role: true,
+      about: true,
+      avatarUrl: true,
+      image: true,
+      isAvailable: true,
+      ratingSum: true,
+      ratingCount: true,
+      isSupport: true,
+      createdAt: true,
+      _count: { select: { ordersCreated: true, ordersTaken: true } },
+    },
+  });
+  if (!user || user.isSupport) notFound();
+
+  const avg = user.ratingCount ? user.ratingSum / user.ratingCount : 0;
+
+  // tayyorlovchining bajarilgan ishlari + har biriga qo'yilgan baho
+  const doneOrders =
+    user.role === "PREPARER"
+      ? await db.order.findMany({
+          where: { preparerId: id, status: "DONE" },
+          orderBy: { updatedAt: "desc" },
+          take: 30,
+          include: { review: true },
+        })
+      : [];
+
+  return (
+    <div className="mx-auto flex max-w-2xl flex-col gap-6">
+      <Link href="/messages" className="text-sm text-zinc-500 hover:text-white">
+        ‹ orqaga
+      </Link>
+
+      {/* bosh qism */}
+      <div className="flex items-center gap-4">
+        <div className="h-20 w-20 shrink-0 overflow-hidden rounded-full border border-white/10 bg-white/5">
+          {(user.avatarUrl ?? user.image) && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={user.avatarUrl ?? user.image ?? ""}
+              alt=""
+              className="h-full w-full object-cover"
+            />
+          )}
+        </div>
+        <div className="min-w-0">
+          <h1 className="text-xl font-semibold text-white">
+            {user.name ||
+              `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() ||
+              "—"}
+          </h1>
+          <div className="mt-0.5 text-sm text-zinc-500">
+            @{user.login ?? "—"} ·{" "}
+            {user.role === "PREPARER"
+              ? "Tayyorlovchi"
+              : user.role === "ORDERER"
+                ? "Buyurtma beruvchi"
+                : "—"}
+            {user.role === "PREPARER" && (
+              <span
+                className={`ml-2 ${user.isAvailable ? "text-emerald-400" : "text-amber-400"}`}
+              >
+                {user.isAvailable ? "bo'sh" : "band"}
+              </span>
+            )}
+          </div>
+          {user.role === "PREPARER" && (
+            <div className="mt-1.5 flex items-center gap-2">
+              <Stars value={avg} size="md" />
+              <span className="text-sm text-zinc-300">
+                {user.ratingCount ? avg.toFixed(1) : "—"}
+              </span>
+              <span className="text-xs text-zinc-500">
+                ({user.ratingCount} baho)
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ma'lumotlar */}
+      <div className="card">
+        <dl className="divide-y divide-white/5 text-sm">
+          <Row k="Email" v={user.email ?? "—"} />
+          <Row
+            k="Ro'yxatdan o'tgan"
+            v={user.createdAt.toLocaleDateString("uz", { dateStyle: "long" })}
+          />
+          {user.role === "PREPARER" ? (
+            <Row k="Olingan ishlar" v={String(user._count.ordersTaken)} />
+          ) : (
+            <Row k="Berilgan buyurtmalar" v={String(user._count.ordersCreated)} />
+          )}
+        </dl>
+        {user.about && (
+          <p className="mt-3 whitespace-pre-wrap text-sm text-zinc-300">
+            {user.about}
+          </p>
+        )}
+      </div>
+
+      {/* bajarilgan ishlar + baholar */}
+      {user.role === "PREPARER" && (
+        <div>
+          <h2 className="mb-3 font-semibold text-white">
+            Bajarilgan ishlar ({doneOrders.length})
+          </h2>
+          {doneOrders.length === 0 ? (
+            <div className="card text-sm text-zinc-500">Hozircha ish yo'q.</div>
+          ) : (
+            <ul className="flex flex-col gap-2">
+              {doneOrders.map((o) => (
+                <li key={o.id} className="card">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="truncate font-medium text-white">{o.title}</div>
+                      <div className="mt-0.5 text-xs text-zinc-500">
+                        {TYPE_LABEL[o.type] ?? o.type} ·{" "}
+                        {o.updatedAt.toLocaleDateString("uz")}
+                      </div>
+                    </div>
+                    {o.review ? (
+                      <div className="shrink-0 text-right">
+                        <Stars value={o.review.stars} />
+                        <div className="text-xs text-zinc-400">
+                          {o.review.stars}.0
+                        </div>
+                      </div>
+                    ) : (
+                      <span className="shrink-0 text-xs text-zinc-600">
+                        baholanmagan
+                      </span>
+                    )}
+                  </div>
+                  {o.review?.comment && (
+                    <p className="mt-2 text-sm text-zinc-400">
+                      «{o.review.comment}»
+                    </p>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Row({ k, v }: { k: string; v: string }) {
+  return (
+    <div className="flex justify-between gap-4 py-2">
+      <dt className="text-zinc-500">{k}</dt>
+      <dd className="text-right text-zinc-200">{v}</dd>
+    </div>
+  );
+}

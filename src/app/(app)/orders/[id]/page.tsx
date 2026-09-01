@@ -56,6 +56,7 @@ export default async function OrderDetailPage({
         orderBy: { createdAt: "asc" },
       },
       files: true,
+      review: true,
     },
   });
 
@@ -144,6 +145,12 @@ export default async function OrderDetailPage({
         isPreparer={isPreparer}
         isAssigned={isAssigned}
         ordererId={order.ordererId}
+        reviewed={!!order.review}
+        myReview={
+          order.review
+            ? { stars: order.review.stars, comment: order.review.comment }
+            : null
+        }
         myOffer={
           myOffer && {
             id: myOffer.id,
@@ -166,6 +173,7 @@ export default async function OrderDetailPage({
             rating: o.preparer.ratingCount
               ? o.preparer.ratingSum / o.preparer.ratingCount
               : null,
+            ratingCount: o.preparer.ratingCount,
           },
         }))}
       />
