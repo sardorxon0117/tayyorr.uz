@@ -106,6 +106,8 @@ export function ChatRoom({
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const nearBottomRef = useRef(true);
+  const prevLenRef = useRef(initialMessages.filter((m) => !m.deleted).length);
   const sinceRef = useRef<number>(
     initialMessages.reduce((m, x) => Math.max(m, x.updatedAt || x.createdAt), 0),
   );
@@ -223,8 +225,22 @@ export function ChatRoom({
     markRead();
   }, [markRead]);
 
+  // birinchi ochilganda pastga
   useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
+    const el = scrollRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, []);
+
+  // yangi xabar qo'shilgandagina pastga tushamiz (reaksiya/tahrir emas)
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const grew = messages.length > prevLenRef.current;
+    const lastMine = messages[messages.length - 1]?.mine;
+    prevLenRef.current = messages.length;
+    if (grew && (nearBottomRef.current || lastMine)) {
+      el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+    }
   }, [messages]);
 
   async function onPickFile(file: File) {
@@ -502,7 +518,15 @@ export function ChatRoom({
 
       {/* ---- xabarlar + suzuvchi composer ---- */}
       <div className="relative min-h-0 flex-1">
-        <div ref={scrollRef} className="h-full overflow-y-auto">
+        <div
+          ref={scrollRef}
+          onScroll={(e) => {
+            const el = e.currentTarget;
+            nearBottomRef.current =
+              el.scrollHeight - el.scrollTop - el.clientHeight < 140;
+          }}
+          className="h-full overflow-y-auto"
+        >
           <div className="mx-auto max-w-3xl space-y-2 px-3 pb-36 pt-4 sm:px-4">
             {messages.length === 0 && (
               <p className="mt-10 text-center text-sm text-zinc-500">
