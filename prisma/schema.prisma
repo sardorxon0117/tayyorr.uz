@@ -188,6 +188,20 @@ model Contract {
   @@index([preparerId, status])
 }
 
+model Broadcast {
+  id         String    @id @default(cuid())
+  body       String
+  role       String?
+  balanceMin Int?
+  balanceMax Int?
+  regFrom    DateTime?
+  regTo      DateTime?
+  sentCount  Int       @default(0)
+  createdAt  DateTime  @default(now())
+
+  @@index([createdAt])
+}
+
 model PushSubscription {
   id        String   @id @default(cuid())
   userId    String

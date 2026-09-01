@@ -77,5 +77,26 @@ export async function POST(req: Request) {
     }
   }
 
-  return NextResponse.json({ ok: true, sent });
+  const record = await db.broadcast.create({
+    data: {
+      body,
+      role: role ?? null,
+      balanceMin: balanceMin ?? null,
+      balanceMax: balanceMax ?? null,
+      regFrom: from ? new Date(from) : null,
+      regTo: to ? new Date(`${to}T23:59:59.999`) : null,
+      sentCount: sent,
+    },
+  });
+
+  return NextResponse.json({
+    ok: true,
+    sent,
+    broadcast: {
+      id: record.id,
+      body: record.body,
+      sentCount: record.sentCount,
+      createdAt: record.createdAt.toISOString(),
+    },
+  });
 }

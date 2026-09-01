@@ -86,18 +86,17 @@ export interface PreparedChatFile {
   size: number;
 }
 
-/** presign -> R2 ga progress bilan yuklaydi. Xabar hali YUBORILMAYDI. */
-export async function prepareChatFile(
+async function prepareVia(
+  presignUrl: string,
+  extra: Record<string, unknown>,
   file: File,
-  conversationId: string,
   onProgress: (pct: number) => void,
 ): Promise<PreparedChatFile> {
-  const res = await fetch("/api/upload/presign", {
+  const res = await fetch(presignUrl, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      kind: "CHAT",
-      conversationId,
+      ...extra,
       filename: file.name,
       contentType: file.type || "application/octet-stream",
     }),
@@ -115,4 +114,32 @@ export async function prepareChatFile(
     type: file.type || "application/octet-stream",
     size: file.size,
   };
+}
+
+/** presign -> R2 ga progress bilan yuklaydi. Xabar hali YUBORILMAYDI. */
+export function prepareChatFile(
+  file: File,
+  conversationId: string,
+  onProgress: (pct: number) => void,
+) {
+  return prepareVia(
+    "/api/upload/presign",
+    { kind: "CHAT", conversationId },
+    file,
+    onProgress,
+  );
+}
+
+/** Admin uchun (support javobi). */
+export function prepareAdminChatFile(
+  file: File,
+  conversationId: string,
+  onProgress: (pct: number) => void,
+) {
+  return prepareVia(
+    "/api/admin/upload/presign",
+    { kind: "CHAT", conversationId },
+    file,
+    onProgress,
+  );
 }

@@ -2,8 +2,9 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { ChatFileView, type ChatFile } from "@/components/chat-file";
+import { ChatFileView, humanSize, type ChatFile } from "@/components/chat-file";
 import { Linkify } from "@/components/linkify";
+import { prepareAdminChatFile, type PreparedChatFile } from "@/lib/upload-client";
 
 interface Msg {
   id: string;
@@ -34,7 +35,10 @@ export function AdminChatThread({
 }) {
   const [messages, setMessages] = useState<Msg[]>(initialMessages);
   const [text, setText] = useState("");
+  const [attachment, setAttachment] = useState<PreparedChatFile | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [uploadPct, setUploadPct] = useState(0);
+  const [uploadName, setUploadName] = useState("");
   const [err, setErr] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -96,11 +100,18 @@ export function AdminChatThread({
   async function send(e: React.FormEvent) {
     e.preventDefault();
     const body = text.trim();
-    if (!body) return;
+    if ((!body && !attachment) || uploading) return;
+    const file = attachment;
     setText("");
+    setAttachment(null);
     setErr(null);
     try {
-      await reply({ body });
+      await reply({
+        body: body || undefined,
+        file: file
+          ? { key: file.key, name: file.name, type: file.type, size: file.size }
+          : undefined,
+      });
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Xatolik");
     }
@@ -113,34 +124,14 @@ export function AdminChatThread({
       return;
     }
     setUploading(true);
+    setUploadPct(0);
+    setUploadName(file.name);
+    setAttachment(null);
     try {
-      const pres = await fetch("/api/admin/upload/presign", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          conversationId,
-          filename: file.name,
-          contentType: file.type || "application/octet-stream",
-        }),
-      });
-      const p = await pres.json();
-      if (!pres.ok) throw new Error(p.error || "Yuklab bo'lmadi");
-      const put = await fetch(p.uploadUrl, {
-        method: "PUT",
-        headers: { "Content-Type": file.type || "application/octet-stream" },
-        body: file,
-      });
-      if (!put.ok) throw new Error("R2 ga yuklanmadi");
-      await reply({
-        file: {
-          key: p.key,
-          name: file.name,
-          type: file.type || "application/octet-stream",
-          size: file.size,
-        },
-      });
+      const prepared = await prepareAdminChatFile(file, conversationId, setUploadPct);
+      setAttachment(prepared);
     } catch (e) {
-      setErr(e instanceof Error ? e.message : "Fayl yuborilmadi");
+      setErr(e instanceof Error ? e.message : "Fayl yuklanmadi");
     } finally {
       setUploading(false);
       if (fileRef.current) fileRef.current.value = "";
@@ -190,44 +181,81 @@ export function AdminChatThread({
 
       {err && <p className="px-4 pb-1 text-xs text-red-400">{err}</p>}
 
-      <form
-        onSubmit={send}
-        className="flex items-end gap-2 border-t border-white/10 p-3"
-      >
-        <input
-          ref={fileRef}
-          type="file"
-          hidden
-          onChange={(e) => {
-            const f = e.target.files?.[0];
-            if (f) onPickFile(f);
-          }}
-        />
-        <button
-          type="button"
-          className="btn-ghost shrink-0"
-          disabled={uploading}
-          onClick={() => fileRef.current?.click()}
-        >
-          {uploading ? "..." : "📎"}
-        </button>
-        <textarea
-          className="input max-h-32 min-h-[42px] resize-none"
-          placeholder="tayyorr.uz support nomidan javob..."
-          rows={1}
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              send(e);
-            }
-          }}
-        />
-        <button className="btn-primary shrink-0" disabled={!text.trim()}>
-          Yuborish
-        </button>
-      </form>
+      <div className="border-t border-white/10 p-3">
+        {(uploading || attachment) && (
+          <div className="mb-2 rounded-lg bg-white/5 px-3 py-2 text-xs text-zinc-300">
+            <div className="flex items-center justify-between gap-2">
+              <span className="min-w-0 truncate">
+                📎 {attachment?.name ?? uploadName}
+                {attachment && ` · ${humanSize(attachment.size)}`}
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  setAttachment(null);
+                  setUploading(false);
+                  setUploadName("");
+                }}
+                className="shrink-0 text-zinc-500 hover:text-white"
+              >
+                ✕
+              </button>
+            </div>
+            {uploading && (
+              <div className="mt-1.5">
+                <div className="h-1.5 overflow-hidden rounded bg-white/10">
+                  <div
+                    className="h-full rounded bg-indigo-500 transition-all"
+                    style={{ width: `${uploadPct}%` }}
+                  />
+                </div>
+                <div className="mt-1 text-[10px] text-zinc-500">
+                  {uploadPct}% yuklandi
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        <form onSubmit={send} className="flex items-end gap-2">
+          <input
+            ref={fileRef}
+            type="file"
+            hidden
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) onPickFile(f);
+            }}
+          />
+          <button
+            type="button"
+            className="btn-ghost flex h-[42px] w-[42px] shrink-0 items-center justify-center !p-0 text-lg leading-none"
+            disabled={uploading}
+            onClick={() => fileRef.current?.click()}
+          >
+            {uploading ? "…" : "📎"}
+          </button>
+          <textarea
+            className="input max-h-32 min-h-[42px] resize-none"
+            placeholder="tayyorr.uz support nomidan javob..."
+            rows={1}
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                send(e);
+              }
+            }}
+          />
+          <button
+            className="btn-primary flex h-[42px] w-[42px] shrink-0 items-center justify-center !p-0 text-lg leading-none"
+            disabled={uploading || (!text.trim() && !attachment)}
+          >
+            🚀
+          </button>
+        </form>
+      </div>
     </div>
   );
 }
