@@ -90,7 +90,7 @@ export async function POST(
     conversationId: conv.id,
     senderId: supportId,
     body,
-    system: true,
+    system: false, // support xabari — oddiy bubble
   });
   await deliverMessage(msg);
 

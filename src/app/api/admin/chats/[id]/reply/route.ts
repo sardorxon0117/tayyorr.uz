@@ -49,7 +49,7 @@ export async function POST(
     conversationId: id,
     senderId: supportId,
     body: parsed.data.body ?? "",
-    system: true,
+    system: false, // support xabari — oddiy bubble
     file: parsed.data.file ?? null,
   });
 

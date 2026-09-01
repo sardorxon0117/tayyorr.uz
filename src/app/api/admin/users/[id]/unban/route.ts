@@ -28,7 +28,7 @@ export async function POST(
     conversationId: conv.id,
     senderId: supportId,
     body: "Hisobingizdagi cheklov bekor qilindi. Platformadan to'liq foydalanishingiz mumkin.",
-    system: true,
+    system: false, // support xabari — oddiy bubble
   });
   await deliverMessage(m);
 

@@ -11,7 +11,7 @@ export async function sendSupportMessage(userId: string, body: string) {
     conversationId: conv.id,
     senderId: supportId,
     body,
-    system: true,
+    system: false, // support xabari — oddiy bubble
   });
   await deliverMessage(msg);
   return conv.id;
@@ -32,7 +32,7 @@ export async function sendWelcome(userId: string, firstName?: string | null) {
       `${hi} tayyorr.uz'ga xush kelibsiz 🎉\n\n` +
       `Bu — tayyorr.uz support. Har qanday savol, muammo yoki taklif bo'lsa ` +
       `shu yerga yozing — yordam beramiz.`,
-    system: true,
+    system: false, // support xabari — oddiy bubble
   });
   await deliverMessage(msg);
 }
