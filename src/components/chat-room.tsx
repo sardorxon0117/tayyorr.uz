@@ -526,7 +526,7 @@ export function ChatRoom({
                 <button
                   type="button"
                   onClick={(e) => openMenu(m, e.currentTarget)}
-                  className="flex h-7 w-7 shrink-0 items-center justify-center self-center rounded-lg border border-white/15 bg-white/10 text-zinc-300 transition hover:bg-white/20 hover:text-white"
+                  className="flex h-7 w-7 shrink-0 items-center justify-center self-end rounded-lg border border-white/15 bg-white/10 text-zinc-300 transition hover:bg-white/20 hover:text-white"
                   aria-label="Xabar menyusi"
                 >
                   ⋮
@@ -541,7 +541,7 @@ export function ChatRoom({
                     m.mine ? "justify-end" : "justify-start"
                   }`}
                 >
-                  <div className="flex max-w-[86%] items-center gap-1.5">
+                  <div className="flex max-w-[86%] items-end gap-1.5">
                     {m.mine && MenuBtn}
 
                     <div
@@ -580,7 +580,7 @@ export function ChatRoom({
                       )}
 
                       {hasReactions && (
-                        <div className="flex flex-wrap gap-1 pt-0.5">
+                        <div className="flex flex-wrap gap-1.5 pt-1">
                           {(["LIKE", "DISLIKE"] as const).map((v) => {
                             const n =
                               v === "LIKE"
@@ -593,17 +593,20 @@ export function ChatRoom({
                                 key={v}
                                 type="button"
                                 onClick={() => react(m, v)}
-                                className={`flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[11px] leading-none transition ${
+                                className={`flex items-center gap-1 rounded-full px-2 py-1 text-sm transition ${
                                   on
                                     ? m.mine
-                                      ? "bg-white/25 text-white"
-                                      : "bg-indigo-500/25 text-white"
+                                      ? "bg-white/25 text-white ring-1 ring-white/40"
+                                      : "bg-indigo-500/30 text-white ring-1 ring-indigo-400/50"
                                     : m.mine
                                       ? "bg-white/10 text-indigo-100"
-                                      : "bg-white/10 text-zinc-300"
+                                      : "bg-white/10 text-zinc-200"
                                 }`}
                               >
-                                {v === "LIKE" ? "👍" : "👎"} {n}
+                                <span className="text-base leading-none">
+                                  {v === "LIKE" ? "👍" : "👎"}
+                                </span>
+                                <span className="text-xs font-medium">{n}</span>
                               </button>
                             );
                           })}
@@ -717,7 +720,7 @@ export function ChatRoom({
               {!editing && (
                 <button
                   type="button"
-                  className="btn-ghost shrink-0"
+                  className="btn-ghost flex h-[42px] w-[42px] shrink-0 items-center justify-center !p-0 text-lg leading-none"
                   disabled={uploading}
                   onClick={() => fileInputRef.current?.click()}
                   title="Fayl biriktirish"
@@ -739,7 +742,7 @@ export function ChatRoom({
                 }}
               />
               <button
-                className="btn-primary h-[42px] w-[42px] shrink-0 !px-0 text-lg"
+                className="btn-primary flex h-[42px] w-[42px] shrink-0 items-center justify-center !p-0 text-lg leading-none"
                 disabled={!canSend}
                 aria-label={editing ? "Saqlash" : "Yuborish"}
                 title={editing ? "Saqlash" : "Yuborish"}
