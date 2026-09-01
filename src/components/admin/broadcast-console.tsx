@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import { humanSize } from "@/components/chat-file";
+import { RocketIcon } from "@/components/icons";
 import { prepareBroadcastFile, type PreparedChatFile } from "@/lib/upload-client";
 
 interface Item {
@@ -294,10 +295,10 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
             }}
           />
           <button
-            className="btn-primary flex h-[42px] w-[42px] shrink-0 items-center justify-center !p-0 text-lg leading-none"
+            className="btn-primary flex h-[42px] w-[42px] shrink-0 items-center justify-center !p-0"
             disabled={busy || uploading || (!text.trim() && !attachment)}
           >
-            ➦
+            <RocketIcon />
           </button>
         </form>
       </div>

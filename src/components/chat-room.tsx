@@ -7,6 +7,7 @@ import Link from "next/link";
 import { ReportButton, ReportDialog } from "@/components/report-button";
 import { ChatFileView, humanSize, type ChatFile } from "@/components/chat-file";
 import { Linkify } from "@/components/linkify";
+import { RocketIcon } from "@/components/icons";
 import { prepareChatFile, type PreparedChatFile } from "@/lib/upload-client";
 import { presenceText } from "@/lib/presence";
 
@@ -774,7 +775,7 @@ export function ChatRoom({
                 aria-label={editing ? "Saqlash" : "Yuborish"}
                 title={editing ? "Saqlash" : "Yuborish"}
               >
-                {editing ? "✓" : "➦"}
+                {editing ? "✓" : <RocketIcon />}
               </button>
             </form>
           </div>

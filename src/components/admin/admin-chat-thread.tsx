@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ChatFileView, humanSize, type ChatFile } from "@/components/chat-file";
 import { Linkify } from "@/components/linkify";
 import { prepareAdminChatFile, type PreparedChatFile } from "@/lib/upload-client";
+import { RocketIcon } from "@/components/icons";
 
 interface Msg {
   id: string;
@@ -265,10 +266,10 @@ export function AdminChatThread({
             }}
           />
           <button
-            className="btn-primary flex h-[42px] w-[42px] shrink-0 items-center justify-center !p-0 text-lg leading-none"
+            className="btn-primary flex h-[42px] w-[42px] shrink-0 items-center justify-center !p-0"
             disabled={uploading || (!text.trim() && !attachment)}
           >
-            ➦
+            <RocketIcon />
           </button>
         </form>
       </div>
