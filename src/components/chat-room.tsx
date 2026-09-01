@@ -3,8 +3,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
-import { ReportButton, ReportDialog } from "@/components/report-button";
+import { ReportDialog } from "@/components/report-button";
 import { ChatFileView, humanSize, type ChatFile } from "@/components/chat-file";
 import { Linkify } from "@/components/linkify";
 import { RocketIcon } from "@/components/icons";
@@ -44,6 +45,8 @@ interface Props {
   conversationId: string;
   meId: string;
   orderId: string | null;
+  blockedByMe?: boolean;
+  blockedMe?: boolean;
   other: {
     id: string;
     name: string;
@@ -65,14 +68,59 @@ export function ChatRoom({
   conversationId,
   meId,
   orderId,
+  blockedByMe = false,
+  blockedMe = false,
   other,
   initialMessages,
 }: Props) {
+  const router = useRouter();
   const [messages, setMessages] = useState<Msg[]>(
     initialMessages.filter((m) => !m.deleted),
   );
   const [text, setText] = useState("");
   const [live, setLive] = useState(false);
+  const [iBlocked, setIBlocked] = useState(blockedByMe);
+  const [theyBlocked, setTheyBlocked] = useState(blockedMe);
+  const [hdrMenu, setHdrMenu] = useState(false);
+  const [reportHdr, setReportHdr] = useState(false);
+  const blocked = iBlocked || theyBlocked;
+
+  async function toggleBlock() {
+    setHdrMenu(false);
+    const action = iBlocked ? "UNBLOCK" : "BLOCK";
+    try {
+      const res = await fetch(`/api/chat/${conversationId}/block`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setIBlocked(!!data.iBlocked);
+      setTheyBlocked(!!data.blockedMe);
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "Xatolik");
+    }
+  }
+
+  async function deleteConversation() {
+    setHdrMenu(false);
+    if (
+      !window.confirm(
+        "Suhbat ikkala tomondan ham o'chiriladi. Davom etilsinmi?",
+      )
+    )
+      return;
+    try {
+      const res = await fetch(`/api/chat/${conversationId}`, { method: "DELETE" });
+      if (res.ok) {
+        router.push("/messages");
+        router.refresh();
+      }
+    } catch {
+      setErr("O'chirib bo'lmadi");
+    }
+  }
   const [peerRead, setPeerRead] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
@@ -508,12 +556,50 @@ export function ChatRoom({
           </Link>
 
           {!other.isSupport && other.id && (
-            <ReportButton
-              suspectId={other.id}
-              orderId={orderId ?? undefined}
-              label="Shikoyat"
-              className="shrink-0 rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-zinc-300 transition hover:bg-white/10"
-            />
+            <div className="relative shrink-0">
+              <button
+                type="button"
+                onClick={() => setHdrMenu((v) => !v)}
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-zinc-300 hover:bg-white/10"
+                aria-label="Menyu"
+              >
+                ⋮
+              </button>
+              {hdrMenu && (
+                <>
+                  <div
+                    className="fixed inset-0 z-[65]"
+                    onClick={() => setHdrMenu(false)}
+                  />
+                  <div className="menu-panel absolute right-0 top-10 z-[66] w-52 overflow-hidden rounded-xl border border-white/10 bg-[#14141b] text-sm shadow-2xl shadow-black/50">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setHdrMenu(false);
+                        setReportHdr(true);
+                      }}
+                      className="block w-full px-3 py-2.5 text-left text-amber-300 hover:bg-white/5"
+                    >
+                      ⚠︎ Shikoyat qilish
+                    </button>
+                    <button
+                      type="button"
+                      onClick={toggleBlock}
+                      className="block w-full px-3 py-2.5 text-left text-zinc-200 hover:bg-white/5"
+                    >
+                      {iBlocked ? "✓ Blokdan chiqarish" : "🚫 Bloklash"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={deleteConversation}
+                      className="block w-full px-3 py-2.5 text-left text-red-400 hover:bg-white/5"
+                    >
+                      🗑 Suhbatni o'chirish
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           )}
         </div>
       </header>
@@ -668,6 +754,25 @@ export function ChatRoom({
           <div className="pointer-events-auto mx-auto max-w-3xl rounded-2xl border border-white/15 bg-[#0b0b12]/80 p-2.5 shadow-2xl shadow-black/40 backdrop-blur-2xl">
             {err && <p className="mb-2 px-1 text-xs text-red-400">{err}</p>}
 
+            {blocked ? (
+              <div className="flex items-center justify-between gap-3 px-1 py-1.5 text-sm text-zinc-400">
+                <span>
+                  {iBlocked
+                    ? "Siz bu foydalanuvchini bloklagansiz."
+                    : "Bu foydalanuvchi sizni bloklagan."}
+                </span>
+                {iBlocked && (
+                  <button
+                    type="button"
+                    onClick={toggleBlock}
+                    className="shrink-0 rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-xs text-zinc-200 hover:bg-white/10"
+                  >
+                    Blokdan chiqarish
+                  </button>
+                )}
+              </div>
+            ) : (
+              <>
             {editing && (
               <div className="mb-2 flex items-center justify-between rounded-lg bg-white/5 px-3 py-1.5 text-xs text-zinc-300">
                 <span>Xabarni tahrirlash</span>
@@ -778,6 +883,8 @@ export function ChatRoom({
                 {editing ? "✓" : <RocketIcon />}
               </button>
             </form>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -860,6 +967,14 @@ export function ChatRoom({
           orderId={orderId ?? undefined}
           messageId={report.messageId}
           onClose={() => setReport(null)}
+        />
+      )}
+
+      {reportHdr && other.id && (
+        <ReportDialog
+          suspectId={other.id}
+          orderId={orderId ?? undefined}
+          onClose={() => setReportHdr(false)}
         />
       )}
     </div>

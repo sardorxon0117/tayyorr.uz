@@ -17,11 +17,12 @@ export async function getOrCreateConversation(
     where: { userAId_userBId: { userAId, userBId } },
   });
   if (existing) {
-    if (orderId && !existing.orderId) {
-      return db.conversation.update({
-        where: { id: existing.id },
-        data: { orderId },
-      });
+    // foydalanuvchi o'chirgan bo'lsa — qayta yozилганда tiklaymiz
+    const data: { orderId?: string; deletedByUsersAt?: null } = {};
+    if (orderId && !existing.orderId) data.orderId = orderId;
+    if (existing.deletedByUsersAt) data.deletedByUsersAt = null;
+    if (Object.keys(data).length) {
+      return db.conversation.update({ where: { id: existing.id }, data });
     }
     return existing;
   }
@@ -31,12 +32,12 @@ export async function getOrCreateConversation(
   });
 }
 
-/** Suhbat a'zosi ekanini tekshiradi (admin yashirgan bo'lsa null), aks holda null. */
+/** Suhbat a'zosi ekanini tekshiradi; admin yashirgan yoki foydalanuvchi o'chirgan bo'lsa null. */
 export async function getConversationForUser(convId: string, userId: string) {
   const conv = await db.conversation.findUnique({ where: { id: convId } });
   if (!conv) return null;
   if (conv.userAId !== userId && conv.userBId !== userId) return null;
-  if (conv.hiddenFromUsersAt) return null; // admin foydalanuvchilardan yashirgan
+  if (conv.hiddenFromUsersAt || conv.deletedByUsersAt) return null;
   return conv;
 }
 
@@ -45,6 +46,22 @@ export function otherUserId(
   meId: string,
 ) {
   return conv.userAId === meId ? conv.userBId : conv.userAId;
+}
+
+/** Ikki foydalanuvchi o'rtasidagi bloklash holati. */
+export async function blockState(a: string, b: string) {
+  const rows = await db.block.findMany({
+    where: {
+      OR: [
+        { blockerId: a, blockedId: b },
+        { blockerId: b, blockedId: a },
+      ],
+    },
+  });
+  return {
+    iBlocked: rows.some((r) => r.blockerId === a),
+    blockedMe: rows.some((r) => r.blockerId === b),
+  };
 }
 
 /** Xabar yaratadi va suhbatning lastMessageAt'ini yangilaydi. */

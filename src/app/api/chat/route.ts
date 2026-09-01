@@ -14,6 +14,7 @@ export async function GET() {
   const convs = await db.conversation.findMany({
     where: {
       hiddenFromUsersAt: null,
+      deletedByUsersAt: null,
       OR: [{ userAId: me }, { userBId: me }],
     },
     orderBy: { lastMessageAt: "desc" },

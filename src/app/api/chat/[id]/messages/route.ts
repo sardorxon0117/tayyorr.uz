@@ -2,7 +2,12 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { auth } from "@/auth";
-import { getConversationForUser, createMessage } from "@/lib/chat";
+import {
+  getConversationForUser,
+  createMessage,
+  otherUserId,
+  blockState,
+} from "@/lib/chat";
 import { getRestriction, restrictionText } from "@/lib/restriction";
 import { getSupportUserId } from "@/lib/support";
 import { toClientMessage } from "@/lib/chat-messages";
@@ -45,14 +50,30 @@ export async function POST(
     );
   }
 
+  const supportId = await getSupportUserId();
+  const isSupportThread =
+    conv.userAId === supportId || conv.userBId === supportId;
+
   // cheklangan foydalanuvchi faqat "tayyorr.uz support" bilan yozisha oladi
   const restriction = await getRestriction(me);
-  if (restriction) {
-    const supportId = await getSupportUserId();
-    const isSupportThread =
-      conv.userAId === supportId || conv.userBId === supportId;
-    if (!isSupportThread) {
-      return NextResponse.json({ error: restrictionText(restriction) }, { status: 403 });
+  if (restriction && !isSupportThread) {
+    return NextResponse.json({ error: restrictionText(restriction) }, { status: 403 });
+  }
+
+  // bloklash
+  if (!isSupportThread) {
+    const bs = await blockState(me, otherUserId(conv, me));
+    if (bs.iBlocked) {
+      return NextResponse.json(
+        { error: "Siz bu foydalanuvchini bloklagansiz. Avval blokdan chiqaring." },
+        { status: 403 },
+      );
+    }
+    if (bs.blockedMe) {
+      return NextResponse.json(
+        { error: "Bu foydalanuvchi sizni bloklagan." },
+        { status: 403 },
+      );
     }
   }
 

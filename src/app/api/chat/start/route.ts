@@ -3,7 +3,7 @@ import { z } from "zod";
 
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
-import { getOrCreateConversation } from "@/lib/chat";
+import { getOrCreateConversation, blockState } from "@/lib/chat";
 import { getRestriction, restrictionText } from "@/lib/restriction";
 
 const schema = z.object({
@@ -41,6 +41,20 @@ export async function POST(req: Request) {
   });
   if (!other) {
     return NextResponse.json({ error: "Foydalanuvchi topilmadi" }, { status: 404 });
+  }
+
+  const bs = await blockState(session.user.id, userId);
+  if (bs.iBlocked) {
+    return NextResponse.json(
+      { error: "Siz bu foydalanuvchini bloklagansiz." },
+      { status: 403 },
+    );
+  }
+  if (bs.blockedMe) {
+    return NextResponse.json(
+      { error: "Bu foydalanuvchi sizni bloklagan." },
+      { status: 403 },
+    );
   }
 
   const conv = await getOrCreateConversation(session.user.id, userId, orderId);

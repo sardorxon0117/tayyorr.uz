@@ -59,3 +59,23 @@ export async function GET(
     messages: await toClientMessages(rows, me),
   });
 }
+
+/** Foydalanuvchi suhbatni ikki tomondan o'chiradi (adminда saqlanadi). */
+export async function DELETE(
+  _req: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Avval kiring" }, { status: 401 });
+  }
+  const { id } = await params;
+  const conv = await getConversationForUser(id, session.user.id);
+  if (!conv) return NextResponse.json({ error: "Suhbat topilmadi" }, { status: 404 });
+
+  await db.conversation.update({
+    where: { id },
+    data: { deletedByUsersAt: new Date() },
+  });
+  return NextResponse.json({ ok: true });
+}

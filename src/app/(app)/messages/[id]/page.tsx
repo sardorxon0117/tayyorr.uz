@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
-import { getConversationForUser, otherUserId } from "@/lib/chat";
+import { getConversationForUser, otherUserId, blockState } from "@/lib/chat";
 import { toClientMessages } from "@/lib/chat-messages";
 import { ChatRoom } from "@/components/chat-room";
 
@@ -39,11 +39,17 @@ export default async function ChatPage({
     }),
   ]);
 
+  const bs = other?.isSupport
+    ? { iBlocked: false, blockedMe: false }
+    : await blockState(me, otherUserId(conv, me));
+
   return (
     <ChatRoom
       conversationId={id}
       meId={me}
       orderId={conv.orderId}
+      blockedByMe={bs.iBlocked}
+      blockedMe={bs.blockedMe}
       other={{
         id: other?.id ?? "",
         name: other?.name ?? other?.login ?? "Foydalanuvchi",

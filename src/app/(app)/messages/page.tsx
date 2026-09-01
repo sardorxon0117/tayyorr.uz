@@ -19,6 +19,7 @@ export default async function MessagesPage() {
   const convs = await db.conversation.findMany({
     where: {
       hiddenFromUsersAt: null,
+      deletedByUsersAt: null,
       OR: [{ userAId: me }, { userBId: me }],
     },
     orderBy: { lastMessageAt: "desc" },
