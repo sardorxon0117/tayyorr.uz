@@ -28,12 +28,14 @@ export default async function ChatPage({
         avatarUrl: true,
         image: true,
         isSupport: true,
+        lastSeenAt: true,
       },
     }),
     db.message.findMany({
       where: { conversationId: id },
       orderBy: { createdAt: "asc" },
       take: 200,
+      include: { reactions: true },
     }),
   ]);
 
@@ -48,6 +50,7 @@ export default async function ChatPage({
         login: other?.login ?? null,
         image: other?.avatarUrl ?? other?.image ?? null,
         isSupport: other?.isSupport ?? false,
+        lastSeenAt: other?.lastSeenAt ? other.lastSeenAt.toISOString() : null,
       }}
       initialMessages={await toClientMessages(messages, me)}
     />

@@ -72,23 +72,17 @@ export default async function MessagesPage() {
                   isSupport ? "border-indigo-400/30 bg-indigo-500/[0.06]" : ""
                 }`}
               >
-                <div
-                  className={`flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-white/5 ${
-                    isSupport ? "text-lg" : ""
-                  }`}
-                >
-                  {isSupport ? (
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-white/5 text-lg">
+                  {(other.avatarUrl ?? other.image) ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={other.avatarUrl ?? other.image ?? ""}
+                      alt=""
+                      className="h-full w-full object-cover"
+                    />
+                  ) : isSupport ? (
                     "🛟"
-                  ) : (
-                    (other.avatarUrl ?? other.image) && (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={other.avatarUrl ?? other.image ?? ""}
-                        alt=""
-                        className="h-full w-full object-cover"
-                      />
-                    )
-                  )}
+                  ) : null}
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-2">

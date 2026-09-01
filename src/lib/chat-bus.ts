@@ -35,6 +35,7 @@ type ChatEvent =
   | { type: "message"; message: SerializedMessage }
   | { type: "edit"; message: SerializedMessage }
   | { type: "delete"; messageId: string; updatedAt: string }
+  | { type: "reaction"; messageId: string; like: number; dislike: number }
   | { type: "read"; by: string; at: string };
 
 const g = globalThis as unknown as { __chatBus?: EventEmitter };

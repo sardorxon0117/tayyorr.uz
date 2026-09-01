@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { Stars } from "@/components/stars";
+import { presenceText } from "@/lib/presence";
 
 const TYPE_LABEL: Record<string, string> = {
   PRESENTATION: "Prezentatsiya",
@@ -40,6 +41,7 @@ export default async function PublicProfile({
       ratingCount: true,
       isSupport: true,
       isPlatform: true,
+      lastSeenAt: true,
       createdAt: true,
       _count: { select: { ordersCreated: true, ordersTaken: true } },
     },
@@ -98,6 +100,21 @@ export default async function PublicProfile({
               </span>
             )}
           </div>
+          {(() => {
+            const p = presenceText(user.lastSeenAt);
+            return (
+              <div className="mt-0.5 flex items-center gap-1.5 text-xs">
+                <span
+                  className={`inline-block h-1.5 w-1.5 rounded-full ${
+                    p.online ? "bg-emerald-400" : "bg-zinc-600"
+                  }`}
+                />
+                <span className={p.online ? "text-emerald-400" : "text-zinc-500"}>
+                  {p.text}
+                </span>
+              </div>
+            );
+          })()}
           {user.role === "PREPARER" && (
             <div className="mt-1.5 flex items-center gap-2">
               <Stars value={avg} size="md" />

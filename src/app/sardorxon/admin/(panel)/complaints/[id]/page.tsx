@@ -123,6 +123,21 @@ export default async function AdminComplaintDetail({
     pairConvId = conv?.id ?? null;
   }
 
+  // muayyan xabar ustidan shikoyat bo'lsa
+  const reportedMsg = c.messageId
+    ? await db.message.findUnique({
+        where: { id: c.messageId },
+        select: {
+          id: true,
+          body: true,
+          fileName: true,
+          deletedAt: true,
+          createdAt: true,
+          conversationId: true,
+        },
+      })
+    : null;
+
   return (
     <div className="flex flex-col gap-6">
       <Link
@@ -144,6 +159,28 @@ export default async function AdminComplaintDetail({
         <h2 className="mb-2 text-sm font-semibold text-zinc-400">Shikoyat matni</h2>
         <p className="whitespace-pre-wrap text-sm text-zinc-100">{c.body}</p>
       </div>
+
+      {reportedMsg && (
+        <div className="rounded-xl border border-amber-400/25 bg-amber-500/5 p-5">
+          <h2 className="mb-2 text-sm font-semibold text-amber-300">
+            Shikoyat qilingan xabar
+          </h2>
+          <p className="text-xs text-zinc-500">
+            {reportedMsg.createdAt.toLocaleString("uz")}
+            {reportedMsg.deletedAt && " · (keyinchalik o'chirilgan)"}
+          </p>
+          <p className="mt-1 whitespace-pre-wrap text-sm text-zinc-100">
+            {reportedMsg.fileName && `📎 ${reportedMsg.fileName} `}
+            {reportedMsg.body}
+          </p>
+          <Link
+            href={`/sardorxon/admin/chats/${reportedMsg.conversationId}`}
+            className="mt-2 inline-block text-sm text-indigo-400 hover:underline"
+          >
+            Yozishmani ko'rish →
+          </Link>
+        </div>
+      )}
 
       <div className="grid gap-4 md:grid-cols-2">
         <AccountCard title="Shikoyat qiluvchi" user={c.reporter} />

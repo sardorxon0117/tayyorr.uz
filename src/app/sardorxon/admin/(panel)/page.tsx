@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { db } from "@/lib/db";
 import { formatSom } from "@/lib/wallet";
+import { SupportProfileForm } from "@/components/admin/support-profile-form";
 
 export default async function AdminHome() {
   const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
@@ -58,6 +59,8 @@ export default async function AdminHome() {
           </Link>
         ))}
       </div>
+
+      <SupportProfileForm />
     </div>
   );
 }

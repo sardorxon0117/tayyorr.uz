@@ -32,11 +32,19 @@ export async function GET(
     },
     orderBy: { createdAt: "asc" },
     take: 300,
+    include: { reactions: true },
   });
 
   const other = await db.user.findUnique({
     where: { id: otherUserId(conv, me) },
-    select: { id: true, name: true, login: true, avatarUrl: true, image: true },
+    select: {
+      id: true,
+      name: true,
+      login: true,
+      avatarUrl: true,
+      image: true,
+      lastSeenAt: true,
+    },
   });
 
   return NextResponse.json({
@@ -46,6 +54,7 @@ export async function GET(
       name: other.name ?? other.login ?? "Foydalanuvchi",
       login: other.login,
       image: other.avatarUrl ?? other.image ?? null,
+      lastSeenAt: other.lastSeenAt ? other.lastSeenAt.toISOString() : null,
     },
     messages: await toClientMessages(rows, me),
   });

@@ -1,57 +1,61 @@
 import { NextResponse } from "next/server";
-import { z } from "zod";
 import type { Prisma } from "@prisma/client";
 
 import { db } from "@/lib/db";
 import { adminApiGuard } from "@/lib/admin";
 import { sendSupportMessage } from "@/lib/support-actions";
 
-const schema = z.object({
-  body: z.string().trim().min(1).max(4000),
-  role: z.enum(["ORDERER", "PREPARER"]).optional(),
-  balanceMin: z.coerce.number().int().nonnegative().optional(),
-  balanceMax: z.coerce.number().int().nonnegative().optional(),
-  registeredFrom: z.string().optional(),
-  registeredTo: z.string().optional(),
-  preview: z.boolean().optional(),
-});
-
 const MAX = 5000;
+
+function num(v: unknown): number | undefined {
+  if (v === "" || v === null || v === undefined) return undefined;
+  const n = Number(v);
+  return Number.isFinite(n) ? Math.trunc(n) : undefined;
+}
+function str(v: unknown): string | undefined {
+  return typeof v === "string" && v.trim() ? v.trim() : undefined;
+}
 
 export async function POST(req: Request) {
   const denied = await adminApiGuard();
   if (denied) return denied;
 
-  const parsed = schema.safeParse(await req.json().catch(() => null));
-  if (!parsed.success) {
-    return NextResponse.json({ error: "Ma'lumot noto'g'ri" }, { status: 400 });
+  const raw = (await req.json().catch(() => ({}))) as Record<string, unknown>;
+  const body = str(raw.body);
+  if (!body) {
+    return NextResponse.json({ error: "Xabar matni bo'sh" }, { status: 400 });
   }
-  const d = parsed.data;
 
+  const roleIn = str(raw.role);
+  const role =
+    roleIn === "ORDERER" || roleIn === "PREPARER" ? roleIn : undefined;
+  const balanceMin = num(raw.balanceMin);
+  const balanceMax = num(raw.balanceMax);
+  const from = str(raw.registeredFrom);
+  const to = str(raw.registeredTo);
+  const preview = raw.preview === true;
+
+  // bo'sh maydonlar hisobga olinmaydi (all)
   const where: Prisma.UserWhereInput = {
     isSupport: false,
     isPlatform: false,
     login: { not: null },
-    role: d.role ?? undefined,
   };
-  if (d.balanceMin != null || d.balanceMax != null) {
-    where.balance = {
-      ...(d.balanceMin != null ? { gte: d.balanceMin } : {}),
-      ...(d.balanceMax != null ? { lte: d.balanceMax } : {}),
-    };
+  if (role) where.role = role;
+  if (balanceMin !== undefined || balanceMax !== undefined) {
+    where.balance = {};
+    if (balanceMin !== undefined) where.balance.gte = balanceMin;
+    if (balanceMax !== undefined) where.balance.lte = balanceMax;
   }
-  if (d.registeredFrom || d.registeredTo) {
-    where.createdAt = {
-      ...(d.registeredFrom ? { gte: new Date(d.registeredFrom) } : {}),
-      ...(d.registeredTo ? { lte: new Date(`${d.registeredTo}T23:59:59`) } : {}),
-    };
+  if (from || to) {
+    where.createdAt = {};
+    if (from) where.createdAt.gte = new Date(from);
+    if (to) where.createdAt.lte = new Date(`${to}T23:59:59.999`);
   }
 
   const count = await db.user.count({ where });
 
-  if (d.preview) {
-    return NextResponse.json({ count });
-  }
+  if (preview) return NextResponse.json({ count });
   if (count === 0) {
     return NextResponse.json({ error: "Filtrga mos foydalanuvchi yo'q" }, { status: 400 });
   }
@@ -66,7 +70,7 @@ export async function POST(req: Request) {
   let sent = 0;
   for (const u of users) {
     try {
-      await sendSupportMessage(u.id, d.body);
+      await sendSupportMessage(u.id, body);
       sent++;
     } catch {
       /* birini o'tkazib yuboramiz */

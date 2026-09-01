@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { AuroraBackground } from "@/components/aurora-background";
 import { AppHeader } from "@/components/app-header";
 import { PushSetup } from "@/components/push-setup";
+import { PresencePing } from "@/components/presence-ping";
 import { getRestriction, restrictionText } from "@/lib/restriction";
 
 export default async function AppLayout({
@@ -22,6 +23,7 @@ export default async function AppLayout({
       <AuroraBackground compact />
 
       <AppHeader image={session.user.image ?? null} />
+      <PresencePing />
 
       <main className="relative z-10 mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-10">
         <PushSetup />

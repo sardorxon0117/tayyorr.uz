@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 const schema = z.object({
   suspectId: z.string().optional(),
   orderId: z.string().optional(),
+  messageId: z.string().optional(),
   body: z.string().trim().min(10).max(3000),
 });
 
@@ -23,7 +24,7 @@ export async function POST(req: Request) {
       { status: 400 },
     );
   }
-  const { suspectId, orderId, body } = parsed.data;
+  const { suspectId, orderId, messageId, body } = parsed.data;
 
   if (suspectId && suspectId === session.user.id) {
     return NextResponse.json(
@@ -37,6 +38,7 @@ export async function POST(req: Request) {
       reporterId: session.user.id,
       suspectId: suspectId || null,
       orderId: orderId || null,
+      messageId: messageId || null,
       body,
     },
   });

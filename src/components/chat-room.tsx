@@ -4,15 +4,22 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 
-import { ReportButton } from "@/components/report-button";
+import { ReportButton, ReportDialog } from "@/components/report-button";
 import { ChatFileView, humanSize, type ChatFile } from "@/components/chat-file";
 import { prepareChatFile, type PreparedChatFile } from "@/lib/upload-client";
+import { presenceText } from "@/lib/presence";
 
 interface ReplyPreview {
   id: string;
   authorId: string;
   text: string;
   deleted: boolean;
+}
+
+interface Reactions {
+  like: number;
+  dislike: number;
+  mine: "LIKE" | "DISLIKE" | null;
 }
 
 interface Msg {
@@ -27,6 +34,7 @@ interface Msg {
   deleted?: boolean;
   pending?: boolean;
   replyTo?: ReplyPreview | null;
+  reactions?: Reactions;
   file?: ChatFile | null;
 }
 
@@ -40,6 +48,7 @@ interface Props {
     login: string | null;
     image: string | null;
     isSupport: boolean;
+    lastSeenAt: string | null;
   };
   initialMessages: Msg[];
 }
@@ -76,11 +85,15 @@ export function ChatRoom({
   const [menu, setMenu] = useState<{ msg: Msg; left: number; top: number } | null>(
     null,
   );
+  const [report, setReport] = useState<{ suspectId: string; messageId: string } | null>(
+    null,
+  );
+  const [otherSeen, setOtherSeen] = useState<string | null>(other.lastSeenAt);
 
   function openMenu(m: Msg, btn: HTMLElement) {
     const r = btn.getBoundingClientRect();
     const W = 184;
-    const H = m.mine ? 148 : 52;
+    const H = m.mine ? 150 : 96;
     const M = 8;
     let left = r.right - W;
     if (left < M) left = M;
@@ -128,6 +141,23 @@ export function ChatRoom({
     es.onmessage = (e) => {
       try {
         const data = JSON.parse(e.data);
+        if (data.type === "reaction") {
+          setMessages((prev) =>
+            prev.map((x) =>
+              x.id === data.messageId
+                ? {
+                    ...x,
+                    reactions: {
+                      like: data.like,
+                      dislike: data.dislike,
+                      mine: x.reactions?.mine ?? null,
+                    },
+                  }
+                : x,
+            ),
+          );
+          return;
+        }
         if (data.type === "message" || data.type === "edit") {
           const m = data.message;
           merge([
@@ -170,6 +200,9 @@ export function ChatRoom({
         );
         if (!res.ok) return;
         const data = await res.json();
+        if (data.other && "lastSeenAt" in data.other) {
+          setOtherSeen(data.other.lastSeenAt ?? null);
+        }
         if (data.messages?.length) {
           merge(data.messages);
           if (
@@ -248,6 +281,51 @@ export function ChatRoom({
       el.scrollIntoView({ behavior: "smooth", block: "center" });
       el.classList.add("ring-2", "ring-indigo-400/70");
       setTimeout(() => el.classList.remove("ring-2", "ring-indigo-400/70"), 1400);
+    }
+  }
+
+  function reportMsg(m: Msg) {
+    setMenu(null);
+    setReport({ suspectId: m.senderId, messageId: m.id });
+  }
+
+  async function react(m: Msg, value: "LIKE" | "DISLIKE") {
+    const cur = m.reactions ?? { like: 0, dislike: 0, mine: null };
+    const next = cur.mine === value ? null : value;
+    // optimistik
+    setMessages((prev) =>
+      prev.map((x) => {
+        if (x.id !== m.id) return x;
+        const r = { ...cur };
+        if (cur.mine === "LIKE") r.like--;
+        if (cur.mine === "DISLIKE") r.dislike--;
+        if (next === "LIKE") r.like++;
+        if (next === "DISLIKE") r.dislike++;
+        r.mine = next;
+        return { ...x, reactions: r };
+      }),
+    );
+    try {
+      const res = await fetch(
+        `/api/chat/${conversationId}/messages/${m.id}/react`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ value: next }),
+        },
+      );
+      const data = await res.json();
+      if (res.ok) {
+        setMessages((prev) =>
+          prev.map((x) =>
+            x.id === m.id
+              ? { ...x, reactions: { like: data.like, dislike: data.dislike, mine: data.mine } }
+              : x,
+          ),
+        );
+      }
+    } catch {
+      /* ignore */
     }
   }
 
@@ -387,8 +465,26 @@ export function ChatRoom({
             </div>
             <div className="min-w-0">
               <div className="truncate font-medium text-white">{other.name}</div>
-              <div className="truncate text-xs text-zinc-500">
-                {live ? "onlayn" : "ulanmoqda…"}
+              <div className="flex items-center gap-1.5 truncate text-xs text-zinc-500">
+                {other.isSupport ? (
+                  <span>{live ? "onlayn" : "ulanmoqda…"}</span>
+                ) : (
+                  (() => {
+                    const p = presenceText(otherSeen);
+                    return (
+                      <>
+                        <span
+                          className={`inline-block h-1.5 w-1.5 rounded-full ${
+                            p.online ? "bg-emerald-400" : "bg-zinc-600"
+                          }`}
+                        />
+                        <span className={p.online ? "text-emerald-400" : ""}>
+                          {p.text}
+                        </span>
+                      </>
+                    );
+                  })()
+                )}
               </div>
             </div>
           </Link>
@@ -446,6 +542,7 @@ export function ChatRoom({
                   <div className="flex max-w-[86%] items-end gap-1.5">
                     {m.mine && MenuBtn}
 
+                    <div className={`flex flex-col ${m.mine ? "items-end" : "items-start"}`}>
                     <div
                       className={`space-y-1.5 rounded-2xl px-3.5 py-2 text-sm ${
                         m.mine
@@ -489,6 +586,34 @@ export function ChatRoom({
                         {fmtTime(m.createdAt)}
                         {m.mine && m.id === lastMineId && peerRead ? " · o'qildi" : ""}
                       </div>
+                    </div>
+
+                    {!m.pending && !m.deleted && (
+                      <div className="mt-1 flex gap-1">
+                        {(["LIKE", "DISLIKE"] as const).map((v) => {
+                          const on = m.reactions?.mine === v;
+                          const n =
+                            v === "LIKE"
+                              ? m.reactions?.like ?? 0
+                              : m.reactions?.dislike ?? 0;
+                          return (
+                            <button
+                              key={v}
+                              type="button"
+                              onClick={() => react(m, v)}
+                              className={`flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs transition ${
+                                on
+                                  ? "border-indigo-400/60 bg-indigo-500/20 text-white"
+                                  : "border-white/10 bg-white/5 text-zinc-400 hover:bg-white/10"
+                              }`}
+                            >
+                              {v === "LIKE" ? "👍" : "👎"}
+                              {n > 0 && <span>{n}</span>}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
                     </div>
 
                     {!m.mine && MenuBtn}
@@ -640,7 +765,7 @@ export function ChatRoom({
               >
                 ↩︎ Javob berish
               </button>
-              {menu.msg.mine && (
+              {menu.msg.mine ? (
                 <>
                   <button
                     type="button"
@@ -657,11 +782,30 @@ export function ChatRoom({
                     🗑 O'chirish
                   </button>
                 </>
+              ) : (
+                !other.isSupport && (
+                  <button
+                    type="button"
+                    onClick={() => reportMsg(menu.msg)}
+                    className="block w-full px-3 py-2.5 text-left text-amber-300 hover:bg-white/5"
+                  >
+                    ⚠︎ Shikoyat qilish
+                  </button>
+                )
               )}
             </div>
           </>,
           document.body,
         )}
+
+      {report && (
+        <ReportDialog
+          suspectId={report.suspectId}
+          orderId={orderId ?? undefined}
+          messageId={report.messageId}
+          onClose={() => setReport(null)}
+        />
+      )}
     </div>
   );
 }

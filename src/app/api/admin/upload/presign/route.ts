@@ -3,10 +3,17 @@ import { z } from "zod";
 
 import { adminApiGuard } from "@/lib/admin";
 import { db } from "@/lib/db";
-import { PRIVATE_BUCKET, buildKey, presignPut } from "@/lib/r2";
+import {
+  PRIVATE_BUCKET,
+  PUBLIC_BUCKET,
+  buildKey,
+  presignPut,
+  publicUrl,
+} from "@/lib/r2";
 
 const schema = z.object({
-  conversationId: z.string().min(1),
+  kind: z.enum(["CHAT", "AVATAR"]).default("CHAT"),
+  conversationId: z.string().optional(),
   filename: z.string().min(1).max(200),
   contentType: z.string().min(1).max(150),
 });
@@ -19,8 +26,22 @@ export async function POST(req: Request) {
   if (!parsed.success) {
     return NextResponse.json({ error: "Noto'g'ri so'rov" }, { status: 400 });
   }
-  const { conversationId, filename, contentType } = parsed.data;
+  const { kind, conversationId, filename, contentType } = parsed.data;
 
+  if (kind === "AVATAR") {
+    const key = buildKey("avatars/support", filename);
+    const uploadUrl = await presignPut({ bucket: PUBLIC_BUCKET, key, contentType });
+    return NextResponse.json({
+      uploadUrl,
+      key,
+      bucket: "public",
+      publicUrl: publicUrl(key),
+    });
+  }
+
+  if (!conversationId) {
+    return NextResponse.json({ error: "conversationId kerak" }, { status: 400 });
+  }
   const conv = await db.conversation.findUnique({ where: { id: conversationId } });
   if (!conv) return NextResponse.json({ error: "Suhbat topilmadi" }, { status: 404 });
 

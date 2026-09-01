@@ -1,6 +1,20 @@
-import type { Message } from "@prisma/client";
+import type { Message, MessageReaction } from "@prisma/client";
 import { db } from "@/lib/db";
 import { PRIVATE_BUCKET, presignGet } from "@/lib/r2";
+
+type WithReactions = Message & { reactions?: MessageReaction[] };
+
+function reactionSummary(m: WithReactions, meId: string) {
+  const rs = m.reactions ?? [];
+  return {
+    like: rs.filter((r) => r.value === "LIKE").length,
+    dislike: rs.filter((r) => r.value === "DISLIKE").length,
+    mine: (rs.find((r) => r.userId === meId)?.value ?? null) as
+      | "LIKE"
+      | "DISLIKE"
+      | null,
+  };
+}
 
 export interface ReplyPreview {
   id: string;
@@ -20,6 +34,7 @@ export interface ClientMessage {
   edited: boolean;
   deleted: boolean;
   replyTo: ReplyPreview | null;
+  reactions: { like: number; dislike: number; mine: "LIKE" | "DISLIKE" | null };
   file: null | {
     name: string;
     type: string;
@@ -82,6 +97,7 @@ export async function toClientMessage(
     edited: !!m.editedAt,
     deleted,
     replyTo: await replyPreview(m.replyToId),
+    reactions: reactionSummary(m as WithReactions, meId),
     file,
   };
 }
