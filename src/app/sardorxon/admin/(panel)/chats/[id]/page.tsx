@@ -2,7 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { db } from "@/lib/db";
+import { toClientMessages } from "@/lib/chat-messages";
 import { AdminPostButton } from "@/components/admin/admin-post-button";
+import { AdminConversationView } from "@/components/admin/admin-conversation-view";
 
 export default async function AdminChatView({
   params,
@@ -32,8 +34,14 @@ export default async function AdminChatView({
     isSupport: boolean;
   }) => (u.isSupport ? "tayyorr.uz support" : `@${u.login ?? u.name ?? u.id}`);
 
-  const nameOf = (senderId: string) =>
-    senderId === conv.userA.id ? label(conv.userA) : label(conv.userB);
+  // o'ng tomon = userB perspektivasi
+  const clientMsgs = await toClientMessages(conv.messages, conv.userB.id, {
+    forAdmin: true,
+  });
+  const revisions: Record<string, string[]> = {};
+  for (const m of conv.messages) {
+    if (m.revisions.length) revisions[m.id] = m.revisions.map((r) => r.body);
+  }
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-5">
@@ -74,6 +82,10 @@ export default async function AdminChatView({
         />
       </div>
 
+      <p className="text-xs text-zinc-500">
+        Faqat ko'rish uchun — bu yozishmaga javob yoza olmaysiz.
+      </p>
+
       {conv.hiddenFromUsersAt && (
         <p className="rounded-lg border border-amber-400/30 bg-amber-500/10 p-3 text-sm text-amber-200">
           Bu suhbat {conv.hiddenFromUsersAt.toLocaleString("uz")} da yashirilgan —
@@ -81,57 +93,12 @@ export default async function AdminChatView({
         </p>
       )}
 
-      <div className="flex flex-col gap-2 rounded-xl border border-white/10 bg-white/[0.02] p-4">
-        {conv.messages.length === 0 && (
-          <p className="text-sm text-zinc-500">Xabarlar yo'q.</p>
-        )}
-        {conv.messages.map((m) => (
-          <div
-            key={m.id}
-            className={`rounded-md px-2 py-1 text-sm ${
-              m.deletedAt ? "border border-red-400/25 bg-red-500/5" : ""
-            }`}
-          >
-            <span className="text-zinc-500">
-              [{m.createdAt.toLocaleString("uz", { dateStyle: "short", timeStyle: "short" })}]
-            </span>{" "}
-            <span className="font-medium text-white">{nameOf(m.senderId)}:</span>{" "}
-            {m.fileKey && (
-              <span className="text-indigo-300">
-                📎 {m.fileName ?? "fayl"} ({m.fileType}){" "}
-              </span>
-            )}
-            <span className="whitespace-pre-wrap text-zinc-200">{m.body}</span>
-            {m.system && (
-              <span className="ml-2 text-xs text-indigo-400">(tizim)</span>
-            )}
-            {m.deletedAt && (
-              <span className="ml-2 text-xs font-semibold text-red-400">
-                O'CHIRILGAN {m.deletedAt.toLocaleString("uz", { dateStyle: "short", timeStyle: "short" })}
-              </span>
-            )}
-            {m.editedAt && (
-              <span className="ml-2 text-xs text-amber-400">
-                tahrirlangan {m.editedAt.toLocaleString("uz", { dateStyle: "short", timeStyle: "short" })}
-              </span>
-            )}
-            {m.revisions.length > 0 && (
-              <div className="mt-1 space-y-0.5 border-l-2 border-white/10 pl-3">
-                {m.revisions.map((r, i) => (
-                  <div key={r.id} className="text-xs text-zinc-500">
-                    <span className="text-zinc-600">v{i + 1}:</span>{" "}
-                    <span className="whitespace-pre-wrap">{r.body}</span>
-                  </div>
-                ))}
-                <div className="text-xs text-zinc-500">
-                  <span className="text-zinc-600">joriy:</span>{" "}
-                  <span className="whitespace-pre-wrap text-zinc-300">{m.body}</span>
-                </div>
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
+      <AdminConversationView
+        left={{ id: conv.userA.id, label: label(conv.userA) }}
+        right={{ id: conv.userB.id, label: label(conv.userB) }}
+        messages={clientMsgs}
+        revisions={revisions}
+      />
     </div>
   );
 }
