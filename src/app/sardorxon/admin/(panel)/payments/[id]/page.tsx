@@ -24,7 +24,7 @@ export default async function AdminPaymentReceipt({
     ["Sana", t.createdAt.toLocaleString("uz")],
     ["Foydalanuvchi", `@${t.user.login ?? t.user.name ?? t.user.id}`],
     ["Tur", t.type],
-    ["Summa", formatSom(t.amount)],
+    ["Summa", `${t.reversedAt ? "−" : ""}${formatSom(t.amount)}`],
     ["Usul", t.method],
     ["Holat", t.reversedAt ? "BEKOR QILINGAN" : t.status],
     ["Izoh", t.note ?? "—"],
@@ -51,7 +51,15 @@ export default async function AdminPaymentReceipt({
           {rows.map(([k, v]) => (
             <div key={k} className="flex justify-between gap-4 py-2">
               <dt className="text-zinc-500">{k}</dt>
-              <dd className="text-right font-mono text-zinc-200">{v}</dd>
+              <dd
+                className={`text-right font-mono ${
+                  t.reversedAt && (k === "Summa" || k === "Holat")
+                    ? "text-red-400"
+                    : "text-zinc-200"
+                }`}
+              >
+                {v}
+              </dd>
             </div>
           ))}
         </dl>

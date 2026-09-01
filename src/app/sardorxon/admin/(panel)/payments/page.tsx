@@ -56,13 +56,18 @@ export default async function AdminPayments() {
                   </Link>
                 </td>
                 <td className="px-4 py-2">{TYPE_LABEL[t.type] ?? t.type}</td>
-                <td className="px-4 py-2 font-medium text-white">
+                <td
+                  className={`px-4 py-2 font-medium ${
+                    t.reversedAt ? "text-red-400 line-through" : "text-white"
+                  }`}
+                >
+                  {t.reversedAt ? "−" : ""}
                   {formatSom(t.amount)}
                 </td>
                 <td className="px-4 py-2 text-zinc-400">{t.method}</td>
                 <td className="px-4 py-2">
                   {t.reversedAt ? (
-                    <span className="text-amber-400">bekor qilingan</span>
+                    <span className="text-red-400">bekor qilingan</span>
                   ) : (
                     <span
                       className={

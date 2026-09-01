@@ -78,7 +78,8 @@ export default async function WalletPage() {
         ) : (
           <ul className="flex flex-col gap-2">
             {txns.map((t) => {
-              const out = OUTFLOW.has(t.type);
+              const reversed = !!t.reversedAt;
+              const out = reversed || OUTFLOW.has(t.type);
               return (
                 <li
                   key={t.id}
@@ -92,6 +93,11 @@ export default async function WalletPage() {
                           DEMO
                         </span>
                       )}
+                      {reversed && (
+                        <span className="ml-2 rounded bg-red-500/15 px-1.5 py-0.5 text-[10px] font-semibold text-red-400">
+                          BEKOR QILINGAN
+                        </span>
+                      )}
                     </div>
                     <div className="mt-0.5 text-xs text-zinc-500">
                       {t.createdAt.toLocaleString("uz")}
@@ -100,7 +106,11 @@ export default async function WalletPage() {
                   </div>
                   <div
                     className={`text-sm font-semibold ${
-                      out ? "text-zinc-300" : "text-emerald-400"
+                      reversed
+                        ? "text-red-400 line-through"
+                        : out
+                          ? "text-zinc-300"
+                          : "text-emerald-400"
                     }`}
                   >
                     {out ? "−" : "+"}
