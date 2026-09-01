@@ -5,6 +5,7 @@ import { AuroraBackground } from "@/components/aurora-background";
 import { AppHeader } from "@/components/app-header";
 import { PushSetup } from "@/components/push-setup";
 import { PresencePing } from "@/components/presence-ping";
+import { RestrictionBanner } from "@/components/restriction-banner";
 import { getRestriction, restrictionText } from "@/lib/restriction";
 
 export default async function AppLayout({
@@ -27,11 +28,7 @@ export default async function AppLayout({
 
       <main className="relative z-10 mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-10">
         <PushSetup />
-        {restriction && (
-          <div className="mb-6 rounded-xl border border-amber-400/30 bg-amber-500/10 p-4 text-sm text-amber-200">
-            {restrictionText(restriction)}
-          </div>
-        )}
+        {restriction && <RestrictionBanner text={restrictionText(restriction)} />}
         {children}
       </main>
     </div>

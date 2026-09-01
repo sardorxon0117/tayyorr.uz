@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 
 const VAPID = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || "";
 
@@ -31,6 +32,7 @@ async function subscribe() {
 }
 
 export function PushSetup() {
+  const pathname = usePathname();
   const [state, setState] = useState<
     "loading" | "unsupported" | "default" | "granted" | "denied"
   >("loading");
@@ -58,6 +60,7 @@ export function PushSetup() {
   }, []);
 
   if (state !== "default") return null;
+  if (/^\/messages\/[^/]+$/.test(pathname)) return null;
 
   async function enable() {
     setBusy(true);

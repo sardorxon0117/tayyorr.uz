@@ -41,11 +41,11 @@ export function ReportDialog({
 
   return (
     <div
-      className="fixed inset-0 z-[75] flex items-center justify-center bg-black/60 p-4"
+      className="fixed inset-0 z-[75] flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm"
       onClick={() => !busy && onClose()}
     >
       <div
-        className="w-full max-w-md rounded-2xl glass-strong p-6"
+        className="w-full max-w-md rounded-2xl border border-white/10 bg-[#14141b] p-6 shadow-2xl shadow-black/50"
         onClick={(e) => e.stopPropagation()}
       >
         {done ? (
