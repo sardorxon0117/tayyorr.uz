@@ -76,6 +76,13 @@ enum ContractStatus {
   CANCELLED // buyurtmachi bekor qildi
 }
 
+enum PayoutStatus {
+  PENDING // so'rov yuborildi, admin ko'rib chiqmoqda
+  PAID // kartaga o'tkazildi
+  REJECTED // rad etildi (mablag' qaytarildi)
+  CANCELLED // foydalanuvchi bekor qildi (mablag' qaytarildi)
+}
+
 // ----------------- Foydalanuvchi -----------------
 
 model User {
@@ -131,8 +138,26 @@ model User {
   contractsSent     Contract[]          @relation("ContractsSent")
   contractsGot      Contract[]          @relation("ContractsGot")
   pushSubscriptions PushSubscription[]
+  payoutRequests    PayoutRequest[]
 
   @@index([role, isAvailable])
+}
+
+model PayoutRequest {
+  id        String       @id @default(cuid())
+  userId    String
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount    Int // so'm — so'rovda balansdan yechiladi
+  card      String // to'liq karta raqami (admin o'tkazadi)
+  cardName  String? // karta egasi
+  status    PayoutStatus @default(PENDING)
+  adminNote String?
+
+  createdAt  DateTime  @default(now())
+  resolvedAt DateTime?
+
+  @@index([status, createdAt])
+  @@index([userId, createdAt])
 }
 
 model Contract {

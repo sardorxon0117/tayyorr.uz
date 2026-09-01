@@ -6,13 +6,16 @@ import { formatSom } from "@/lib/wallet";
 export default async function AdminHome() {
   const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
-  const [users, openComplaints, txnToday, balanceAgg, banned] = await Promise.all([
-    db.user.count({ where: { isSupport: false } }),
-    db.complaint.count({ where: { status: { in: ["OPEN", "REVIEWING"] } } }),
-    db.walletTransaction.count({ where: { createdAt: { gte: since } } }),
-    db.user.aggregate({ _sum: { balance: true } }),
-    db.user.count({ where: { bannedUntil: { gt: new Date() } } }),
-  ]);
+  const [users, openComplaints, txnToday, balanceAgg, banned, pendingPayouts, platform] =
+    await Promise.all([
+      db.user.count({ where: { isSupport: false, isPlatform: false } }),
+      db.complaint.count({ where: { status: { in: ["OPEN", "REVIEWING"] } } }),
+      db.walletTransaction.count({ where: { createdAt: { gte: since } } }),
+      db.user.aggregate({ _sum: { balance: true } }),
+      db.user.count({ where: { bannedUntil: { gt: new Date() } } }),
+      db.payoutRequest.count({ where: { status: "PENDING" } }),
+      db.user.findFirst({ where: { isPlatform: true }, select: { balance: true } }),
+    ]);
 
   const cards = [
     { label: "Foydalanuvchilar", value: users, href: "/sardorxon/admin/users" },
@@ -21,8 +24,18 @@ export default async function AdminHome() {
       value: openComplaints,
       href: "/sardorxon/admin/complaints",
     },
+    {
+      label: "Yechib olish (kutilmoqda)",
+      value: pendingPayouts,
+      href: "/sardorxon/admin/payouts",
+    },
     { label: "24 soatlik amallar", value: txnToday, href: "/sardorxon/admin/payments" },
     { label: "Cheklangan hisoblar", value: banned, href: "/sardorxon/admin/users" },
+    {
+      label: "Sayt komissiyasi (jami)",
+      value: formatSom(platform?.balance ?? 0),
+      href: "/sardorxon/admin/payments",
+    },
     {
       label: "Umumiy balans",
       value: formatSom(balanceAgg._sum.balance ?? 0),

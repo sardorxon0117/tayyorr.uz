@@ -4,6 +4,15 @@ import { ensureWalletCode, formatSom } from "@/lib/wallet";
 import { getRestriction } from "@/lib/restriction";
 import { RestrictionNotice } from "@/components/restriction-notice";
 import { WalletTopUp } from "@/components/wallet-topup";
+import { WalletPayout } from "@/components/wallet-payout";
+import { PayoutCancelButton } from "@/components/payout-cancel-button";
+
+const PAYOUT_STATUS: Record<string, string> = {
+  PENDING: "Ko'rib chiqilmoqda",
+  PAID: "To'landi",
+  REJECTED: "Rad etildi",
+  CANCELLED: "Bekor qilindi",
+};
 
 const TXN_LABEL: Record<string, string> = {
   TOPUP: "To'ldirish",
@@ -25,12 +34,17 @@ export default async function WalletPage() {
   if (restriction) return <RestrictionNotice restriction={restriction} />;
 
   const walletCode = await ensureWalletCode(userId);
-  const [user, txns] = await Promise.all([
+  const [user, txns, payouts] = await Promise.all([
     db.user.findUnique({ where: { id: userId }, select: { balance: true } }),
     db.walletTransaction.findMany({
       where: { userId },
       orderBy: { createdAt: "desc" },
       take: 20,
+    }),
+    db.payoutRequest.findMany({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+      take: 10,
     }),
   ]);
 
@@ -72,6 +86,44 @@ export default async function WalletPage() {
       </div>
 
       <WalletTopUp myCode={walletCode} />
+
+      <WalletPayout balance={balance} />
+
+      {payouts.length > 0 && (
+        <div>
+          <h2 className="mb-3 font-semibold text-white">Yechib olish so'rovlari</h2>
+          <ul className="flex flex-col gap-2">
+            {payouts.map((p) => (
+              <li
+                key={p.id}
+                className="card flex items-center justify-between gap-3 py-3"
+              >
+                <div>
+                  <div className="text-sm font-medium text-white">
+                    {formatSom(p.amount)}
+                    <span
+                      className={`ml-2 text-xs ${
+                        p.status === "PAID"
+                          ? "text-emerald-400"
+                          : p.status === "PENDING"
+                            ? "text-amber-400"
+                            : "text-zinc-500"
+                      }`}
+                    >
+                      {PAYOUT_STATUS[p.status]}
+                    </span>
+                  </div>
+                  <div className="mt-0.5 text-xs text-zinc-500">
+                    {p.createdAt.toLocaleString("uz")}
+                    {p.adminNote ? ` · ${p.adminNote}` : ""}
+                  </div>
+                </div>
+                {p.status === "PENDING" && <PayoutCancelButton id={p.id} />}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {/* tarix */}
       <div>
