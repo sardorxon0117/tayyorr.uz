@@ -71,15 +71,25 @@ export default async function AdminChatView({
             {conv.order && ` · buyurtma: ${conv.order.title}`}
           </p>
         </div>
-        <AdminPostButton
-          url={`/api/admin/chats/${conv.id}/hide`}
-          label={
-            conv.hiddenFromUsersAt
-              ? "Foydalanuvchilarga qaytarish"
-              : "Foydalanuvchilardan yashirish"
-          }
-          className="btn-ghost"
-        />
+        <div className="flex flex-wrap gap-2">
+          <AdminPostButton
+            url={`/api/admin/chats/${conv.id}/hide`}
+            label={
+              conv.hiddenFromUsersAt
+                ? "Foydalanuvchilarga qaytarish"
+                : "Foydalanuvchilardan yashirish"
+            }
+            className="btn-ghost"
+          />
+          <AdminPostButton
+            url={`/api/admin/chats/${conv.id}`}
+            method="DELETE"
+            label="Suhbatni o'chirish"
+            className="rounded-xl bg-red-500/15 px-4 py-2 text-sm text-red-300 hover:bg-red-500/25"
+            confirmText="Suhbat va barcha xabarlar butunlay o'chiriladi. Davom etilsinmi?"
+            redirectTo="/sardorxon/admin/chats"
+          />
+        </div>
       </div>
 
       <p className="text-xs text-zinc-500">

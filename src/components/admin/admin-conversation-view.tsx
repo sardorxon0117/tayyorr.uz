@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 import { ChatFileView, type ChatFile } from "@/components/chat-file";
 
@@ -38,10 +39,23 @@ export function AdminConversationView({
   messages: Msg[];
   revisions: Record<string, string[]>;
 }) {
+  const router = useRouter();
   const nameOf = (senderId: string) =>
     senderId === left.id ? left.label : senderId === right.id ? right.label : "—";
 
   const [openRev, setOpenRev] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<string | null>(null);
+
+  async function delMsg(msgId: string) {
+    if (!window.confirm("Bu xabar butunlay o'chiriladi. Davom etilsinmi?")) return;
+    setDeleting(msgId);
+    try {
+      const res = await fetch(`/api/admin/messages/${msgId}`, { method: "DELETE" });
+      if (res.ok) router.refresh();
+    } finally {
+      setDeleting(null);
+    }
+  }
 
   return (
     <div className="flex max-h-[70vh] flex-col gap-2 overflow-y-auto rounded-xl border border-white/10 bg-[#0b0b12]/40 p-4">
@@ -65,8 +79,16 @@ export function AdminConversationView({
             className={`flex ${m.mine ? "justify-end" : "justify-start"}`}
           >
             <div className="max-w-[78%]">
-              <div className="mb-0.5 px-1 text-[10px] text-zinc-500">
-                {nameOf(m.senderId)}
+              <div className="mb-0.5 flex items-center gap-2 px-1 text-[10px] text-zinc-500">
+                <span>{nameOf(m.senderId)}</span>
+                <button
+                  type="button"
+                  disabled={deleting === m.id}
+                  onClick={() => delMsg(m.id)}
+                  className="text-red-400/70 hover:text-red-400"
+                >
+                  {deleting === m.id ? "..." : "o'chirish"}
+                </button>
               </div>
               <div
                 className={`space-y-1.5 rounded-2xl px-3.5 py-2 text-sm ${

@@ -10,6 +10,7 @@ export function AdminPostButton({
   confirmText,
   className = "btn-ghost",
   redirectTo,
+  method = "POST",
 }: {
   url: string;
   body?: unknown;
@@ -17,6 +18,7 @@ export function AdminPostButton({
   confirmText?: string;
   className?: string;
   redirectTo?: string;
+  method?: "POST" | "DELETE" | "PATCH";
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
@@ -28,7 +30,7 @@ export function AdminPostButton({
     setErr(null);
     try {
       const res = await fetch(url, {
-        method: "POST",
+        method,
         headers: { "Content-Type": "application/json" },
         body: body ? JSON.stringify(body) : undefined,
       });
