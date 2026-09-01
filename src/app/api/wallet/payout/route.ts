@@ -3,7 +3,6 @@ import { z } from "zod";
 
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
-import { restrictionApiError } from "@/lib/restriction";
 import { maskCard } from "@/lib/wallet";
 
 const MIN = 10_000;
@@ -19,8 +18,7 @@ export async function POST(req: Request) {
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Avval kiring" }, { status: 401 });
   }
-  const restricted = await restrictionApiError(session.user.id);
-  if (restricted) return restricted;
+  // cheklangan foydalanuvchi ham pulini yechib olishi mumkin — bu yerда tekshirmaymiz
   const me = session.user.id;
 
   const parsed = schema.safeParse(await req.json().catch(() => null));

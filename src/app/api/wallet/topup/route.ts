@@ -4,7 +4,6 @@ import { z } from "zod";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { luhnValid, maskCard } from "@/lib/wallet";
-import { restrictionApiError } from "@/lib/restriction";
 
 /**
  * DEMO hisobni to'ldirish. Haqiqiy pul yechilmaydi.
@@ -28,8 +27,6 @@ export async function POST(req: Request) {
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Avval kiring" }, { status: 401 });
   }
-  const restricted = await restrictionApiError(session.user.id);
-  if (restricted) return restricted;
 
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {

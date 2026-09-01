@@ -2,7 +2,6 @@ import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { ensureWalletCode, formatSom } from "@/lib/wallet";
 import { getRestriction } from "@/lib/restriction";
-import { RestrictionNotice } from "@/components/restriction-notice";
 import { WalletTopUp } from "@/components/wallet-topup";
 import { WalletPayout } from "@/components/wallet-payout";
 import { PayoutCancelButton } from "@/components/payout-cancel-button";
@@ -30,8 +29,8 @@ const OUTFLOW = new Set(["SPEND", "TRANSFER_OUT", "PAYOUT", "HOLD"]);
 export default async function WalletPage() {
   const session = await auth();
   const userId = session!.user.id;
+  // hisob cheklangan bo'lsa ham hamyon ochiq — foydalanuvchi pulini yechib olishi kerak
   const restriction = await getRestriction(userId);
-  if (restriction) return <RestrictionNotice restriction={restriction} />;
 
   const walletCode = await ensureWalletCode(userId);
   const [user, txns, payouts] = await Promise.all([
@@ -84,6 +83,13 @@ export default async function WalletPage() {
           </div>
         </div>
       </div>
+
+      {restriction && (
+        <p className="rounded-xl border border-amber-400/30 bg-amber-500/10 p-3 text-sm text-amber-200">
+          Hisobingiz cheklangan bo'lsa ham hamyon ochiq: mablag'ingizni kartaga
+          yechib olishingiz mumkin.
+        </p>
+      )}
 
       <WalletTopUp myCode={walletCode} />
 
