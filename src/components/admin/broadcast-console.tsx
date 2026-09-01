@@ -198,7 +198,7 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
             className="btn-primary flex h-[42px] w-[42px] shrink-0 items-center justify-center !p-0 text-lg leading-none"
             disabled={busy || !text.trim()}
           >
-            🚀
+            ➦
           </button>
         </form>
       </div>

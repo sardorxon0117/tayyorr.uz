@@ -774,7 +774,7 @@ export function ChatRoom({
                 aria-label={editing ? "Saqlash" : "Yuborish"}
                 title={editing ? "Saqlash" : "Yuborish"}
               >
-                {editing ? "✓" : "🚀"}
+                {editing ? "✓" : "➦"}
               </button>
             </form>
           </div>
