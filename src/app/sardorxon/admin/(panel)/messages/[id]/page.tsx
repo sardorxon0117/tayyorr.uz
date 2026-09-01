@@ -26,7 +26,7 @@ export default async function AdminMessageThread({
   if (conv.userAId !== supportId && conv.userBId !== supportId) notFound();
 
   const user = conv.userAId === supportId ? conv.userB : conv.userA;
-  const initial = await toClientMessages(conv.messages, supportId);
+  const initial = await toClientMessages(conv.messages, supportId, { forAdmin: true });
 
   return (
     <div className="flex flex-col gap-4">

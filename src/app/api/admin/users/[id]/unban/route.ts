@@ -5,6 +5,7 @@ import { adminApiGuard } from "@/lib/admin";
 import { createMessage, getOrCreateConversation } from "@/lib/chat";
 import { getSupportUserId } from "@/lib/support";
 import { publishToConversation } from "@/lib/chat-bus";
+import { toSerializedMessage } from "@/lib/chat-messages";
 
 export async function POST(
   _req: Request,
@@ -32,15 +33,7 @@ export async function POST(
   });
   publishToConversation(conv.id, {
     type: "message",
-    message: {
-      id: m.id,
-      conversationId: conv.id,
-      senderId: supportId,
-      body: m.body,
-      system: true,
-      createdAt: m.createdAt.toISOString(),
-      file: null,
-    },
+    message: await toSerializedMessage(m),
   });
 
   return NextResponse.json({ ok: true });

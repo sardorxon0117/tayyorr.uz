@@ -17,7 +17,10 @@ export default async function AdminChatView({
       userA: { select: { id: true, login: true, name: true, isSupport: true } },
       userB: { select: { id: true, login: true, name: true, isSupport: true } },
       order: { select: { id: true, title: true } },
-      messages: { orderBy: { createdAt: "asc" } },
+      messages: {
+        orderBy: { createdAt: "asc" },
+        include: { revisions: { orderBy: { createdAt: "asc" } } },
+      },
     },
   });
   if (!conv) notFound();
@@ -83,17 +86,48 @@ export default async function AdminChatView({
           <p className="text-sm text-zinc-500">Xabarlar yo'q.</p>
         )}
         {conv.messages.map((m) => (
-          <div key={m.id} className="text-sm">
+          <div
+            key={m.id}
+            className={`rounded-md px-2 py-1 text-sm ${
+              m.deletedAt ? "border border-red-400/25 bg-red-500/5" : ""
+            }`}
+          >
             <span className="text-zinc-500">
               [{m.createdAt.toLocaleString("uz", { dateStyle: "short", timeStyle: "short" })}]
             </span>{" "}
             <span className="font-medium text-white">{nameOf(m.senderId)}:</span>{" "}
             {m.fileKey && (
-              <span className="text-indigo-300">📎 {m.fileName ?? "fayl"} </span>
+              <span className="text-indigo-300">
+                📎 {m.fileName ?? "fayl"} ({m.fileType}){" "}
+              </span>
             )}
             <span className="whitespace-pre-wrap text-zinc-200">{m.body}</span>
             {m.system && (
               <span className="ml-2 text-xs text-indigo-400">(tizim)</span>
+            )}
+            {m.deletedAt && (
+              <span className="ml-2 text-xs font-semibold text-red-400">
+                O'CHIRILGAN {m.deletedAt.toLocaleString("uz", { dateStyle: "short", timeStyle: "short" })}
+              </span>
+            )}
+            {m.editedAt && (
+              <span className="ml-2 text-xs text-amber-400">
+                tahrirlangan {m.editedAt.toLocaleString("uz", { dateStyle: "short", timeStyle: "short" })}
+              </span>
+            )}
+            {m.revisions.length > 0 && (
+              <div className="mt-1 space-y-0.5 border-l-2 border-white/10 pl-3">
+                {m.revisions.map((r, i) => (
+                  <div key={r.id} className="text-xs text-zinc-500">
+                    <span className="text-zinc-600">v{i + 1}:</span>{" "}
+                    <span className="whitespace-pre-wrap">{r.body}</span>
+                  </div>
+                ))}
+                <div className="text-xs text-zinc-500">
+                  <span className="text-zinc-600">joriy:</span>{" "}
+                  <span className="whitespace-pre-wrap text-zinc-300">{m.body}</span>
+                </div>
+              </div>
             )}
           </div>
         ))}

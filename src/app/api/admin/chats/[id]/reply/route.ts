@@ -6,15 +6,15 @@ import { adminApiGuard } from "@/lib/admin";
 import { createMessage } from "@/lib/chat";
 import { getSupportUserId } from "@/lib/support";
 import { publishToConversation } from "@/lib/chat-bus";
-import { PRIVATE_BUCKET, presignGet } from "@/lib/r2";
+import { toClientMessage, toSerializedMessage } from "@/lib/chat-messages";
 
 const schema = z.object({
-  body: z.string().trim().max(4000).optional(),
+  body: z.string().trim().max(8000).optional(),
   file: z
     .object({
       key: z.string().min(1),
-      name: z.string().min(1).max(200),
-      type: z.string().min(1).max(150),
+      name: z.string().min(1).max(300),
+      type: z.string().min(1).max(200),
       size: z.number().int().nonnegative(),
     })
     .optional(),
@@ -53,41 +53,10 @@ export async function POST(
     file: parsed.data.file ?? null,
   });
 
-  const fileOut = msg.fileKey
-    ? {
-        name: msg.fileName ?? "fayl",
-        type: msg.fileType ?? "application/octet-stream",
-        size: msg.fileSize ?? 0,
-        url: await presignGet({
-          bucket: PRIVATE_BUCKET,
-          key: msg.fileKey,
-          expiresIn: 3600,
-        }),
-      }
-    : null;
-
   publishToConversation(id, {
     type: "message",
-    message: {
-      id: msg.id,
-      conversationId: id,
-      senderId: supportId,
-      body: msg.body,
-      system: true,
-      createdAt: msg.createdAt.toISOString(),
-      file: fileOut,
-    },
+    message: await toSerializedMessage(msg),
   });
 
-  return NextResponse.json({
-    message: {
-      id: msg.id,
-      senderId: supportId,
-      body: msg.body,
-      system: true,
-      createdAt: msg.createdAt.getTime(),
-      mine: true,
-      file: fileOut,
-    },
-  });
+  return NextResponse.json({ message: await toClientMessage(msg, supportId) });
 }

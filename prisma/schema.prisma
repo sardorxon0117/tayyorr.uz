@@ -175,10 +175,28 @@ model Message {
   fileType String?
   fileSize Int?
 
+  // tahrirlash / o'chirish
+  editedAt  DateTime? // oxirgi tahrirlangan vaqt
+  deletedAt DateTime? // "hamma uchun o'chirish" — foydalanuvchilarga ko'rinmaydi, adminда qoladi
+
   createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now()) @updatedAt
   readAt    DateTime?
 
+  revisions MessageRevision[]
+
   @@index([conversationId, createdAt])
+  @@index([conversationId, updatedAt])
+}
+
+model MessageRevision {
+  id        String   @id @default(cuid())
+  messageId String
+  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  body      String // shu versiya (almashtirilishдан oldingi holat)
+  createdAt DateTime @default(now())
+
+  @@index([messageId, createdAt])
 }
 
 model Complaint {

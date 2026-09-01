@@ -65,12 +65,7 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: restrictionText(restriction) }, { status: 403 });
       }
     }
-    if (!DOC_TYPES.includes(contentType)) {
-      return NextResponse.json(
-        { error: "Fayl turi qo'llab-quvvatlanmaydi" },
-        { status: 400 },
-      );
-    }
+    // chatда istalgan fayl turi (rasm/video/audio/zip/pdf/...)
     const key = buildKey(`chat/${conversationId}`, filename);
     const uploadUrl = await presignPut({ bucket: PRIVATE_BUCKET, key, contentType });
     return NextResponse.json({ uploadUrl, key, bucket: "private" });

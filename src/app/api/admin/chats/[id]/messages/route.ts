@@ -19,12 +19,12 @@ export async function GET(
 
   const supportId = await getSupportUserId();
   const url = new URL(req.url);
-  const after = url.searchParams.get("after");
+  const since = url.searchParams.get("since");
 
   const rows = await db.message.findMany({
     where: {
       conversationId: id,
-      ...(after ? { createdAt: { gt: new Date(Number(after)) } } : {}),
+      ...(since ? { updatedAt: { gt: new Date(Number(since)) } } : {}),
     },
     orderBy: { createdAt: "asc" },
     take: 300,
@@ -36,5 +36,7 @@ export async function GET(
     data: { readAt: new Date() },
   });
 
-  return NextResponse.json({ messages: await toClientMessages(rows, supportId) });
+  return NextResponse.json({
+    messages: await toClientMessages(rows, supportId, { forAdmin: true }),
+  });
 }

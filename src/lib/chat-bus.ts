@@ -3,13 +3,9 @@ import { EventEmitter } from "events";
 /**
  * Jarayon ichidagi oddiy pub/sub — SSE stream'lariga yangi xabarni yetkazish uchun.
  * Bitta Node instansiyada real vaqt rejimi. Ko'p instansiyali (serverless) deploy'da
- * bu instansiyalararo tarqalmaydi — o'sha holатда klient 4 soniyalik polling bilan
- * baribir xabarni oladi (kechikish bilan). Keyinchalik Redis/Ably bilan almashtiriladi.
+ * bu instansiyalararo tarqalmaydi — o'sha holатда klient polling bilan baribир xabarni
+ * oladi (kechikish bilan). Keyinchalik Redis/Ably bilan almashtiriladi.
  */
-
-type ChatEvent =
-  | { type: "message"; message: SerializedMessage }
-  | { type: "read"; by: string; at: string };
 
 export interface SerializedMessage {
   id: string;
@@ -18,6 +14,9 @@ export interface SerializedMessage {
   body: string;
   system: boolean;
   createdAt: string;
+  updatedAt: string;
+  edited: boolean;
+  deleted: boolean;
   file: null | {
     name: string;
     type: string;
@@ -25,6 +24,12 @@ export interface SerializedMessage {
     url: string;
   };
 }
+
+type ChatEvent =
+  | { type: "message"; message: SerializedMessage }
+  | { type: "edit"; message: SerializedMessage }
+  | { type: "delete"; messageId: string; updatedAt: string }
+  | { type: "read"; by: string; at: string };
 
 const g = globalThis as unknown as { __chatBus?: EventEmitter };
 export const chatBus = g.__chatBus ?? new EventEmitter();

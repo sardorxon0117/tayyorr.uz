@@ -22,15 +22,16 @@ export async function GET(
   }
 
   const url = new URL(req.url);
-  const after = url.searchParams.get("after");
+  // `since` = ko'rilgan eng katta updatedAt (ms). Yangi + tahrirlangan + o'chirilgan xabarlarni qaytaradi.
+  const since = url.searchParams.get("since");
 
   const rows = await db.message.findMany({
     where: {
       conversationId: id,
-      ...(after ? { createdAt: { gt: new Date(Number(after)) } } : {}),
+      ...(since ? { updatedAt: { gt: new Date(Number(since)) } } : {}),
     },
     orderBy: { createdAt: "asc" },
-    take: 200,
+    take: 300,
   });
 
   const other = await db.user.findUnique({

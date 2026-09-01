@@ -2,20 +2,20 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { auth } from "@/auth";
+import { db } from "@/lib/db";
 import { getConversationForUser, createMessage } from "@/lib/chat";
 import { publishToConversation } from "@/lib/chat-bus";
 import { getRestriction, restrictionText } from "@/lib/restriction";
 import { getSupportUserId } from "@/lib/support";
-import { toClientMessage } from "@/lib/chat-messages";
-import { PRIVATE_BUCKET, presignGet } from "@/lib/r2";
+import { toClientMessage, toSerializedMessage } from "@/lib/chat-messages";
 
 const schema = z.object({
-  body: z.string().trim().max(4000).optional(),
+  body: z.string().trim().max(8000).optional(),
   file: z
     .object({
       key: z.string().min(1),
-      name: z.string().min(1).max(200),
-      type: z.string().min(1).max(150),
+      name: z.string().min(1).max(300),
+      type: z.string().min(1).max(200),
       size: z.number().int().nonnegative(),
     })
     .optional(),
@@ -63,31 +63,10 @@ export async function POST(
     file: parsed.data.file ?? null,
   });
 
-  const client = await toClientMessage(msg, me);
-
   publishToConversation(id, {
     type: "message",
-    message: {
-      id: msg.id,
-      conversationId: id,
-      senderId: me,
-      body: msg.body,
-      system: false,
-      createdAt: msg.createdAt.toISOString(),
-      file: msg.fileKey
-        ? {
-            name: msg.fileName ?? "fayl",
-            type: msg.fileType ?? "application/octet-stream",
-            size: msg.fileSize ?? 0,
-            url: await presignGet({
-              bucket: PRIVATE_BUCKET,
-              key: msg.fileKey,
-              expiresIn: 3600,
-            }),
-          }
-        : null,
-    },
+    message: await toSerializedMessage(msg),
   });
 
-  return NextResponse.json({ message: client });
+  return NextResponse.json({ message: await toClientMessage(msg, me) });
 }

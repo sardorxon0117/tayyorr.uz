@@ -10,7 +10,10 @@ interface Msg {
   body: string;
   system?: boolean;
   createdAt: number;
+  updatedAt?: number;
   mine: boolean;
+  edited?: boolean;
+  deleted?: boolean;
   file?: ChatFile | null;
   pending?: boolean;
 }
@@ -34,10 +37,11 @@ export function AdminChatThread({
   const [err, setErr] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const lastMs = useRef(
-    initialMessages.length
-      ? initialMessages[initialMessages.length - 1].createdAt
-      : 0,
+  const sinceMs = useRef(
+    initialMessages.reduce(
+      (mx, x) => Math.max(mx, x.updatedAt || x.createdAt),
+      0,
+    ),
   );
 
   const merge = useCallback((incoming: Msg[]) => {
@@ -45,8 +49,9 @@ export function AdminChatThread({
     setMessages((prev) => {
       const map = new Map(prev.map((m) => [m.id, m]));
       for (const m of incoming) {
-        map.set(m.id, m);
-        if (m.createdAt > lastMs.current) lastMs.current = m.createdAt;
+        map.set(m.id, { ...map.get(m.id), ...m });
+        const t = m.updatedAt || m.createdAt;
+        if (t > sinceMs.current) sinceMs.current = t;
       }
       return [...map.values()].sort((a, b) => a.createdAt - b.createdAt);
     });
@@ -56,7 +61,7 @@ export function AdminChatThread({
     const iv = setInterval(async () => {
       try {
         const res = await fetch(
-          `/api/admin/chats/${conversationId}/messages?after=${lastMs.current}`,
+          `/api/admin/chats/${conversationId}/messages?since=${sinceMs.current}`,
           { cache: "no-store" },
         );
         if (!res.ok) return;
@@ -151,20 +156,28 @@ export function AdminChatThread({
           <div key={m.id} className={`flex ${m.mine ? "justify-end" : "justify-start"}`}>
             <div
               className={`max-w-[78%] space-y-1.5 rounded-2xl px-3.5 py-2 text-sm ${
-                m.mine
-                  ? "bg-indigo-600 text-white"
-                  : "border border-white/10 bg-white/5 text-zinc-100"
+                m.deleted
+                  ? "border border-red-400/30 bg-red-500/5 text-zinc-300"
+                  : m.mine
+                    ? "bg-indigo-600 text-white"
+                    : "border border-white/10 bg-white/5 text-zinc-100"
               }`}
             >
+              {m.deleted && (
+                <div className="text-[10px] font-semibold uppercase text-red-400">
+                  o'chirilgan
+                </div>
+              )}
               {m.file && <ChatFileView file={m.file} mine={m.mine} />}
               {m.body && (
                 <div className="whitespace-pre-wrap break-words">{m.body}</div>
               )}
               <div
                 className={`text-right text-[10px] ${
-                  m.mine ? "text-indigo-200" : "text-zinc-500"
+                  m.mine && !m.deleted ? "text-indigo-200" : "text-zinc-500"
                 }`}
               >
+                {m.edited && "tahrirlangan · "}
                 {m.mine ? "support" : "foydalanuvchi"} · {fmt(m.createdAt)}
               </div>
             </div>

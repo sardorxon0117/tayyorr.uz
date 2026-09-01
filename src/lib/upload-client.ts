@@ -57,3 +57,62 @@ export async function uploadFile(
 
   return { key, bucket, publicUrl };
 }
+
+/** PUT to R2 with upload progress via XHR. */
+function xhrPut(url: string, file: File, onProgress: (pct: number) => void) {
+  return new Promise<void>((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("PUT", url);
+    xhr.setRequestHeader(
+      "Content-Type",
+      file.type || "application/octet-stream",
+    );
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100));
+    };
+    xhr.onload = () =>
+      xhr.status >= 200 && xhr.status < 300
+        ? resolve()
+        : reject(new Error("Fayl yuklanmadi"));
+    xhr.onerror = () => reject(new Error("Tarmoq xatosi"));
+    xhr.send(file);
+  });
+}
+
+export interface PreparedChatFile {
+  key: string;
+  name: string;
+  type: string;
+  size: number;
+}
+
+/** presign -> R2 ga progress bilan yuklaydi. Xabar hali YUBORILMAYDI. */
+export async function prepareChatFile(
+  file: File,
+  conversationId: string,
+  onProgress: (pct: number) => void,
+): Promise<PreparedChatFile> {
+  const res = await fetch("/api/upload/presign", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      kind: "CHAT",
+      conversationId,
+      filename: file.name,
+      contentType: file.type || "application/octet-stream",
+    }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Yuklashni boshlab bo'lmadi");
+
+  onProgress(0);
+  await xhrPut(data.uploadUrl, file, onProgress);
+  onProgress(100);
+
+  return {
+    key: data.key,
+    name: file.name,
+    type: file.type || "application/octet-stream",
+    size: file.size,
+  };
+}
