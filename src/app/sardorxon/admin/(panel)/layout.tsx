@@ -2,15 +2,15 @@ import Link from "next/link";
 
 import { requireAdmin } from "@/lib/admin";
 import { AdminPostButton } from "@/components/admin/admin-post-button";
-import { MobileNav } from "@/components/mobile-nav";
+import { NavMenu, type NavLink } from "@/components/nav-menu";
 
-const NAV = [
-  { href: "/sardorxon/admin", label: "Bosh" },
-  { href: "/sardorxon/admin/messages", label: "Xabarlar" },
-  { href: "/sardorxon/admin/payments", label: "To'lovlar" },
-  { href: "/sardorxon/admin/complaints", label: "Shikoyatlar" },
-  { href: "/sardorxon/admin/users", label: "Foydalanuvchilar" },
-  { href: "/sardorxon/admin/chats", label: "Suhbatlar" },
+const NAV: NavLink[] = [
+  { href: "/sardorxon/admin", label: "Bosh", icon: "🏠" },
+  { href: "/sardorxon/admin/messages", label: "Xabarlar", icon: "💬" },
+  { href: "/sardorxon/admin/payments", label: "To'lovlar", icon: "💳" },
+  { href: "/sardorxon/admin/complaints", label: "Shikoyatlar", icon: "⚠️" },
+  { href: "/sardorxon/admin/users", label: "Foydalanuvchilar", icon: "👥" },
+  { href: "/sardorxon/admin/chats", label: "Suhbatlar", icon: "🗨️" },
 ];
 
 export default async function AdminPanelLayout({
@@ -22,9 +22,8 @@ export default async function AdminPanelLayout({
 
   return (
     <div className="min-h-screen bg-[#08080d] text-zinc-100">
-      <header className="sticky top-0 z-30 border-b border-white/10 bg-[#08080d]/90 backdrop-blur-xl">
+      <header className="sticky top-0 z-30 border-b border-white/10 bg-[#08080d]/85 backdrop-blur-2xl">
         <div className="mx-auto flex max-w-5xl items-center gap-3 px-4 py-3 sm:px-6">
-          <MobileNav links={NAV} />
           <Link href="/sardorxon/admin" className="shrink-0 font-semibold">
             tayyorr<span className="text-indigo-400">.uz</span>{" "}
             <span className="text-zinc-500">admin</span>
@@ -40,12 +39,17 @@ export default async function AdminPanelLayout({
               </Link>
             ))}
           </nav>
-          <AdminPostButton
-            url="/api/admin/logout"
-            label="Chiqish"
-            className="ml-auto rounded-lg px-2 py-1 text-sm text-zinc-500 transition hover:text-red-400 sm:ml-0"
-            redirectTo="/sardorxon/admin/login"
-          />
+          <div className="ml-auto flex items-center gap-2 sm:ml-0">
+            <AdminPostButton
+              url="/api/admin/logout"
+              label="Chiqish"
+              className="rounded-lg px-2 py-1 text-sm text-zinc-500 transition hover:text-red-400"
+              redirectTo="/sardorxon/admin/login"
+            />
+            <div className="sm:hidden">
+              <NavMenu links={NAV} />
+            </div>
+          </div>
         </div>
       </header>
       <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-8">{children}</main>

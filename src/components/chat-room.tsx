@@ -5,6 +5,8 @@ import Link from "next/link";
 
 import { ReportButton } from "@/components/report-button";
 import { ChatFileView, humanSize, type ChatFile } from "@/components/chat-file";
+import { NavMenu } from "@/components/nav-menu";
+import { APP_NAV } from "@/lib/nav";
 import { prepareChatFile, type PreparedChatFile } from "@/lib/upload-client";
 
 interface Msg {
@@ -24,6 +26,7 @@ interface Msg {
 interface Props {
   conversationId: string;
   meId: string;
+  myImage: string | null;
   orderId: string | null;
   other: {
     id: string;
@@ -44,6 +47,7 @@ const MAX_FILE = 100 * 1024 * 1024;
 export function ChatRoom({
   conversationId,
   meId,
+  myImage,
   orderId,
   other,
   initialMessages,
@@ -204,13 +208,11 @@ export function ChatRoom({
   async function del(m: Msg) {
     setMenuFor(null);
     if (!window.confirm("Xabar ikkala tomondan ham o'chirilsinmi?")) return;
-    // optimistik
     applyDelete(m.id, Date.now());
     try {
-      const res = await fetch(
-        `/api/chat/${conversationId}/messages/${m.id}`,
-        { method: "DELETE" },
-      );
+      const res = await fetch(`/api/chat/${conversationId}/messages/${m.id}`, {
+        method: "DELETE",
+      });
       if (!res.ok) throw new Error();
     } catch {
       setErr("O'chirib bo'lmadi");
@@ -313,231 +315,255 @@ export function ChatRoom({
 
   return (
     <div
-      className="flex flex-col"
-      style={{ height: "calc(100dvh - 8.5rem)" }}
+      className="fixed inset-0 z-40 flex flex-col"
       onClick={() => menuFor && setMenuFor(null)}
     >
-      {/* header (sticky + blur) */}
-      <div className="sticky top-0 z-20 flex items-center gap-3 rounded-b-xl border border-white/10 bg-[#0b0b12]/85 px-3 py-2.5 backdrop-blur-xl">
-        <Link
-          href="/messages"
-          className="rounded-lg px-2 py-1 text-sm text-zinc-400 transition hover:bg-white/5 hover:text-white"
-        >
-          ←
-        </Link>
-        <div className="h-9 w-9 shrink-0 overflow-hidden rounded-full border border-white/10 bg-white/5">
-          {other.image && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={other.image} alt="" className="h-full w-full object-cover" />
-          )}
-        </div>
-        <div className="min-w-0 flex-1">
-          <div className="truncate font-medium text-white">{other.name}</div>
-          <div className="text-xs text-zinc-500">
-            {live ? "onlayn ulanish" : "ulanmoqda..."}
-            {orderId && (
-              <>
-                {" · "}
-                <Link href={`/orders/${orderId}`} className="text-indigo-400 hover:underline">
-                  buyurtma
-                </Link>
-              </>
+      {/* ---- birlashgan header (sayt + suhbat) ---- */}
+      <header className="shrink-0 border-b border-white/10 bg-[#0b0b12]/80 backdrop-blur-2xl">
+        <div className="mx-auto flex max-w-3xl items-center gap-2.5 px-3 py-2.5 sm:px-4">
+          <Link
+            href="/messages"
+            className="-ml-1 rounded-lg px-1.5 py-1 text-lg text-zinc-400 transition hover:bg-white/5 hover:text-white"
+            aria-label="Orqaga"
+          >
+            ‹
+          </Link>
+          <div className="h-9 w-9 shrink-0 overflow-hidden rounded-full border border-white/10 bg-white/5">
+            {other.image && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={other.image} alt="" className="h-full w-full object-cover" />
             )}
           </div>
-        </div>
-        {!other.isSupport && other.id && (
-          <ReportButton
-            suspectId={other.id}
-            orderId={orderId ?? undefined}
-            label="Shikoyat"
-            className="shrink-0 rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-zinc-300 transition hover:bg-white/10"
-          />
-        )}
-      </div>
+          <div className="min-w-0 flex-1">
+            <div className="truncate font-medium text-white">{other.name}</div>
+            <div className="truncate text-xs text-zinc-500">
+              {live ? "onlayn" : "ulanmoqda…"}
+              {orderId && (
+                <>
+                  {" · "}
+                  <Link
+                    href={`/orders/${orderId}`}
+                    className="text-indigo-400 hover:underline"
+                  >
+                    buyurtma
+                  </Link>
+                </>
+              )}
+            </div>
+          </div>
 
-      {/* messages */}
-      <div ref={scrollRef} className="flex-1 space-y-2 overflow-y-auto px-1 py-4">
-        {messages.length === 0 && (
-          <p className="mt-8 text-center text-sm text-zinc-500">
-            Suhbatni boshlang.
-          </p>
-        )}
-        {messages.map((m) => {
-          if (m.system) {
-            return (
-              <div key={m.id} className="flex justify-center">
-                <div className="max-w-[85%] rounded-lg bg-white/5 px-3 py-1.5 text-center text-xs text-zinc-400">
-                  {m.body}
-                </div>
-              </div>
-            );
-          }
-          return (
-            <div
-              key={m.id}
-              className={`group flex ${m.mine ? "justify-end" : "justify-start"}`}
-            >
-              <div className="relative flex max-w-[80%] items-end gap-1">
-                {m.mine && !m.pending && !m.deleted && (
-                  <div className="relative">
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setMenuFor(menuFor === m.id ? null : m.id);
-                      }}
-                      className="mb-1 rounded px-1 text-zinc-500 opacity-0 transition hover:text-white group-hover:opacity-100"
-                      aria-label="Menyu"
-                    >
-                      ⋮
-                    </button>
-                    {menuFor === m.id && (
-                      <div className="absolute bottom-6 right-0 z-30 w-32 overflow-hidden rounded-lg border border-white/10 bg-[#14141b] text-sm shadow-xl">
+          {!other.isSupport && other.id && (
+            <ReportButton
+              suspectId={other.id}
+              orderId={orderId ?? undefined}
+              label="Shikoyat"
+              className="shrink-0 rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-zinc-300 transition hover:bg-white/10"
+            />
+          )}
+          <Link
+            href="/profile"
+            className="h-9 w-9 shrink-0 overflow-hidden rounded-full border border-white/15 bg-white/5 transition hover:border-white/30"
+            aria-label="Profil"
+          >
+            {myImage && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={myImage} alt="" className="h-full w-full object-cover" />
+            )}
+          </Link>
+          <NavMenu links={APP_NAV} />
+        </div>
+      </header>
+
+      {/* ---- xabarlar + suzuvchi composer ---- */}
+      <div className="relative min-h-0 flex-1">
+        <div ref={scrollRef} className="h-full overflow-y-auto">
+          <div className="mx-auto max-w-3xl space-y-2 px-3 pb-36 pt-4 sm:px-4">
+            {messages.length === 0 && (
+              <p className="mt-10 text-center text-sm text-zinc-500">
+                Suhbatni boshlang.
+              </p>
+            )}
+            {messages.map((m) => {
+              if (m.system) {
+                return (
+                  <div key={m.id} className="flex justify-center">
+                    <div className="max-w-[85%] rounded-lg bg-white/5 px-3 py-1.5 text-center text-xs text-zinc-400">
+                      {m.body}
+                    </div>
+                  </div>
+                );
+              }
+              return (
+                <div
+                  key={m.id}
+                  className={`group flex ${m.mine ? "justify-end" : "justify-start"}`}
+                >
+                  <div className="relative flex max-w-[82%] items-end gap-1">
+                    {m.mine && !m.pending && !m.deleted && (
+                      <div className="relative">
                         <button
                           type="button"
-                          onClick={() => startEdit(m)}
-                          className="block w-full px-3 py-2 text-left text-zinc-200 hover:bg-white/5"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setMenuFor(menuFor === m.id ? null : m.id);
+                          }}
+                          className="mb-1 rounded px-1 text-zinc-500 opacity-0 transition hover:text-white group-hover:opacity-100"
+                          aria-label="Menyu"
                         >
-                          Tahrirlash
+                          ⋮
                         </button>
-                        <button
-                          type="button"
-                          onClick={() => del(m)}
-                          className="block w-full px-3 py-2 text-left text-red-400 hover:bg-white/5"
-                        >
-                          O'chirish
-                        </button>
+                        {menuFor === m.id && (
+                          <div className="menu-panel absolute bottom-6 right-0 z-30 w-32 overflow-hidden rounded-xl border border-white/10 bg-[#14141b]/95 text-sm shadow-xl backdrop-blur-xl">
+                            <button
+                              type="button"
+                              onClick={() => startEdit(m)}
+                              className="block w-full px-3 py-2 text-left text-zinc-200 hover:bg-white/5"
+                            >
+                              Tahrirlash
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => del(m)}
+                              className="block w-full px-3 py-2 text-left text-red-400 hover:bg-white/5"
+                            >
+                              O'chirish
+                            </button>
+                          </div>
+                        )}
                       </div>
                     )}
-                  </div>
-                )}
 
-                <div
-                  className={`space-y-1.5 rounded-2xl px-3.5 py-2 text-sm ${
-                    m.deleted
-                      ? "border border-white/10 bg-transparent italic text-zinc-500"
-                      : m.mine
-                        ? "bg-indigo-600 text-white"
-                        : "border border-white/10 bg-white/5 text-zinc-100"
-                  } ${m.pending ? "opacity-60" : ""}`}
-                >
-                  {m.deleted ? (
-                    <div>🚫 Xabar o'chirildi</div>
-                  ) : (
-                    <>
+                    <div
+                      className={`space-y-1.5 rounded-2xl px-3.5 py-2 text-sm ${
+                        m.mine
+                          ? "bg-indigo-600 text-white"
+                          : "border border-white/10 bg-white/5 text-zinc-100"
+                      } ${m.pending ? "opacity-60" : ""}`}
+                    >
                       {m.file && m.file.url && (
                         <ChatFileView file={m.file} mine={m.mine} />
                       )}
                       {m.file && !m.file.url && (
-                        <div className="text-xs opacity-70">📎 {m.file.name} · yuborilmoqda…</div>
+                        <div className="text-xs opacity-70">
+                          📎 {m.file.name} · yuborilmoqda…
+                        </div>
                       )}
                       {m.body && (
                         <div className="whitespace-pre-wrap break-words">{m.body}</div>
                       )}
-                    </>
-                  )}
-                  <div
-                    className={`text-right text-[10px] ${
-                      m.mine && !m.deleted ? "text-indigo-200" : "text-zinc-500"
-                    }`}
-                  >
-                    {m.edited && !m.deleted && "tahrirlangan · "}
-                    {fmtTime(m.createdAt)}
-                    {m.mine && m.id === lastMineId && peerRead ? " · o'qildi" : ""}
+                      <div
+                        className={`text-right text-[10px] ${
+                          m.mine ? "text-indigo-200" : "text-zinc-500"
+                        }`}
+                      >
+                        {m.edited && "tahrirlangan · "}
+                        {fmtTime(m.createdAt)}
+                        {m.mine && m.id === lastMineId && peerRead ? " · o'qildi" : ""}
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* composer (sticky + blur) */}
-      <div className="sticky bottom-0 z-20 rounded-t-xl border border-white/10 bg-[#0b0b12]/85 p-3 backdrop-blur-xl">
-        {err && <p className="mb-2 text-xs text-red-400">{err}</p>}
-
-        {editing && (
-          <div className="mb-2 flex items-center justify-between rounded-lg bg-white/5 px-3 py-1.5 text-xs text-zinc-300">
-            <span>Xabarni tahrirlash</span>
-            <button type="button" onClick={cancelEdit} className="text-zinc-500 hover:text-white">
-              bekor ✕
-            </button>
+              );
+            })}
           </div>
-        )}
+        </div>
 
-        {(uploading || attachment) && !editing && (
-          <div className="mb-2 rounded-lg bg-white/5 px-3 py-2 text-xs text-zinc-300">
-            <div className="flex items-center justify-between gap-2">
-              <span className="min-w-0 truncate">
-                📎 {attachment?.name ?? uploadName}
-                {attachment && ` · ${humanSize(attachment.size)}`}
-              </span>
-              <button
-                type="button"
-                onClick={() => {
-                  setAttachment(null);
-                  setUploading(false);
-                  setUploadName("");
-                }}
-                className="shrink-0 text-zinc-500 hover:text-white"
-              >
-                ✕
-              </button>
-            </div>
-            {uploading && (
-              <div className="mt-1.5">
-                <div className="h-1 overflow-hidden rounded bg-white/10">
-                  <div
-                    className="h-full bg-indigo-500 transition-all"
-                    style={{ width: `${uploadPct}%` }}
-                  />
-                </div>
-                <div className="mt-1 text-[10px] text-zinc-500">
-                  {uploadPct}% yuklandi
-                </div>
+        {/* suzuvchi, chegarali, blurli composer — pastda bo'shliq bilan */}
+        <div
+          className="pointer-events-none absolute inset-x-0 bottom-0 px-3 sm:px-4"
+          style={{ paddingBottom: "calc(1rem + env(safe-area-inset-bottom, 0px))" }}
+        >
+          <div className="pointer-events-auto mx-auto max-w-3xl rounded-2xl border border-white/15 bg-[#0b0b12]/80 p-2.5 shadow-2xl shadow-black/40 backdrop-blur-2xl">
+            {err && <p className="mb-2 px-1 text-xs text-red-400">{err}</p>}
+
+            {editing && (
+              <div className="mb-2 flex items-center justify-between rounded-lg bg-white/5 px-3 py-1.5 text-xs text-zinc-300">
+                <span>Xabarni tahrirlash</span>
+                <button
+                  type="button"
+                  onClick={cancelEdit}
+                  className="text-zinc-500 hover:text-white"
+                >
+                  bekor ✕
+                </button>
               </div>
             )}
-          </div>
-        )}
 
-        <form onSubmit={submit} className="flex items-end gap-2">
-          <input
-            ref={fileInputRef}
-            type="file"
-            hidden
-            onChange={(e) => {
-              const f = e.target.files?.[0];
-              if (f) onPickFile(f);
-            }}
-          />
-          {!editing && (
-            <button
-              type="button"
-              className="btn-ghost shrink-0"
-              disabled={uploading}
-              onClick={() => fileInputRef.current?.click()}
-              title="Fayl biriktirish"
-            >
-              {uploading ? "…" : "📎"}
-            </button>
-          )}
-          <textarea
-            className="input max-h-32 min-h-[42px] resize-none"
-            placeholder={editing ? "Yangi matn…" : "Xabar yozing…"}
-            rows={1}
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                submit(e);
-              }
-            }}
-          />
-          <button className="btn-primary shrink-0" disabled={!canSend}>
-            {editing ? "Saqlash" : "Yuborish"}
-          </button>
-        </form>
+            {(uploading || attachment) && !editing && (
+              <div className="mb-2 rounded-lg bg-white/5 px-3 py-2 text-xs text-zinc-300">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="min-w-0 truncate">
+                    📎 {attachment?.name ?? uploadName}
+                    {attachment && ` · ${humanSize(attachment.size)}`}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAttachment(null);
+                      setUploading(false);
+                      setUploadName("");
+                    }}
+                    className="shrink-0 text-zinc-500 hover:text-white"
+                  >
+                    ✕
+                  </button>
+                </div>
+                {uploading && (
+                  <div className="mt-1.5">
+                    <div className="h-1.5 overflow-hidden rounded bg-white/10">
+                      <div
+                        className="h-full rounded bg-indigo-500 transition-all"
+                        style={{ width: `${uploadPct}%` }}
+                      />
+                    </div>
+                    <div className="mt-1 text-[10px] text-zinc-500">
+                      {uploadPct}% yuklandi
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <form onSubmit={submit} className="flex items-end gap-2">
+              <input
+                ref={fileInputRef}
+                type="file"
+                hidden
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) onPickFile(f);
+                }}
+              />
+              {!editing && (
+                <button
+                  type="button"
+                  className="btn-ghost shrink-0"
+                  disabled={uploading}
+                  onClick={() => fileInputRef.current?.click()}
+                  title="Fayl biriktirish"
+                >
+                  {uploading ? "…" : "📎"}
+                </button>
+              )}
+              <textarea
+                className="input max-h-32 min-h-[42px] resize-none bg-white/[0.03]"
+                placeholder={editing ? "Yangi matn…" : "Xabar yozing…"}
+                rows={1}
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    submit(e);
+                  }
+                }}
+              />
+              <button className="btn-primary shrink-0" disabled={!canSend}>
+                {editing ? "Saqlash" : "Yuborish"}
+              </button>
+            </form>
+          </div>
+        </div>
       </div>
     </div>
   );

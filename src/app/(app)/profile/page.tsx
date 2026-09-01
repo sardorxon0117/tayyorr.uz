@@ -3,11 +3,19 @@ import { db } from "@/lib/db";
 import { getRestriction } from "@/lib/restriction";
 import { RestrictionNotice } from "@/components/restriction-notice";
 import { ProfileForm } from "@/components/profile-form";
+import { SignOutButton } from "@/components/sign-out-button";
 
 export default async function ProfilePage() {
   const session = await auth();
   const restriction = await getRestriction(session!.user.id);
-  if (restriction) return <RestrictionNotice restriction={restriction} />;
+  if (restriction) {
+    return (
+      <div className="mx-auto flex max-w-lg flex-col items-center gap-6">
+        <RestrictionNotice restriction={restriction} />
+        <SignOutButton />
+      </div>
+    );
+  }
   const user = await db.user.findUnique({
     where: { id: session!.user.id },
     select: {
@@ -40,6 +48,13 @@ export default async function ProfilePage() {
           avatarUrl: user.avatarUrl ?? "",
         }}
       />
+
+      <div className="mt-8 border-t border-white/10 pt-6">
+        <p className="mb-3 text-sm text-zinc-500">
+          Hisobdan chiqsangiz, qayta kirish uchun login/parol yoki Google kerak bo'ladi.
+        </p>
+        <SignOutButton />
+      </div>
     </div>
   );
 }
