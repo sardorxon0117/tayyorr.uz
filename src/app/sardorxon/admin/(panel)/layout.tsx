@@ -8,6 +8,7 @@ const NAV: NavLink[] = [
   { href: "/sardorxon/admin", label: "Bosh", icon: "🏠" },
   { href: "/sardorxon/admin/orders", label: "Buyurtmalar", icon: "📦" },
   { href: "/sardorxon/admin/messages", label: "Xabarlar", icon: "💬" },
+  { href: "/sardorxon/admin/broadcast", label: "Ommaviy xabar", icon: "📣" },
   { href: "/sardorxon/admin/payments", label: "To'lovlar", icon: "💳" },
   { href: "/sardorxon/admin/payouts", label: "Yechib olish", icon: "🏧" },
   { href: "/sardorxon/admin/complaints", label: "Shikoyatlar", icon: "⚠️" },

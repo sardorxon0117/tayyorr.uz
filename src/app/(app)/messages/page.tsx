@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
+import { getSupportUserId } from "@/lib/support";
 
 function timeAgo(d: Date) {
   const s = Math.floor((Date.now() - d.getTime()) / 1000);
@@ -28,15 +29,29 @@ export default async function MessagesPage() {
     },
   });
 
+  const supportId = await getSupportUserId();
+
   const rows = await Promise.all(
     convs.map(async (c) => {
       const other = c.userAId === me ? c.userB : c.userA;
       const unread = await db.message.count({
         where: { conversationId: c.id, senderId: { not: me }, readAt: null },
       });
-      return { c, other, unread, last: c.messages[0] ?? null };
+      return {
+        c,
+        other,
+        unread,
+        last: c.messages[0] ?? null,
+        isSupport: other.id === supportId,
+      };
     }),
   );
+
+  // support suhbatini eng tepaga qadaymiz
+  rows.sort((a, b) => {
+    if (a.isSupport !== b.isSupport) return a.isSupport ? -1 : 1;
+    return b.c.lastMessageAt.getTime() - a.c.lastMessageAt.getTime();
+  });
 
   return (
     <div className="flex flex-col gap-5">
@@ -49,25 +64,36 @@ export default async function MessagesPage() {
         </div>
       ) : (
         <ul className="flex flex-col gap-2">
-          {rows.map(({ c, other, unread, last }) => (
+          {rows.map(({ c, other, unread, last, isSupport }) => (
             <li key={c.id}>
               <Link
                 href={`/messages/${c.id}`}
-                className="card flex items-center gap-3 py-3 transition hover:border-white/15 hover:bg-white/[0.06]"
+                className={`card flex items-center gap-3 py-3 transition hover:border-white/15 hover:bg-white/[0.06] ${
+                  isSupport ? "border-indigo-400/30 bg-indigo-500/[0.06]" : ""
+                }`}
               >
-                <div className="h-11 w-11 shrink-0 overflow-hidden rounded-full border border-white/10 bg-white/5">
-                  {(other.avatarUrl ?? other.image) && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={other.avatarUrl ?? other.image ?? ""}
-                      alt=""
-                      className="h-full w-full object-cover"
-                    />
+                <div
+                  className={`flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-white/5 ${
+                    isSupport ? "text-lg" : ""
+                  }`}
+                >
+                  {isSupport ? (
+                    "🛟"
+                  ) : (
+                    (other.avatarUrl ?? other.image) && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={other.avatarUrl ?? other.image ?? ""}
+                        alt=""
+                        className="h-full w-full object-cover"
+                      />
+                    )
                   )}
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="truncate font-medium text-white">
+                    <span className="flex min-w-0 items-center gap-1.5 truncate font-medium text-white">
+                      {isSupport && <span className="text-xs text-indigo-400">📌</span>}
                       {other.name ?? other.login ?? "Foydalanuvchi"}
                     </span>
                     {last && (

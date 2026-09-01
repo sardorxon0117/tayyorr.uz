@@ -4,6 +4,7 @@ import { z } from "zod";
 
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
+import { sendWelcome } from "@/lib/support-actions";
 
 const schema = z.object({
   role: z.enum(["ORDERER", "PREPARER"]),
@@ -53,6 +54,8 @@ export async function POST(req: Request) {
       ...rest,
     },
   });
+
+  await sendWelcome(session.user.id, firstName).catch(() => {});
 
   return NextResponse.json({ ok: true });
 }
