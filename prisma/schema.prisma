@@ -1,0 +1,292 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ----------------- Rollar / enumlar -----------------
+
+enum Role {
+  ORDERER // buyurtma beruvchi
+  PREPARER // tayyorlovchi
+}
+
+enum OrderType {
+  PRESENTATION // prezentatsiya
+  COURSE_WORK // kurs ishi
+  REFERAT
+  ESSAY
+  DIPLOMA
+  OTHER
+}
+
+enum OrderStatus {
+  OPEN // ochiq, takliflar qabul qilinmoqda
+  IN_PROGRESS // tayyorlovchi tanlandi
+  DELIVERED // ish topshirildi
+  DONE // yakunlandi
+  CANCELLED
+}
+
+enum OfferStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  WITHDRAWN
+}
+
+enum FileKind {
+  AVATAR
+  ATTACHMENT // buyurtmaga biriktirilgan material
+  DELIVERABLE // tayyor ish
+}
+
+enum WalletTxnType {
+  TOPUP // hisobni to'ldirish
+  SPEND // buyurtma uchun to'lov
+  TRANSFER_IN // boshqa foydalanuvchidan
+  TRANSFER_OUT // boshqa foydalanuvchiga
+  PAYOUT // kartaga yechib olish
+  REFUND // qaytarish
+}
+
+enum WalletTxnStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+enum ComplaintStatus {
+  OPEN // yangi
+  REVIEWING // ko'rib chiqilmoqda
+  RESOLVED // hal qilindi
+  DISMISSED // rad etildi
+}
+
+// ----------------- Foydalanuvchi -----------------
+
+model User {
+  id            String    @id @default(cuid())
+  // Auth.js standart maydonlari
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+
+  // tayyorr.uz maydonlari
+  firstName    String?
+  lastName     String?
+  login        String?  @unique
+  passwordHash String? // Google-only foydalanuvchida null
+  role         Role?
+  about        String? // qo'shimcha ma'lumot
+  avatarUrl    String? // glavniy rasm (R2 public)
+
+  // faqat PREPARER uchun ma'noli
+  isAvailable Boolean @default(true) // band emas = true
+  ratingSum   Int     @default(0)
+  ratingCount Int     @default(0)
+
+  // hamyon (balans so'mda saqlanadi)
+  balance    Int     @default(0)
+  walletCode String? @unique // qisqa hisob kodi, masalan "TYR-8FK2"
+
+  // admin cheklovi (ban)
+  bannedUntil DateTime? // shu sanagacha cheklangan; null = cheklanmagan
+  banReason   String?
+
+  isSupport Boolean @default(false) // "tayyorr.uz support" tizim hisobi
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  accounts          Account[]
+  sessions          Session[]
+  ordersCreated     Order[]             @relation("OrdererOrders")
+  ordersTaken       Order[]             @relation("PreparerOrders")
+  offers            Offer[]
+  files             FileObject[]
+  walletTxns        WalletTransaction[]
+  conversationsA    Conversation[]      @relation("ConvUserA")
+  conversationsB    Conversation[]      @relation("ConvUserB")
+  messages          Message[]
+  complaintsMade    Complaint[]         @relation("ComplaintsMade")
+  complaintsAgainst Complaint[]         @relation("ComplaintsAgainst")
+
+  @@index([role, isAvailable])
+}
+
+model WalletTransaction {
+  id        String          @id @default(cuid())
+  userId    String
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      WalletTxnType
+  status    WalletTxnStatus @default(SUCCESS)
+  amount    Int // musbat qiymat; yo'nalish type orqali aniqlanadi
+  method     String          @default("DEMO") // DEMO | CLICK | PAYME | ADMIN
+  note       String?
+  meta       Json?
+  reversedAt DateTime? // admin bekor qilgan sana
+  createdAt  DateTime        @default(now())
+
+  @@index([userId, createdAt])
+}
+
+// ----------------- Messenger (real-time chat) -----------------
+
+model Conversation {
+  id      String  @id @default(cuid())
+  // juftlik doim tartiblangan saqlanadi: userAId < userBId
+  userAId String
+  userA   User    @relation("ConvUserA", fields: [userAId], references: [id], onDelete: Cascade)
+  userBId String
+  userB   User    @relation("ConvUserB", fields: [userBId], references: [id], onDelete: Cascade)
+  // qaysi buyurtma kontekstida boshlangani (ixtiyoriy)
+  orderId String?
+  order   Order?  @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  hiddenFromUsersAt DateTime? // admin foydalanuvchilardan yashirgan (bazada qoladi)
+
+  createdAt     DateTime @default(now())
+  lastMessageAt DateTime @default(now())
+
+  messages Message[]
+
+  @@unique([userAId, userBId])
+  @@index([userAId, lastMessageAt])
+  @@index([userBId, lastMessageAt])
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId       String
+  sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  body           String       @default("")
+  system         Boolean      @default(false) // tizim/support xabari
+
+  // ixtiyoriy fayl (R2 private bucket)
+  fileKey  String?
+  fileName String?
+  fileType String?
+  fileSize Int?
+
+  createdAt DateTime  @default(now())
+  readAt    DateTime?
+
+  @@index([conversationId, createdAt])
+}
+
+model Complaint {
+  id         String          @id @default(cuid())
+  reporterId String
+  reporter   User            @relation("ComplaintsMade", fields: [reporterId], references: [id], onDelete: Cascade)
+  suspectId  String?
+  suspect    User?           @relation("ComplaintsAgainst", fields: [suspectId], references: [id], onDelete: SetNull)
+  orderId    String?
+  body       String
+  status     ComplaintStatus @default(OPEN)
+  adminNote  String?
+  createdAt  DateTime        @default(now())
+  resolvedAt DateTime?
+
+  @@index([status, createdAt])
+}
+
+// ----------------- Auth.js adapter modellari -----------------
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ----------------- Buyurtmalar -----------------
+
+model Order {
+  id          String      @id @default(cuid())
+  ordererId   String
+  orderer     User        @relation("OrdererOrders", fields: [ordererId], references: [id], onDelete: Cascade)
+  preparerId  String?
+  preparer    User?       @relation("PreparerOrders", fields: [preparerId], references: [id], onDelete: SetNull)
+
+  title       String
+  type        OrderType   @default(OTHER)
+  description String
+  deadline    DateTime?
+  budget      Int? // so'mda
+  status      OrderStatus @default(OPEN)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  offers        Offer[]
+  files         FileObject[]
+  conversations Conversation[]
+
+  @@index([status, createdAt])
+}
+
+model Offer {
+  id         String      @id @default(cuid())
+  orderId    String
+  order      Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  preparerId String
+  preparer   User        @relation(fields: [preparerId], references: [id], onDelete: Cascade)
+  price      Int
+  message    String?
+  status     OfferStatus @default(PENDING)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([orderId, preparerId])
+  @@index([preparerId, status])
+}
+
+model FileObject {
+  id         String   @id @default(cuid())
+  key        String   @unique // R2 obyekt kaliti
+  bucket     String // "public" yoki "private"
+  kind       FileKind
+  mimeType   String
+  size       Int
+  uploaderId String
+  uploader   User     @relation(fields: [uploaderId], references: [id], onDelete: Cascade)
+  orderId    String?
+  order      Order?   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+}

@@ -1,0 +1,18 @@
+import Link from "next/link";
+import type { Restriction } from "@/lib/restriction";
+import { restrictionText } from "@/lib/restriction";
+
+export function RestrictionNotice({ restriction }: { restriction: Restriction }) {
+  return (
+    <div className="mx-auto max-w-xl rounded-2xl border border-amber-400/30 bg-amber-500/10 p-6 text-center">
+      <div className="text-3xl">🚫</div>
+      <h1 className="mt-3 text-lg font-semibold text-amber-100">
+        Bu bo'lim vaqtincha cheklangan
+      </h1>
+      <p className="mt-2 text-sm text-amber-200/90">{restrictionText(restriction)}</p>
+      <Link href="/messages" className="btn-primary mt-5 inline-flex">
+        «tayyorr.uz support» bilan bog'lanish
+      </Link>
+    </div>
+  );
+}

@@ -1,0 +1,269 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+
+import { ReportButton } from "@/components/report-button";
+
+interface OfferView {
+  id: string;
+  price: number;
+  message: string | null;
+  status: string;
+  preparerId: string;
+  preparer: {
+    name: string;
+    login: string | null;
+    about: string | null;
+    isAvailable: boolean;
+    rating: number | null;
+  };
+}
+
+interface Props {
+  orderId: string;
+  status: string;
+  isOrderer: boolean;
+  isPreparer: boolean;
+  isAssigned: boolean;
+  ordererId: string;
+  myOffer: { id: string; price: number; message: string | null; status: string } | null;
+  offers: OfferView[];
+}
+
+export function OrderActions(props: Props) {
+  const router = useRouter();
+  const {
+    orderId,
+    status,
+    isOrderer,
+    isPreparer,
+    isAssigned,
+    ordererId,
+    myOffer,
+    offers,
+  } = props;
+
+  const [price, setPrice] = useState(myOffer?.price?.toString() ?? "");
+  const [message, setMessage] = useState(myOffer?.message ?? "");
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  async function startChat(userId: string) {
+    setBusy(true);
+    setErr(null);
+    try {
+      const res = await fetch("/api/chat/start", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, orderId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Chat ochilmadi");
+      router.push(`/messages/${data.conversationId}`);
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "Xatolik");
+      setBusy(false);
+    }
+  }
+
+  async function call(url: string, method: string, body?: unknown) {
+    setBusy(true);
+    setErr(null);
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: body ? JSON.stringify(body) : undefined,
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Xatolik");
+      router.refresh();
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "Xatolik");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-4">
+      {err && <p className="text-sm text-red-400">{err}</p>}
+
+      {isAssigned && (
+        <button
+          type="button"
+          className="btn-ghost w-fit"
+          disabled={busy}
+          onClick={() => startChat(ordererId)}
+        >
+          💬 Buyurtmachi bilan yozishish
+        </button>
+      )}
+
+      {/* Tayyorlovchi: taklif yuborish */}
+      {isPreparer && !isAssigned && status === "OPEN" && (
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            call(`/api/orders/${orderId}/offers`, "POST", {
+              price: Number(price),
+              message: message || undefined,
+            });
+          }}
+          className="card flex flex-col gap-3"
+        >
+          <h2 className="font-semibold">
+            {myOffer ? "Taklifni yangilash" : "Taklif yuborish"}
+          </h2>
+          <div>
+            <label className="label">Narx (so'm)</label>
+            <input
+              className="input"
+              type="number"
+              min={1}
+              required
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="label">Xabar</label>
+            <textarea
+              className="input"
+              rows={3}
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+            />
+          </div>
+          <button className="btn-primary" disabled={busy}>
+            {myOffer ? "Yangilash" : "Yuborish"}
+          </button>
+          {myOffer && (
+            <p className="text-xs text-zinc-500">
+              Holat: {myOffer.status}
+            </p>
+          )}
+        </form>
+      )}
+
+      {/* Buyurtmachi: takliflar ro'yxati */}
+      {isOrderer && (
+        <div className="flex flex-col gap-3">
+          <h2 className="font-semibold">Takliflar ({offers.length})</h2>
+          {offers.length === 0 && (
+            <p className="text-sm text-zinc-500">Hozircha taklif yo'q.</p>
+          )}
+          {offers.map((o) => (
+            <div key={o.id} className="card flex flex-col gap-2">
+              <div className="flex items-center justify-between">
+                <div className="font-medium">
+                  {o.preparer.name}
+                  {o.preparer.login && (
+                    <span className="text-zinc-400"> @{o.preparer.login}</span>
+                  )}
+                </div>
+                <span
+                  className={`text-xs ${
+                    o.preparer.isAvailable ? "text-emerald-400" : "text-amber-400"
+                  }`}
+                >
+                  {o.preparer.isAvailable ? "bo'sh" : "band"}
+                </span>
+              </div>
+              {o.preparer.about && (
+                <p className="text-xs text-zinc-500">{o.preparer.about}</p>
+              )}
+              <div className="text-sm">
+                Narx: <b>{o.price.toLocaleString()} so'm</b>
+                {o.preparer.rating != null &&
+                  ` · reyting ${o.preparer.rating.toFixed(1)}`}
+              </div>
+              {o.message && <p className="text-sm text-zinc-300">{o.message}</p>}
+
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  disabled={busy}
+                  onClick={() => startChat(o.preparerId)}
+                >
+                  💬 Chat
+                </button>
+                <ReportButton
+                  suspectId={o.preparerId}
+                  orderId={orderId}
+                  label="Shikoyat"
+                />
+                {status === "OPEN" && o.status === "PENDING" && (
+                  <>
+                    <button
+                      className="btn-primary"
+                      disabled={busy}
+                      onClick={() =>
+                        call(`/api/offers/${o.id}`, "PATCH", { action: "ACCEPT" })
+                      }
+                    >
+                      Tanlash
+                    </button>
+                    <button
+                      className="btn-ghost"
+                      disabled={busy}
+                      onClick={() =>
+                        call(`/api/offers/${o.id}`, "PATCH", { action: "REJECT" })
+                      }
+                    >
+                      Rad etish
+                    </button>
+                  </>
+                )}
+                {o.status !== "PENDING" && (
+                  <span className="self-center text-xs text-zinc-400">
+                    {o.status}
+                  </span>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Status o'zgartirish */}
+      <div className="flex flex-wrap gap-2">
+        {isAssigned && status === "IN_PROGRESS" && (
+          <button
+            className="btn-primary"
+            disabled={busy}
+            onClick={() =>
+              call(`/api/orders/${orderId}`, "PATCH", { status: "DELIVERED" })
+            }
+          >
+            Ishni topshirish
+          </button>
+        )}
+        {isOrderer && status === "DELIVERED" && (
+          <button
+            className="btn-primary"
+            disabled={busy}
+            onClick={() =>
+              call(`/api/orders/${orderId}`, "PATCH", { status: "DONE" })
+            }
+          >
+            Qabul qilish (yakunlash)
+          </button>
+        )}
+        {isOrderer && (status === "OPEN" || status === "IN_PROGRESS") && (
+          <button
+            className="btn-ghost"
+            disabled={busy}
+            onClick={() =>
+              call(`/api/orders/${orderId}`, "PATCH", { status: "CANCELLED" })
+            }
+          >
+            Bekor qilish
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}

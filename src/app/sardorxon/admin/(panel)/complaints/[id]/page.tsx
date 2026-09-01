@@ -1,0 +1,185 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+
+import { db } from "@/lib/db";
+import { orderedPair } from "@/lib/chat";
+import { formatSom } from "@/lib/wallet";
+import { ComplaintForm } from "@/components/admin/complaint-form";
+
+function AccountCard({
+  title,
+  user,
+}: {
+  title: string;
+  user: {
+    id: string;
+    name: string | null;
+    login: string | null;
+    email: string | null;
+    role: string | null;
+    balance: number;
+    bannedUntil: Date | null;
+  } | null;
+}) {
+  if (!user) {
+    return (
+      <div className="rounded-xl border border-white/10 bg-white/[0.03] p-5">
+        <h3 className="text-sm font-semibold text-zinc-400">{title}</h3>
+        <p className="mt-2 text-sm text-zinc-500">Foydalanuvchi o'chirilgan.</p>
+      </div>
+    );
+  }
+  const banned = user.bannedUntil && user.bannedUntil.getTime() > Date.now();
+  return (
+    <div className="rounded-xl border border-white/10 bg-white/[0.03] p-5">
+      <h3 className="text-sm font-semibold text-zinc-400">{title}</h3>
+      <div className="mt-2 font-medium text-white">
+        {user.name ?? "—"}{" "}
+        <span className="text-zinc-500">@{user.login ?? "—"}</span>
+      </div>
+      <dl className="mt-2 space-y-1 text-sm text-zinc-400">
+        <div>Email: {user.email ?? "—"}</div>
+        <div>
+          Rol:{" "}
+          {user.role === "PREPARER"
+            ? "Tayyorlovchi"
+            : user.role === "ORDERER"
+              ? "Buyurtmachi"
+              : "—"}
+        </div>
+        <div>Balans: {formatSom(user.balance)}</div>
+        <div>
+          Holat:{" "}
+          {banned ? (
+            <span className="text-amber-400">
+              {user.bannedUntil!.toLocaleDateString("uz")} gacha cheklangan
+            </span>
+          ) : (
+            <span className="text-emerald-400">faol</span>
+          )}
+        </div>
+      </dl>
+      <Link
+        href={`/sardorxon/admin/users/${user.id}`}
+        className="mt-3 inline-block text-sm text-indigo-400 hover:underline"
+      >
+        Hisobni ochish (ban / xabar / chatlar) →
+      </Link>
+    </div>
+  );
+}
+
+export default async function AdminComplaintDetail({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+
+  const c = await db.complaint.findUnique({
+    where: { id },
+    include: {
+      reporter: {
+        select: {
+          id: true,
+          name: true,
+          login: true,
+          email: true,
+          role: true,
+          balance: true,
+          bannedUntil: true,
+        },
+      },
+      suspect: {
+        select: {
+          id: true,
+          name: true,
+          login: true,
+          email: true,
+          role: true,
+          balance: true,
+          bannedUntil: true,
+        },
+      },
+    },
+  });
+  if (!c) notFound();
+
+  const order = c.orderId
+    ? await db.order.findUnique({
+        where: { id: c.orderId },
+        select: { id: true, title: true },
+      })
+    : null;
+
+  // shikoyatchi–gumondor yozishmasi
+  let pairConvId: string | null = null;
+  if (c.suspectId) {
+    const [a, b] = orderedPair(c.reporterId, c.suspectId);
+    const conv = await db.conversation.findUnique({
+      where: { userAId_userBId: { userAId: a, userBId: b } },
+      select: { id: true },
+    });
+    pairConvId = conv?.id ?? null;
+  }
+
+  return (
+    <div className="flex flex-col gap-6">
+      <Link
+        href="/sardorxon/admin/complaints"
+        className="text-sm text-zinc-500 hover:text-white"
+      >
+        ← Shikoyatlar
+      </Link>
+
+      <div>
+        <h1 className="text-xl font-semibold text-white">Shikoyat</h1>
+        <p className="text-sm text-zinc-500">
+          {c.createdAt.toLocaleString("uz")}
+          {order && ` · buyurtma: ${order.title}`}
+        </p>
+      </div>
+
+      <div className="rounded-xl border border-white/10 bg-white/[0.03] p-5">
+        <h2 className="mb-2 text-sm font-semibold text-zinc-400">Shikoyat matni</h2>
+        <p className="whitespace-pre-wrap text-sm text-zinc-100">{c.body}</p>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <AccountCard title="Shikoyat qiluvchi" user={c.reporter} />
+        <AccountCard title="Gumondor" user={c.suspect} />
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        {pairConvId ? (
+          <Link href={`/sardorxon/admin/chats/${pairConvId}`} className="btn-ghost">
+            💬 Ularning yozishmasini ko'rish
+          </Link>
+        ) : (
+          <span className="text-sm text-zinc-500">
+            Shikoyatchi va gumondor o'rtasida yozishma yo'q.
+          </span>
+        )}
+        <Link
+          href={`/sardorxon/admin/users/${c.reporterId}`}
+          className="btn-ghost"
+        >
+          Shikoyatchi chatlari
+        </Link>
+        {c.suspectId && (
+          <Link
+            href={`/sardorxon/admin/users/${c.suspectId}`}
+            className="btn-ghost"
+          >
+            Gumondor chatlari
+          </Link>
+        )}
+      </div>
+
+      <div className="rounded-xl border border-white/10 bg-white/[0.03] p-5">
+        <h2 className="mb-3 font-semibold text-white">Ko'rib chiqish</h2>
+        <ComplaintForm complaintId={c.id} status={c.status} note={c.adminNote} />
+      </div>
+    </div>
+  );
+}
