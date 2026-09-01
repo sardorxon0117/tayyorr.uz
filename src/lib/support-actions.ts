@@ -4,7 +4,11 @@ import { deliverMessage } from "@/lib/chat-notify";
 import { getSupportUserId } from "@/lib/support";
 
 /** tayyorr.uz support nomidan foydalanuvchiga xabar yuboradi (real vaqt + push). */
-export async function sendSupportMessage(userId: string, body: string) {
+export async function sendSupportMessage(
+  userId: string,
+  body: string,
+  file?: { key: string; name: string; type: string; size: number } | null,
+) {
   const supportId = await getSupportUserId();
   const conv = await getOrCreateConversation(supportId, userId, null);
   const msg = await createMessage({
@@ -12,6 +16,7 @@ export async function sendSupportMessage(userId: string, body: string) {
     senderId: supportId,
     body,
     system: false, // support xabari — oddiy bubble
+    file: file ?? null,
   });
   await deliverMessage(msg);
   return conv.id;

@@ -143,3 +143,16 @@ export function prepareAdminChatFile(
     onProgress,
   );
 }
+
+/** Admin ommaviy xabar fayli. */
+export function prepareBroadcastFile(
+  file: File,
+  onProgress: (pct: number) => void,
+) {
+  return prepareVia(
+    "/api/admin/upload/presign",
+    { kind: "BROADCAST" },
+    file,
+    onProgress,
+  );
+}

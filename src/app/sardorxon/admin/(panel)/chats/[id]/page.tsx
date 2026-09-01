@@ -21,7 +21,10 @@ export default async function AdminChatView({
       order: { select: { id: true, title: true } },
       messages: {
         orderBy: { createdAt: "asc" },
-        include: { revisions: { orderBy: { createdAt: "asc" } } },
+        include: {
+          revisions: { orderBy: { createdAt: "asc" } },
+          reactions: true,
+        },
       },
     },
   });

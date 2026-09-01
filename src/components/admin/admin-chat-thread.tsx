@@ -16,8 +16,23 @@ interface Msg {
   mine: boolean;
   edited?: boolean;
   deleted?: boolean;
+  reactions?: { like: number; dislike: number; mine: "LIKE" | "DISLIKE" | null };
   file?: ChatFile | null;
   pending?: boolean;
+}
+
+function ReactionChips({ r }: { r?: Msg["reactions"] }) {
+  if (!r || (r.like === 0 && r.dislike === 0)) return null;
+  return (
+    <div className="flex gap-1.5 pt-1">
+      {r.like > 0 && (
+        <span className="rounded-full bg-white/10 px-2 py-0.5 text-xs">👍 {r.like}</span>
+      )}
+      {r.dislike > 0 && (
+        <span className="rounded-full bg-white/10 px-2 py-0.5 text-xs">👎 {r.dislike}</span>
+      )}
+    </div>
+  );
 }
 
 const MAX_FILE = 25 * 1024 * 1024;
@@ -166,6 +181,7 @@ export function AdminChatThread({
                   <Linkify text={m.body} mine={m.mine} />
                 </div>
               )}
+              <ReactionChips r={m.reactions} />
               <div
                 className={`text-right text-[10px] ${
                   m.mine && !m.deleted ? "text-indigo-200" : "text-zinc-500"

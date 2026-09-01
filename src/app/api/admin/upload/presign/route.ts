@@ -12,7 +12,7 @@ import {
 } from "@/lib/r2";
 
 const schema = z.object({
-  kind: z.enum(["CHAT", "AVATAR"]).default("CHAT"),
+  kind: z.enum(["CHAT", "AVATAR", "BROADCAST"]).default("CHAT"),
   conversationId: z.string().optional(),
   filename: z.string().min(1).max(200),
   contentType: z.string().min(1).max(150),
@@ -37,6 +37,12 @@ export async function POST(req: Request) {
       bucket: "public",
       publicUrl: publicUrl(key),
     });
+  }
+
+  if (kind === "BROADCAST") {
+    const key = buildKey("broadcast", filename);
+    const uploadUrl = await presignPut({ bucket: PRIVATE_BUCKET, key, contentType });
+    return NextResponse.json({ uploadUrl, key, bucket: "private" });
   }
 
   if (!conversationId) {

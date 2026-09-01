@@ -21,9 +21,22 @@ export async function POST(req: Request) {
   if (denied) return denied;
 
   const raw = (await req.json().catch(() => ({}))) as Record<string, unknown>;
-  const body = str(raw.body);
-  if (!body) {
-    return NextResponse.json({ error: "Xabar matni bo'sh" }, { status: 400 });
+  const body = str(raw.body) ?? "";
+  const rf = raw.file as
+    | { key?: string; name?: string; type?: string; size?: number }
+    | undefined;
+  const file =
+    rf && typeof rf.key === "string" && typeof rf.name === "string"
+      ? {
+          key: rf.key,
+          name: rf.name,
+          type: typeof rf.type === "string" ? rf.type : "application/octet-stream",
+          size: typeof rf.size === "number" ? rf.size : 0,
+        }
+      : null;
+
+  if (!body && !file) {
+    return NextResponse.json({ error: "Xabar yoki fayl kerak" }, { status: 400 });
   }
 
   const roleIn = str(raw.role);
@@ -70,7 +83,7 @@ export async function POST(req: Request) {
   let sent = 0;
   for (const u of users) {
     try {
-      await sendSupportMessage(u.id, body);
+      await sendSupportMessage(u.id, body, file);
       sent++;
     } catch {
       /* birini o'tkazib yuboramiz */
@@ -80,6 +93,7 @@ export async function POST(req: Request) {
   const record = await db.broadcast.create({
     data: {
       body,
+      fileName: file?.name ?? null,
       role: role ?? null,
       balanceMin: balanceMin ?? null,
       balanceMax: balanceMax ?? null,
@@ -95,6 +109,7 @@ export async function POST(req: Request) {
     broadcast: {
       id: record.id,
       body: record.body,
+      fileName: record.fileName,
       sentCount: record.sentCount,
       createdAt: record.createdAt.toISOString(),
     },

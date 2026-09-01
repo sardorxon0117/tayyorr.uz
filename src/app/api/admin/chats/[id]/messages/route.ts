@@ -28,6 +28,7 @@ export async function GET(
     },
     orderBy: { createdAt: "asc" },
     take: 300,
+    include: { reactions: true },
   });
 
   // admin ko'rdi -> foydalanuvchi xabarlarini o'qilgan deb belgilaymiz

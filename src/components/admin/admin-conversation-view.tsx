@@ -16,6 +16,7 @@ interface Msg {
   deleted: boolean;
   mine: boolean; // = perspektiva foydalanuvchisi (o'ng tomon)
   replyTo: { id: string; authorId: string; text: string; deleted: boolean } | null;
+  reactions?: { like: number; dislike: number; mine: "LIKE" | "DISLIKE" | null };
   file: ChatFile | null;
 }
 
@@ -117,6 +118,21 @@ export function AdminConversationView({
                     <Linkify text={m.body} mine={m.mine} />
                   </div>
                 )}
+                {m.reactions &&
+                  (m.reactions.like > 0 || m.reactions.dislike > 0) && (
+                    <div className="flex gap-1.5 pt-1">
+                      {m.reactions.like > 0 && (
+                        <span className="rounded-full bg-white/10 px-2 py-0.5 text-xs">
+                          👍 {m.reactions.like}
+                        </span>
+                      )}
+                      {m.reactions.dislike > 0 && (
+                        <span className="rounded-full bg-white/10 px-2 py-0.5 text-xs">
+                          👎 {m.reactions.dislike}
+                        </span>
+                      )}
+                    </div>
+                  )}
                 <div
                   className={`text-right text-[10px] ${
                     m.mine && !m.deleted ? "text-indigo-200" : "text-zinc-500"

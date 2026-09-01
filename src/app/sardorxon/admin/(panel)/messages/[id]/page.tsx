@@ -19,7 +19,11 @@ export default async function AdminMessageThread({
     include: {
       userA: { select: { id: true, login: true, name: true, isSupport: true } },
       userB: { select: { id: true, login: true, name: true, isSupport: true } },
-      messages: { orderBy: { createdAt: "asc" }, take: 300 },
+      messages: {
+        orderBy: { createdAt: "asc" },
+        take: 300,
+        include: { reactions: true },
+      },
     },
   });
   if (!conv) notFound();
