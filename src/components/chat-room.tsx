@@ -6,6 +6,7 @@ import Link from "next/link";
 
 import { ReportButton, ReportDialog } from "@/components/report-button";
 import { ChatFileView, humanSize, type ChatFile } from "@/components/chat-file";
+import { Linkify } from "@/components/linkify";
 import { prepareChatFile, type PreparedChatFile } from "@/lib/upload-client";
 import { presenceText } from "@/lib/presence";
 
@@ -600,7 +601,9 @@ export function ChatRoom({
                         </div>
                       )}
                       {m.body && (
-                        <div className="whitespace-pre-wrap break-words">{m.body}</div>
+                        <div className="whitespace-pre-wrap break-words">
+                          <Linkify text={m.body} mine={m.mine} />
+                        </div>
                       )}
 
                       {hasReactions && (

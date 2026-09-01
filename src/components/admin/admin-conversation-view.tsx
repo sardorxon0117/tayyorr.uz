@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { ChatFileView, type ChatFile } from "@/components/chat-file";
+import { Linkify } from "@/components/linkify";
 
 interface Msg {
   id: string;
@@ -112,7 +113,9 @@ export function AdminConversationView({
                 )}
                 {m.file && <ChatFileView file={m.file} mine={m.mine} />}
                 {m.body && (
-                  <div className="whitespace-pre-wrap break-words">{m.body}</div>
+                  <div className="whitespace-pre-wrap break-words">
+                    <Linkify text={m.body} mine={m.mine} />
+                  </div>
                 )}
                 <div
                   className={`text-right text-[10px] ${
