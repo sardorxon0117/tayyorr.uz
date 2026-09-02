@@ -61,7 +61,7 @@ export function PeopleModal({
           {people.map((p) => (
             <a
               key={p.id}
-              href={`/u/${p.id}`}
+              href={`/sardorxon/admin/users/${p.id}`}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-3 rounded-xl px-2 py-2 hover:bg-white/5"
