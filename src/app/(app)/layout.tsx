@@ -1,8 +1,11 @@
 import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
+import { db } from "@/lib/db";
+import { ensureWalletCode } from "@/lib/wallet";
 import { AuroraBackground } from "@/components/aurora-background";
 import { AppHeader } from "@/components/app-header";
+import { AppSidebar } from "@/components/app-sidebar";
 import { PushSetup } from "@/components/push-setup";
 import { PresencePing } from "@/components/presence-ping";
 import { NavHistoryTracker } from "@/components/nav-history";
@@ -18,20 +21,50 @@ export default async function AppLayout({
   if (!session?.user) redirect("/login");
   if (!session.user.profileComplete) redirect("/onboarding");
 
-  const restriction = await getRestriction(session.user.id);
+  const [restriction, u] = await Promise.all([
+    getRestriction(session.user.id),
+    db.user.findUnique({
+      where: { id: session.user.id },
+      select: {
+        name: true,
+        firstName: true,
+        login: true,
+        role: true,
+        avatarUrl: true,
+        image: true,
+        balance: true,
+        walletCode: true,
+      },
+    }),
+  ]);
+  const walletCode = u?.walletCode ?? (await ensureWalletCode(session.user.id));
 
   return (
     <div className="relative min-h-screen">
       <AuroraBackground compact />
 
+      <AppSidebar
+        user={{
+          name: u?.firstName || u?.name || null,
+          login: u?.login ?? null,
+          role: u?.role ?? null,
+          image: u?.avatarUrl ?? u?.image ?? session.user.image ?? null,
+          balance: u?.balance ?? 0,
+          walletCode,
+        }}
+      />
       <AppHeader image={session.user.image ?? null} />
       <PresencePing />
       <NavHistoryTracker />
 
-      <main className="relative z-10 mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-10">
-        <PushSetup />
-        {restriction && <RestrictionBanner text={restrictionText(restriction)} />}
-        {children}
+      <main className="relative z-10 px-4 py-6 sm:px-6 sm:py-10 lg:pl-64">
+        <div className="mx-auto max-w-4xl lg:px-6">
+          <PushSetup />
+          {restriction && (
+            <RestrictionBanner text={restrictionText(restriction)} />
+          )}
+          {children}
+        </div>
       </main>
     </div>
   );

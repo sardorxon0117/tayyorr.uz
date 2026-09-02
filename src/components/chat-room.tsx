@@ -537,7 +537,7 @@ export function ChatRoom({
     !uploading && (editing ? !!text.trim() : !!text.trim() || !!attachment);
 
   return (
-    <div className="fixed inset-0 z-40 flex flex-col">
+    <div className="fixed inset-0 z-40 flex flex-col lg:left-72">
       {/* ---- birlashgan header (sayt + suhbat) ---- */}
       <header className="shrink-0 border-b border-white/10 bg-[#0b0b12]/80 backdrop-blur-2xl">
         <div className="mx-auto flex max-w-3xl items-center gap-2.5 px-3 py-2.5 sm:px-4">

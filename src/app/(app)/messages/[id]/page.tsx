@@ -4,7 +4,9 @@ import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { getConversationForUser, otherUserId, blockState } from "@/lib/chat";
 import { toClientMessages } from "@/lib/chat-messages";
+import { listConversations } from "@/lib/conversations";
 import { ChatRoom } from "@/components/chat-room";
+import { ChatContactsRail } from "@/components/chat-contacts-rail";
 
 export default async function ChatPage({
   params,
@@ -44,25 +46,30 @@ export default async function ChatPage({
     : await blockState(me, otherUserId(conv, me));
   const hideOther = bs.blockedMe && !other?.isSupport;
 
+  const convRows = await listConversations(me);
+
   return (
-    <ChatRoom
-      conversationId={id}
-      meId={me}
-      orderId={conv.orderId}
-      blockedByMe={bs.iBlocked}
-      blockedMe={bs.blockedMe}
-      other={{
-        id: other?.id ?? "",
-        name: other?.name ?? other?.login ?? "Foydalanuvchi",
-        login: other?.login ?? null,
-        image: hideOther ? null : other?.avatarUrl ?? other?.image ?? null,
-        isSupport: other?.isSupport ?? false,
-        lastSeenAt:
-          hideOther || !other?.lastSeenAt
-            ? null
-            : other.lastSeenAt.toISOString(),
-      }}
-      initialMessages={await toClientMessages(messages, me)}
-    />
+    <>
+      <ChatContactsRail rows={convRows} />
+      <ChatRoom
+        conversationId={id}
+        meId={me}
+        orderId={conv.orderId}
+        blockedByMe={bs.iBlocked}
+        blockedMe={bs.blockedMe}
+        other={{
+          id: other?.id ?? "",
+          name: other?.name ?? other?.login ?? "Foydalanuvchi",
+          login: other?.login ?? null,
+          image: hideOther ? null : other?.avatarUrl ?? other?.image ?? null,
+          isSupport: other?.isSupport ?? false,
+          lastSeenAt:
+            hideOther || !other?.lastSeenAt
+              ? null
+              : other.lastSeenAt.toISOString(),
+        }}
+        initialMessages={await toClientMessages(messages, me)}
+      />
+    </>
   );
 }
