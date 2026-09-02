@@ -4,23 +4,7 @@ import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { getRestriction } from "@/lib/restriction";
 import { RestrictionNotice } from "@/components/restriction-notice";
-
-const TYPE_LABEL: Record<string, string> = {
-  PRESENTATION: "Prezentatsiya",
-  COURSE_WORK: "Kurs ishi",
-  REFERAT: "Referat",
-  ESSAY: "Esse",
-  DIPLOMA: "Diplom ishi",
-  OTHER: "Boshqa",
-};
-
-const STATUS_LABEL: Record<string, string> = {
-  OPEN: "Ochiq",
-  IN_PROGRESS: "Jarayonda",
-  DELIVERED: "Topshirilgan",
-  DONE: "Yakunlangan",
-  CANCELLED: "Bekor qilingan",
-};
+import { OrdersBrowser, type OrderRow } from "@/components/orders-browser";
 
 export default async function OrdersPage() {
   const session = await auth();
@@ -39,6 +23,18 @@ export default async function OrdersPage() {
     },
   });
 
+  const rows: OrderRow[] = orders.map((o) => ({
+    id: o.id,
+    title: o.title,
+    description: o.description,
+    type: o.type,
+    status: o.status,
+    budget: o.budget,
+    offers: o._count.offers,
+    createdAt: o.createdAt.toISOString(),
+    ordererLabel: isPreparer ? o.orderer.login ?? o.orderer.name ?? null : null,
+  }));
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -52,34 +48,11 @@ export default async function OrdersPage() {
         )}
       </div>
 
-      {orders.length === 0 && (
-        <div className="card text-sm text-zinc-500">
-          Hozircha buyurtma yo'q.
-        </div>
+      {orders.length === 0 ? (
+        <div className="card text-sm text-zinc-500">Hozircha buyurtma yo'q.</div>
+      ) : (
+        <OrdersBrowser orders={rows} />
       )}
-
-      <ul className="flex flex-col gap-3">
-        {orders.map((o) => (
-          <li key={o.id}>
-            <Link
-              href={`/orders/${o.id}`}
-              className="card flex items-center justify-between gap-4 transition hover:border-white/15 hover:bg-white/[0.06]"
-            >
-              <div className="min-w-0">
-                <div className="truncate font-medium text-white">{o.title}</div>
-                <div className="mt-1 text-xs text-zinc-500">
-                  {TYPE_LABEL[o.type]} · {STATUS_LABEL[o.status]}
-                  {isPreparer && ` · @${o.orderer.login ?? o.orderer.name}`}
-                  {o.budget ? ` · ${o.budget.toLocaleString()} so'm` : ""}
-                </div>
-              </div>
-              <span className="shrink-0 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-zinc-400">
-                {o._count.offers} taklif
-              </span>
-            </Link>
-          </li>
-        ))}
-      </ul>
     </div>
   );
 }

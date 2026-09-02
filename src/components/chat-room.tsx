@@ -81,12 +81,21 @@ export function ChatRoom({
   const [live, setLive] = useState(false);
   const [iBlocked, setIBlocked] = useState(blockedByMe);
   const [theyBlocked, setTheyBlocked] = useState(blockedMe);
-  const [hdrMenu, setHdrMenu] = useState(false);
+  const [hdrMenu, setHdrMenu] = useState<{ left: number; top: number } | null>(null);
   const [reportHdr, setReportHdr] = useState(false);
+
+  function openHdrMenu(btn: HTMLElement) {
+    const r = btn.getBoundingClientRect();
+    const W = 208;
+    const M = 8;
+    let left = r.right - W;
+    if (left < M) left = M;
+    setHdrMenu({ left, top: r.bottom + 6 });
+  }
   const blocked = iBlocked || theyBlocked;
 
   async function toggleBlock() {
-    setHdrMenu(false);
+    setHdrMenu(null);
     const action = iBlocked ? "UNBLOCK" : "BLOCK";
     try {
       const res = await fetch(`/api/chat/${conversationId}/block`, {
@@ -104,7 +113,7 @@ export function ChatRoom({
   }
 
   async function deleteConversation() {
-    setHdrMenu(false);
+    setHdrMenu(null);
     if (
       !window.confirm(
         "Suhbat ikkala tomondan ham o'chiriladi. Davom etilsinmi?",
@@ -555,54 +564,65 @@ export function ChatRoom({
             </div>
           </Link>
 
-          {!other.isSupport && other.id && (
-            <div className="relative shrink-0">
+          {other.id && (
+            <div className="shrink-0">
               <button
                 type="button"
-                onClick={() => setHdrMenu((v) => !v)}
+                onClick={(e) => openHdrMenu(e.currentTarget)}
                 className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-zinc-300 hover:bg-white/10"
                 aria-label="Menyu"
               >
                 ⋮
               </button>
-              {hdrMenu && (
-                <>
-                  <div
-                    className="fixed inset-0 z-[65]"
-                    onClick={() => setHdrMenu(false)}
-                  />
-                  <div className="menu-panel absolute right-0 top-10 z-[66] w-52 overflow-hidden rounded-xl border border-white/10 bg-[#14141b] text-sm shadow-2xl shadow-black/50">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setHdrMenu(false);
-                        setReportHdr(true);
-                      }}
-                      className="block w-full px-3 py-2.5 text-left text-amber-300 hover:bg-white/5"
-                    >
-                      ⚠︎ Shikoyat qilish
-                    </button>
-                    <button
-                      type="button"
-                      onClick={toggleBlock}
-                      className="block w-full px-3 py-2.5 text-left text-zinc-200 hover:bg-white/5"
-                    >
-                      {iBlocked ? "✓ Blokdan chiqarish" : "🚫 Bloklash"}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={deleteConversation}
-                      className="block w-full px-3 py-2.5 text-left text-red-400 hover:bg-white/5"
-                    >
-                      🗑 Suhbatni o'chirish
-                    </button>
-                  </div>
-                </>
-              )}
             </div>
           )}
         </div>
       </header>
+
+      {/* ---- header menyusi — portal (blur/stacking muammosiz) ---- */}
+      {hdrMenu &&
+        createPortal(
+          <>
+            <div
+              className="fixed inset-0 z-[75]"
+              onClick={() => setHdrMenu(null)}
+            />
+            <div
+              className="menu-panel fixed z-[76] w-52 overflow-hidden rounded-xl border border-white/10 bg-[#14141b] text-sm shadow-2xl shadow-black/50"
+              style={{ left: hdrMenu.left, top: hdrMenu.top }}
+            >
+              {!other.isSupport && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setHdrMenu(null);
+                      setReportHdr(true);
+                    }}
+                    className="block w-full px-3 py-2.5 text-left text-amber-300 hover:bg-white/5"
+                  >
+                    ⚠︎ Shikoyat qilish
+                  </button>
+                  <button
+                    type="button"
+                    onClick={toggleBlock}
+                    className="block w-full px-3 py-2.5 text-left text-zinc-200 hover:bg-white/5"
+                  >
+                    {iBlocked ? "✓ Blokdan chiqarish" : "🚫 Bloklash"}
+                  </button>
+                </>
+              )}
+              <button
+                type="button"
+                onClick={deleteConversation}
+                className="block w-full px-3 py-2.5 text-left text-red-400 hover:bg-white/5"
+              >
+                🗑 Suhbatni o'chirish
+              </button>
+            </div>
+          </>,
+          document.body,
+        )}
 
       {/* ---- xabarlar + suzuvchi composer ---- */}
       <div className="relative min-h-0 flex-1">
