@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { auth } from "@/auth";
@@ -93,6 +94,12 @@ export default async function OrderDetailPage({
 
   return (
     <div className="flex flex-col gap-6">
+      <Link
+        href="/orders"
+        className="inline-flex items-center gap-1 text-sm text-zinc-500 hover:text-white"
+      >
+        ‹ orqaga
+      </Link>
       <div>
         <div className="text-xs uppercase tracking-wide text-indigo-400">
           {TYPE_LABEL[order.type]} · {STATUS_LABEL[order.status]}
