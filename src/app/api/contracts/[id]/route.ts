@@ -7,6 +7,7 @@ import { restrictionApiError } from "@/lib/restriction";
 import { createMessage, getOrCreateConversation } from "@/lib/chat";
 import { deliverMessage } from "@/lib/chat-notify";
 import { getPlatformUserId, commission, COMMISSION_CANCEL } from "@/lib/platform";
+import { updateOrderChannelPost } from "@/lib/telegram";
 
 const schema = z.object({ action: z.enum(["ACCEPT", "DECLINE", "CANCEL"]) });
 
@@ -124,6 +125,7 @@ export async function POST(
         me,
         "✅ Shartnoma qabul qilindi. Ish boshlandi. Yakuniga qadar shu chatда gaplashib turishingiz mumkin.",
       );
+      await updateOrderChannelPost(contract.orderId);
       return NextResponse.json({ ok: true });
     }
 
@@ -194,6 +196,7 @@ export async function POST(
       me,
       `📄 Shartnoma bekor qilindi. ${fee.toLocaleString("ru-RU")} so'm (2%) sayt komissiyasi, ${refund.toLocaleString("ru-RU")} so'm buyurtmachiga qaytarildi.`,
     );
+    await updateOrderChannelPost(contract.orderId);
     return NextResponse.json({ ok: true });
   }
 

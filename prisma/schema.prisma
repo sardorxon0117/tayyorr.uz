@@ -420,6 +420,8 @@ model Order {
   budget      Int? // so'mda
   status      OrderStatus @default(OPEN)
 
+  telegramMessageId Int? // kanaldagi post message_id (status o'zgarganda tahrirlanadi)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

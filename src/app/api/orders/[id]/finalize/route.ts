@@ -6,6 +6,7 @@ import { restrictionApiError } from "@/lib/restriction";
 import { createMessage, getOrCreateConversation } from "@/lib/chat";
 import { deliverMessage } from "@/lib/chat-notify";
 import { getPlatformUserId, commission, COMMISSION_FINAL } from "@/lib/platform";
+import { updateOrderChannelPost } from "@/lib/telegram";
 
 /** Buyurtmachi ishni yakunlaydi -> eskroudan tayyorlovchiga (95%), saytga (5%). */
 export async function POST(
@@ -85,6 +86,8 @@ export async function POST(
     system: true,
   });
   await deliverMessage(msg);
+
+  await updateOrderChannelPost(id);
 
   return NextResponse.json({ ok: true });
 }

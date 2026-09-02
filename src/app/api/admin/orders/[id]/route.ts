@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { db } from "@/lib/db";
 import { adminApiGuard } from "@/lib/admin";
+import { markOrderRemovedInChannel } from "@/lib/telegram";
 
 /** Buyurtmani butunlay o'chiradi. Faol/yuborilgan shartnomalardagi bloklangan
  *  mablag' buyurtmachiga qaytariladi. */
@@ -37,6 +38,10 @@ export async function DELETE(
     }
     await tx.order.delete({ where: { id } });
   });
+
+  if (order.telegramMessageId) {
+    await markOrderRemovedInChannel(order.telegramMessageId, order.title);
+  }
 
   return NextResponse.json({ ok: true });
 }

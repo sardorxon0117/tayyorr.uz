@@ -4,6 +4,7 @@ import { z } from "zod";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { restrictionApiError } from "@/lib/restriction";
+import { updateOrderChannelPost } from "@/lib/telegram";
 
 const schema = z.object({ action: z.enum(["ACCEPT", "REJECT"]) });
 
@@ -65,6 +66,8 @@ export async function PATCH(
     });
     return acceptedOffer;
   });
+
+  await updateOrderChannelPost(offer.orderId);
 
   return NextResponse.json({ offer: result });
 }

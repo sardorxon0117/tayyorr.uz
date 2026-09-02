@@ -5,6 +5,7 @@ import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { PRIVATE_BUCKET, presignGet } from "@/lib/r2";
 import { restrictionApiError } from "@/lib/restriction";
+import { updateOrderChannelPost } from "@/lib/telegram";
 
 export async function GET(
   _req: Request,
@@ -122,6 +123,8 @@ export async function PATCH(
     }
     return o;
   });
+
+  await updateOrderChannelPost(id);
 
   return NextResponse.json({ order: updated });
 }
