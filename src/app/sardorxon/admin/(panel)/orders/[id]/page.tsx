@@ -100,6 +100,31 @@ export default async function AdminOrderDetail({
     ],
     ["Yaratilgan", order.createdAt.toLocaleString("uz")],
     ["Yangilangan", order.updatedAt.toLocaleString("uz")],
+    [
+      "Kanalga",
+      (() => {
+        if (order.telegramSentAt) {
+          return (
+            <span className="text-emerald-400">
+              ✅ Yuborildi · {order.telegramStatus} ·{" "}
+              {order.telegramSentAt.toLocaleString("uz", {
+                dateStyle: "short",
+                timeStyle: "short",
+              })}
+            </span>
+          );
+        }
+        if (order.telegramStatus != null) {
+          return (
+            <span className="text-red-400">
+              ❌ {order.telegramStatus || "xato"}
+              {order.telegramError ? ` — ${order.telegramError}` : ""}
+            </span>
+          );
+        }
+        return <span className="text-zinc-600">— (yuborilmagan)</span>;
+      })(),
+    ],
   ];
 
   return (

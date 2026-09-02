@@ -7,9 +7,9 @@ import { WalletPayout } from "@/components/wallet-payout";
 import { PayoutCancelButton } from "@/components/payout-cancel-button";
 
 const PAYOUT_STATUS: Record<string, string> = {
-  PENDING: "Ko'rib chiqilmoqda",
-  PAID: "To'landi",
-  REJECTED: "Rad etildi",
+  PENDING: "Kartaga o'tkazilmoqda",
+  PAID: "Kartaga o'tkazildi",
+  REJECTED: "Rad etildi (mablag' qaytarildi)",
   CANCELLED: "Bekor qilindi",
 };
 
@@ -97,7 +97,7 @@ export default async function WalletPage() {
 
       {payouts.length > 0 && (
         <div>
-          <h2 className="mb-3 font-semibold text-white">Yechib olish so'rovlari</h2>
+          <h2 className="mb-3 font-semibold text-white">Yechib olishlar</h2>
           <ul className="flex flex-col gap-2">
             {payouts.map((p) => (
               <li

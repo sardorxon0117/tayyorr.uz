@@ -98,6 +98,15 @@ async function tg(method: string, body: Record<string, unknown>) {
  */
 export async function postOrderToChannel(order: ChannelOrder): Promise<void> {
   if (!TOKEN || !CHANNEL) return;
+
+  const rec = (data: {
+    telegramStatus: number;
+    telegramSentAt?: Date | null;
+    telegramError?: string | null;
+    telegramMessageId?: number;
+  }) =>
+    db.order.update({ where: { id: order.id }, data }).catch(() => {});
+
   try {
     const res = await tg("sendMessage", {
       chat_id: CHANNEL,
@@ -108,20 +117,25 @@ export async function postOrderToChannel(order: ChannelOrder): Promise<void> {
     });
     const json = (await res.json().catch(() => ({}))) as {
       ok?: boolean;
+      description?: string;
       result?: { message_id?: number };
     };
-    if (json.ok && json.result?.message_id) {
-      await db.order
-        .update({
-          where: { id: order.id },
-          data: { telegramMessageId: json.result.message_id },
-        })
-        .catch(() => {});
+    if (res.ok && json.ok && json.result?.message_id) {
+      await rec({
+        telegramStatus: res.status,
+        telegramSentAt: new Date(),
+        telegramError: null,
+        telegramMessageId: json.result.message_id,
+      });
     } else {
-      console.error("[telegram] sendMessage not ok", JSON.stringify(json).slice(0, 300));
+      const err = (json.description || `HTTP ${res.status}`).slice(0, 300);
+      console.error("[telegram] sendMessage not ok", res.status, err);
+      await rec({ telegramStatus: res.status, telegramError: err });
     }
   } catch (e) {
-    console.error("[telegram] post error", e instanceof Error ? e.message : e);
+    const msg = e instanceof Error ? e.message : String(e);
+    console.error("[telegram] post error", msg);
+    await rec({ telegramStatus: 0, telegramError: msg.slice(0, 300) });
   }
 }
 

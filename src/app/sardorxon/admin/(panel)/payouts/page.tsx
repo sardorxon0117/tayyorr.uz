@@ -5,9 +5,9 @@ import { formatSom } from "@/lib/wallet";
 import { AdminPostButton } from "@/components/admin/admin-post-button";
 
 const STATUS: Record<string, string> = {
-  PENDING: "Kutilmoqda",
-  PAID: "To'landi",
-  REJECTED: "Rad etildi",
+  PENDING: "O'tkazilishi kutilmoqda",
+  PAID: "Kartaga o'tkazildi",
+  REJECTED: "Rad etildi (qaytarildi)",
   CANCELLED: "Bekor qilindi",
 };
 
@@ -26,8 +26,9 @@ export default async function AdminPayouts() {
     <div className="flex flex-col gap-4">
       <h1 className="text-xl font-semibold text-white">Kartaga yechib olish</h1>
       <p className="text-sm text-zinc-500">
-        Kartaga qo'lda o'tkazгач «To'landi» ni bosing. «Rad etish» — mablag'
-        foydalanuvchi hisobiga qaytadi.
+        Mablag' foydalanuvchi hisobidan avtomatik yechilgan. Kartaga haqiqatan
+        o'tkazgach «Kartaga o'tkazdim» ni bosing. «O'tkazib bo'lmadi» — mablag'
+        foydalanuvchiga qaytadi.
       </p>
 
       <div className="overflow-x-auto rounded-xl border border-white/10">
@@ -86,16 +87,16 @@ export default async function AdminPayouts() {
                       <AdminPostButton
                         url={`/api/admin/payouts/${p.id}`}
                         body={{ action: "PAID" }}
-                        label="To'landi"
+                        label="✅ Kartaga o'tkazdim"
                         className="rounded-lg bg-emerald-500/15 px-2.5 py-1 text-xs text-emerald-300 hover:bg-emerald-500/25"
-                        confirmText="Kartaga o'tkazildi deb belgilansinmi?"
+                        confirmText="Pul kartaga haqiqatan o'tkazildimi?"
                       />
                       <AdminPostButton
                         url={`/api/admin/payouts/${p.id}`}
                         body={{ action: "REJECT" }}
-                        label="Rad etish"
+                        label="O'tkazib bo'lmadi"
                         className="rounded-lg bg-red-500/15 px-2.5 py-1 text-xs text-red-300 hover:bg-red-500/25"
-                        confirmText="Rad etilib, mablag' qaytarilsinmi?"
+                        confirmText="O'tkazib bo'lmadi — mablag' foydalanuvchiga qaytarilsinmi?"
                       />
                     </div>
                   )}

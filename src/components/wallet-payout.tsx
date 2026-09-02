@@ -30,10 +30,10 @@ export function WalletPayout({ balance }: { balance: number }) {
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "So'rov yuborilmadi");
+      if (!res.ok) throw new Error(data.error || "Amalga oshmadi");
       setMsg({
         ok: true,
-        text: "So'rov yuborildi. Admin tasdiqlagach pul kartaga o'tadi.",
+        text: "Mablag' hisobdan yechildi va tez orada kartangizga o'tkaziladi.",
       });
       setCard("");
       setCardName("");
@@ -50,7 +50,7 @@ export function WalletPayout({ balance }: { balance: number }) {
     <form onSubmit={submit} className="card flex flex-col gap-3">
       <h2 className="font-semibold text-white">Kartaga yechib olish</h2>
       <p className="-mt-1 text-xs text-zinc-500">
-        So'rov yuboriladi, pul kartaga admin tasdiqidan so'ng o'tkaziladi.
+        Mablag' darhol hisobdan yechiladi va kartangizga o'tkaziladi.
         Mavjud: {balance.toLocaleString("ru-RU")} so'm.
       </p>
       <div>

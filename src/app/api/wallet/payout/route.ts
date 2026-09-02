@@ -60,7 +60,7 @@ export async function POST(req: Request) {
         status: "PENDING",
         amount,
         method: "CARD",
-        note: `Yechib olish so'rovi — ${maskCard(card)}`,
+        note: `Kartaga yechib olindi — ${maskCard(card)}`,
         meta: { payoutId: p.id, card: maskCard(card) },
       },
     });

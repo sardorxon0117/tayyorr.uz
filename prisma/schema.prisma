@@ -435,6 +435,9 @@ model Order {
   status      OrderStatus @default(OPEN)
 
   telegramMessageId Int? // kanaldagi post message_id (status o'zgarganda tahrirlanadi)
+  telegramStatus    Int? // oxirgi Telegram API javob kodi (200 / 400 ...)
+  telegramSentAt    DateTime? // kanalga muvaffaqiyatli joylangan vaqt
+  telegramError     String? // xato bo'lsa qisqa matn
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
