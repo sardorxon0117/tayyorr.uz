@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
-import { getConversationForUser, otherUserId } from "@/lib/chat";
+import { getConversationForUser, otherUserId, blockState } from "@/lib/chat";
 import { toClientMessages } from "@/lib/chat-messages";
 
 export async function GET(
@@ -35,26 +35,35 @@ export async function GET(
     include: { reactions: true },
   });
 
-  const other = await db.user.findUnique({
-    where: { id: otherUserId(conv, me) },
-    select: {
-      id: true,
-      name: true,
-      login: true,
-      avatarUrl: true,
-      image: true,
-      lastSeenAt: true,
-    },
-  });
+  const otherId = otherUserId(conv, me);
+  const [other, bs] = await Promise.all([
+    db.user.findUnique({
+      where: { id: otherId },
+      select: {
+        id: true,
+        name: true,
+        login: true,
+        avatarUrl: true,
+        image: true,
+        isSupport: true,
+        lastSeenAt: true,
+      },
+    }),
+    blockState(me, otherId),
+  ]);
+  const hidden = bs.blockedMe && !other?.isSupport;
 
   return NextResponse.json({
     conversation: { id: conv.id, orderId: conv.orderId },
+    blockedMe: bs.blockedMe,
+    blockedByMe: bs.iBlocked,
     other: other && {
       id: other.id,
       name: other.name ?? other.login ?? "Foydalanuvchi",
       login: other.login,
-      image: other.avatarUrl ?? other.image ?? null,
-      lastSeenAt: other.lastSeenAt ? other.lastSeenAt.toISOString() : null,
+      image: hidden ? null : other.avatarUrl ?? other.image ?? null,
+      lastSeenAt:
+        hidden || !other.lastSeenAt ? null : other.lastSeenAt.toISOString(),
     },
     messages: await toClientMessages(rows, me),
   });

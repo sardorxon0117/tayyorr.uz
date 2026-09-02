@@ -3,6 +3,7 @@ import Link from "next/link";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { getSupportUserId } from "@/lib/support";
+import { BlockedIcon } from "@/components/icons";
 
 function timeAgo(d: Date) {
   const s = Math.floor((Date.now() - d.getTime()) / 1000);
@@ -32,6 +33,12 @@ export default async function MessagesPage() {
 
   const supportId = await getSupportUserId();
 
+  const blockedMeRows = await db.block.findMany({
+    where: { blockedId: me },
+    select: { blockerId: true },
+  });
+  const blockedMeBy = new Set(blockedMeRows.map((r) => r.blockerId));
+
   const rows = await Promise.all(
     convs.map(async (c) => {
       const other = c.userAId === me ? c.userB : c.userA;
@@ -44,6 +51,7 @@ export default async function MessagesPage() {
         unread,
         last: c.messages[0] ?? null,
         isSupport: other.id === supportId,
+        blockedMe: blockedMeBy.has(other.id) && other.id !== supportId,
       };
     }),
   );
@@ -65,7 +73,7 @@ export default async function MessagesPage() {
         </div>
       ) : (
         <ul className="flex flex-col gap-2">
-          {rows.map(({ c, other, unread, last, isSupport }) => (
+          {rows.map(({ c, other, unread, last, isSupport, blockedMe }) => (
             <li key={c.id}>
               <Link
                 href={`/messages/${c.id}`}
@@ -73,8 +81,10 @@ export default async function MessagesPage() {
                   isSupport ? "border-indigo-400/30 bg-indigo-500/[0.06]" : ""
                 }`}
               >
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-white/5 text-lg">
-                  {(other.avatarUrl ?? other.image) ? (
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-white/5 text-lg text-zinc-500">
+                  {blockedMe ? (
+                    <BlockedIcon className="h-5 w-5" />
+                  ) : (other.avatarUrl ?? other.image) ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={other.avatarUrl ?? other.image ?? ""}

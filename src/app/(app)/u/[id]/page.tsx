@@ -3,7 +3,9 @@ import { notFound } from "next/navigation";
 
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
+import { blockState } from "@/lib/chat";
 import { Stars } from "@/components/stars";
+import { BlockedIcon } from "@/components/icons";
 import { presenceText } from "@/lib/presence";
 
 const TYPE_LABEL: Record<string, string> = {
@@ -21,7 +23,8 @@ export default async function PublicProfile({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  await auth();
+  const session = await auth();
+  const me = session?.user?.id;
 
   const user = await db.user.findUnique({
     where: { id },
@@ -47,6 +50,37 @@ export default async function PublicProfile({
     },
   });
   if (!user || user.isSupport || user.isPlatform) notFound();
+
+  const blockedMe =
+    !!me && me !== id && (await blockState(me, id)).blockedMe;
+
+  const displayName =
+    user.name ||
+    `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() ||
+    "Foydalanuvchi";
+
+  if (blockedMe) {
+    return (
+      <div className="mx-auto flex max-w-2xl flex-col gap-6">
+        <Link href="/messages" className="text-sm text-zinc-500 hover:text-white">
+          ‹ orqaga
+        </Link>
+        <div className="flex items-center gap-4">
+          <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-zinc-500">
+            <BlockedIcon className="h-8 w-8" />
+          </div>
+          <h1 className="text-xl font-semibold text-white">{displayName}</h1>
+        </div>
+        {user.about && (
+          <div className="card">
+            <p className="whitespace-pre-wrap text-sm text-zinc-300">
+              {user.about}
+            </p>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   const avg = user.ratingCount ? user.ratingSum / user.ratingCount : 0;
 

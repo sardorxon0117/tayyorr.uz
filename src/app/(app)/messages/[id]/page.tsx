@@ -42,6 +42,7 @@ export default async function ChatPage({
   const bs = other?.isSupport
     ? { iBlocked: false, blockedMe: false }
     : await blockState(me, otherUserId(conv, me));
+  const hideOther = bs.blockedMe && !other?.isSupport;
 
   return (
     <ChatRoom
@@ -54,9 +55,12 @@ export default async function ChatPage({
         id: other?.id ?? "",
         name: other?.name ?? other?.login ?? "Foydalanuvchi",
         login: other?.login ?? null,
-        image: other?.avatarUrl ?? other?.image ?? null,
+        image: hideOther ? null : other?.avatarUrl ?? other?.image ?? null,
         isSupport: other?.isSupport ?? false,
-        lastSeenAt: other?.lastSeenAt ? other.lastSeenAt.toISOString() : null,
+        lastSeenAt:
+          hideOther || !other?.lastSeenAt
+            ? null
+            : other.lastSeenAt.toISOString(),
       }}
       initialMessages={await toClientMessages(messages, me)}
     />

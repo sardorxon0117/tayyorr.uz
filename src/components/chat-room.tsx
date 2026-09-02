@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import { ReportDialog } from "@/components/report-button";
 import { ChatFileView, humanSize, type ChatFile } from "@/components/chat-file";
 import { Linkify } from "@/components/linkify";
-import { RocketIcon } from "@/components/icons";
+import { RocketIcon, BlockedIcon } from "@/components/icons";
 import { prepareChatFile, type PreparedChatFile } from "@/lib/upload-client";
 import { presenceText } from "@/lib/presence";
 
@@ -115,7 +115,10 @@ export function ChatRoom({
 
   async function toggleBlock() {
     setHdrMenu(null);
-    const action = iBlocked ? "UNBLOCK" : "BLOCK";
+    const wasBlocked = iBlocked;
+    const action = wasBlocked ? "UNBLOCK" : "BLOCK";
+    setIBlocked(!wasBlocked); // darhol yangilanadi
+    setErr(null);
     try {
       const res = await fetch(`/api/chat/${conversationId}/block`, {
         method: "POST",
@@ -127,6 +130,7 @@ export function ChatRoom({
       setIBlocked(!!data.iBlocked);
       setTheyBlocked(!!data.blockedMe);
     } catch (e) {
+      setIBlocked(wasBlocked); // xato — qaytaramiz
       setErr(e instanceof Error ? e.message : "Xatolik");
     }
   }
@@ -280,6 +284,8 @@ export function ChatRoom({
         );
         if (!res.ok) return;
         const data = await res.json();
+        if (typeof data.blockedMe === "boolean") setTheyBlocked(data.blockedMe);
+        if (typeof data.blockedByMe === "boolean") setIBlocked(data.blockedByMe);
         if (data.other && "lastSeenAt" in data.other) {
           setOtherSeen(data.other.lastSeenAt ?? null);
         }
@@ -551,16 +557,22 @@ export function ChatRoom({
             href={other.isSupport || !other.id ? "#" : `/u/${other.id}`}
             className="flex min-w-0 flex-1 items-center gap-2.5"
           >
-            <div className="h-9 w-9 shrink-0 overflow-hidden rounded-full border border-white/10 bg-white/5">
-              {other.image && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={other.image} alt="" className="h-full w-full object-cover" />
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-white/5 text-zinc-500">
+              {theyBlocked ? (
+                <BlockedIcon className="h-4 w-4" />
+              ) : (
+                other.image && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={other.image} alt="" className="h-full w-full object-cover" />
+                )
               )}
             </div>
             <div className="min-w-0">
               <div className="truncate font-medium text-white">{other.name}</div>
               <div className="flex items-center gap-1.5 truncate text-xs text-zinc-500">
-                {other.isSupport ? (
+                {theyBlocked ? (
+                  <span>uzoq vaqt kirmagan</span>
+                ) : other.isSupport ? (
                   <span>{live ? "onlayn" : "ulanmoqda…"}</span>
                 ) : (
                   (() => {
