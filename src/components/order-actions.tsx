@@ -396,6 +396,27 @@ export function OrderActions(props: Props) {
           <ReviewForm orderId={orderId} />
         ))}
 
+      {/* Tayyorlovchiga qo'yilgan baho va sharh */}
+      {isAssigned && status === "DONE" && (
+        <div className="card">
+          <h2 className="mb-1 font-semibold text-white">Sizga qo'yilgan baho</h2>
+          {reviewed ? (
+            <>
+              <Stars value={myReview?.stars ?? 0} size="md" />
+              {myReview?.comment ? (
+                <p className="mt-2 text-sm text-zinc-400">«{myReview.comment}»</p>
+              ) : (
+                <p className="mt-2 text-sm text-zinc-500">Sharh qoldirilmagan.</p>
+              )}
+            </>
+          ) : (
+            <p className="text-sm text-zinc-500">
+              Buyurtmachi hali baho qo'ymagan.
+            </p>
+          )}
+        </div>
+      )}
+
       {/* Shartnoma bo'yicha yakunlash (faqat buyurtmachi) */}
       {isOrderer && acceptedContract &&
         (status === "IN_PROGRESS" || status === "DELIVERED") && (
