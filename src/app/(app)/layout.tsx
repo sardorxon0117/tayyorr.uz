@@ -57,8 +57,8 @@ export default async function AppLayout({
       <PresencePing />
       <NavHistoryTracker />
 
-      <main className="relative z-10 px-3 py-6 sm:px-4 sm:py-8 lg:pl-64">
-        <div className="mx-auto max-w-4xl">
+      <main className="relative z-10 px-3 py-6 sm:px-5 sm:py-8 lg:pl-[17rem] lg:pr-6">
+        <div className="mx-auto w-full max-w-5xl">
           <PushSetup />
           {restriction && (
             <RestrictionBanner text={restrictionText(restriction)} />
