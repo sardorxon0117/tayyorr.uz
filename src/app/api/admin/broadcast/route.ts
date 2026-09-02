@@ -4,6 +4,7 @@ import type { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { adminApiGuard } from "@/lib/admin";
 import { sendSupportMessage } from "@/lib/support-actions";
+import { PRIVATE_BUCKET, presignGet } from "@/lib/r2";
 
 const MAX = 5000;
 
@@ -79,29 +80,37 @@ export async function POST(req: Request) {
     );
   }
 
-  const users = await db.user.findMany({ where, select: { id: true }, take: MAX });
-  let sent = 0;
-  for (const u of users) {
-    try {
-      await sendSupportMessage(u.id, body, file);
-      sent++;
-    } catch {
-      /* birini o'tkazib yuboramiz */
-    }
-  }
-
   const record = await db.broadcast.create({
     data: {
       body,
+      fileKey: file?.key ?? null,
       fileName: file?.name ?? null,
+      fileType: file?.type ?? null,
+      fileSize: file?.size ?? null,
       role: role ?? null,
       balanceMin: balanceMin ?? null,
       balanceMax: balanceMax ?? null,
       regFrom: from ? new Date(from) : null,
       regTo: to ? new Date(`${to}T23:59:59.999`) : null,
-      sentCount: sent,
+      sentCount: 0,
     },
   });
+
+  const users = await db.user.findMany({ where, select: { id: true }, take: MAX });
+  let sent = 0;
+  for (const u of users) {
+    try {
+      await sendSupportMessage(u.id, body, file, record.id);
+      sent++;
+    } catch {
+      /* birini o'tkazib yuboramiz */
+    }
+  }
+  await db.broadcast.update({ where: { id: record.id }, data: { sentCount: sent } });
+
+  const fileUrl = record.fileKey
+    ? await presignGet({ bucket: PRIVATE_BUCKET, key: record.fileKey, expiresIn: 3600 })
+    : null;
 
   return NextResponse.json({
     ok: true,
@@ -110,7 +119,9 @@ export async function POST(req: Request) {
       id: record.id,
       body: record.body,
       fileName: record.fileName,
-      sentCount: record.sentCount,
+      fileType: record.fileType,
+      fileUrl,
+      sentCount: sent,
       createdAt: record.createdAt.toISOString(),
     },
   });

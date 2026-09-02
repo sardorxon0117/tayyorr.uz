@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { PRIVATE_BUCKET, presignGet } from "@/lib/r2";
 import { BroadcastConsole } from "@/components/admin/broadcast-console";
 
 export default async function AdminBroadcast() {
@@ -7,14 +8,19 @@ export default async function AdminBroadcast() {
     take: 40,
   });
 
-  const initial = rows
-    .reverse()
-    .map((b) => ({
+  const initial = await Promise.all(
+    rows.reverse().map(async (b) => ({
       id: b.id,
       body: b.body,
+      fileName: b.fileName,
+      fileType: b.fileType,
+      fileUrl: b.fileKey
+        ? await presignGet({ bucket: PRIVATE_BUCKET, key: b.fileKey, expiresIn: 3600 })
+        : null,
       sentCount: b.sentCount,
       createdAt: b.createdAt.toISOString(),
-    }));
+    })),
+  );
 
   return (
     <div className="flex flex-col gap-3">

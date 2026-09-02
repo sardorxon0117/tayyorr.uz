@@ -71,6 +71,7 @@ export async function createMessage(opts: {
   body?: string;
   system?: boolean;
   replyToId?: string | null;
+  broadcastId?: string | null;
   file?: {
     key: string;
     name: string;
@@ -96,6 +97,7 @@ export async function createMessage(opts: {
         body: opts.body ?? "",
         system: opts.system ?? false,
         replyToId,
+        broadcastId: opts.broadcastId ?? null,
         fileKey: opts.file?.key ?? null,
         fileName: opts.file?.name ?? null,
         fileType: opts.file?.type ?? null,

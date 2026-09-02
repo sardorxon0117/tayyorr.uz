@@ -8,6 +8,7 @@ export async function sendSupportMessage(
   userId: string,
   body: string,
   file?: { key: string; name: string; type: string; size: number } | null,
+  broadcastId?: string | null,
 ) {
   const supportId = await getSupportUserId();
   const conv = await getOrCreateConversation(supportId, userId, null);
@@ -17,6 +18,7 @@ export async function sendSupportMessage(
     body,
     system: false, // support xabari — oddiy bubble
     file: file ?? null,
+    broadcastId: broadcastId ?? null,
   });
   await deliverMessage(msg);
   return conv.id;

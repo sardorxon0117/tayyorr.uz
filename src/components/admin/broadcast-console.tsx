@@ -2,14 +2,17 @@
 
 import { useEffect, useRef, useState } from "react";
 
-import { humanSize } from "@/components/chat-file";
+import { ChatFileView, humanSize } from "@/components/chat-file";
 import { RocketIcon } from "@/components/icons";
+import { AutoTextarea } from "@/components/admin/auto-textarea";
 import { prepareBroadcastFile, type PreparedChatFile } from "@/lib/upload-client";
 
 interface Item {
   id: string;
   body: string;
   fileName?: string | null;
+  fileType?: string | null;
+  fileUrl?: string | null;
   sentCount: number;
   createdAt: string;
 }
@@ -71,6 +74,17 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
       setCount(data.count);
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Xatolik");
+    }
+  }
+
+  async function delItem(id: string) {
+    if (!window.confirm("Bu ommaviy xabar barcha foydalanuvchilardan o'chiriladi. Davom etilsinmi?"))
+      return;
+    try {
+      const res = await fetch(`/api/admin/broadcast/${id}`, { method: "DELETE" });
+      if (res.ok) setItems((p) => p.filter((x) => x.id !== id));
+    } catch {
+      /* ignore */
     }
   }
 
@@ -206,17 +220,36 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
           </p>
         )}
         {items.map((it) => (
-          <div key={it.id} className="flex justify-end">
-            <div className="max-w-[80%] rounded-2xl bg-indigo-600 px-3.5 py-2 text-sm text-white">
-              {it.fileName && (
-                <div className="mb-1 rounded-lg bg-white/15 px-2 py-1 text-xs">
+          <div key={it.id} className="group flex items-center justify-end gap-1.5">
+            <button
+              type="button"
+              onClick={() => delItem(it.id)}
+              title="Hamma uchun o'chirish"
+              className="shrink-0 rounded-lg px-1.5 py-1 text-xs text-zinc-500 opacity-0 transition hover:text-red-400 group-hover:opacity-100"
+            >
+              🗑
+            </button>
+            <div className="max-w-[80%] space-y-1.5 rounded-2xl bg-indigo-600 px-3.5 py-2 text-sm text-white">
+              {it.fileUrl && (
+                <ChatFileView
+                  file={{
+                    name: it.fileName ?? "fayl",
+                    type: it.fileType ?? "application/octet-stream",
+                    size: 0,
+                    url: it.fileUrl,
+                  }}
+                  mine
+                />
+              )}
+              {!it.fileUrl && it.fileName && (
+                <div className="rounded-lg bg-white/15 px-2 py-1 text-xs">
                   📎 {it.fileName}
                 </div>
               )}
               {it.body && (
                 <div className="whitespace-pre-wrap break-words">{it.body}</div>
               )}
-              <div className="mt-1 text-right text-[10px] text-indigo-200">
+              <div className="text-right text-[10px] text-indigo-200">
                 {it.sentCount} ta · {fmt(it.createdAt)}
               </div>
             </div>
@@ -281,9 +314,9 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
           >
             {uploading ? "…" : "📎"}
           </button>
-          <textarea
-            className="input max-h-32 min-h-[42px] resize-none"
-            rows={1}
+          <AutoTextarea
+            className="input min-h-[42px]"
+            maxRows={5}
             placeholder="tayyorr.uz support nomidan xabar…"
             value={text}
             onChange={(e) => setText(e.target.value)}

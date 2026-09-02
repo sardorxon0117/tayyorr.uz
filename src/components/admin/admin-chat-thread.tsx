@@ -6,6 +6,7 @@ import { ChatFileView, humanSize, type ChatFile } from "@/components/chat-file";
 import { Linkify } from "@/components/linkify";
 import { prepareAdminChatFile, type PreparedChatFile } from "@/lib/upload-client";
 import { RocketIcon } from "@/components/icons";
+import { AutoTextarea } from "@/components/admin/auto-textarea";
 
 interface Msg {
   id: string;
@@ -252,10 +253,10 @@ export function AdminChatThread({
           >
             {uploading ? "…" : "📎"}
           </button>
-          <textarea
-            className="input max-h-32 min-h-[42px] resize-none"
+          <AutoTextarea
+            className="input min-h-[42px]"
+            maxRows={5}
             placeholder="tayyorr.uz support nomidan javob..."
-            rows={1}
             value={text}
             onChange={(e) => setText(e.target.value)}
             onKeyDown={(e) => {
