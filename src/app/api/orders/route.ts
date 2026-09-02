@@ -1,9 +1,10 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { z } from "zod";
 
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { restrictionApiError } from "@/lib/restriction";
+import { postOrderToChannel } from "@/lib/telegram";
 
 const createSchema = z.object({
   title: z.string().min(5).max(150),
@@ -86,6 +87,9 @@ export async function POST(req: Request) {
       budget,
     },
   });
+
+  // javob yuborilgach kanalga joylaymiz — buyurtma yaratilishiga ta'sir qilmaydi
+  after(() => postOrderToChannel(order));
 
   return NextResponse.json({ order }, { status: 201 });
 }
