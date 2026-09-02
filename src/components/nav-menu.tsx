@@ -8,6 +8,7 @@ export interface NavLink {
   href: string;
   label: string;
   icon: string;
+  badge?: number;
 }
 
 /**
@@ -94,7 +95,12 @@ export function NavMenu({
                   }`}
                 >
                   <span className="text-base">{l.icon}</span>
-                  {l.label}
+                  <span className="flex-1">{l.label}</span>
+                  {!!l.badge && l.badge > 0 && (
+                    <span className="rounded-full bg-indigo-500 px-1.5 text-xs font-semibold text-white">
+                      {l.badge}
+                    </span>
+                  )}
                 </Link>
               );
             })}
