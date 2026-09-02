@@ -79,10 +79,12 @@ export function OrdersBrowser({
   orders,
   title,
   newOrderHref,
+  banner,
 }: {
   orders: OrderRow[];
   title?: string;
   newOrderHref?: string;
+  banner?: React.ReactNode;
 }) {
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
@@ -129,7 +131,8 @@ export function OrdersBrowser({
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="sticky top-[4.25rem] z-20 -mx-4 flex flex-col gap-2 border-b border-white/10 bg-[#0b0b12]/85 px-4 py-3 backdrop-blur-xl sm:top-[4.75rem] sm:-mx-6 sm:px-6 lg:top-0 lg:-mx-6">
+      <div className="sticky top-[4.25rem] z-20 -mx-3 flex flex-col gap-2 border-b border-white/10 bg-[#0b0b12]/85 px-3 py-3 backdrop-blur-xl sm:top-[4.75rem] sm:-mx-4 sm:px-4 lg:top-0 lg:mx-0 lg:px-0">
+        {banner}
         {(title || newOrderHref) && (
           <div className="flex items-center justify-between gap-2">
             {title && (

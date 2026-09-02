@@ -40,13 +40,11 @@ export default async function DashboardPage() {
   }));
 
   return (
-    <>
-      {announcement && <AnnouncementBanner a={announcement} />}
-      <OrdersBrowser
-        orders={rows}
-        title={isPreparer ? "Buyurtmalar" : "Buyurtmalarim"}
-        newOrderHref={isPreparer ? undefined : "/orders/new"}
-      />
-    </>
+    <OrdersBrowser
+      orders={rows}
+      title={isPreparer ? "Buyurtmalar" : "Buyurtmalarim"}
+      newOrderHref={isPreparer ? undefined : "/orders/new"}
+      banner={announcement && <AnnouncementBanner a={announcement} />}
+    />
   );
 }
