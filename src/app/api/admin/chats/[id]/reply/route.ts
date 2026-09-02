@@ -10,6 +10,7 @@ import { deliverMessage } from "@/lib/chat-notify";
 
 const schema = z.object({
   body: z.string().trim().max(8000).optional(),
+  replyToId: z.string().min(1).optional(),
   file: z
     .object({
       key: z.string().min(1),
@@ -50,6 +51,7 @@ export async function POST(
     senderId: supportId,
     body: parsed.data.body ?? "",
     system: false, // support xabari — oddiy bubble
+    replyToId: parsed.data.replyToId ?? null,
     file: parsed.data.file ?? null,
   });
 

@@ -7,6 +7,30 @@ export default async function AdminBroadcast() {
     orderBy: { createdAt: "desc" },
     take: 40,
   });
+  const ids = rows.map((r) => r.id);
+
+  const msgs = ids.length
+    ? await db.message.findMany({
+        where: { broadcastId: { in: ids } },
+        select: { broadcastId: true, readAt: true },
+      })
+    : [];
+  const reactions = ids.length
+    ? await db.messageReaction.findMany({
+        where: { message: { broadcastId: { in: ids } } },
+        select: { value: true, message: { select: { broadcastId: true } } },
+      })
+    : [];
+
+  const stat = (id: string) => ({
+    readCount: msgs.filter((m) => m.broadcastId === id && m.readAt).length,
+    likeCount: reactions.filter(
+      (r) => r.message.broadcastId === id && r.value === "LIKE",
+    ).length,
+    dislikeCount: reactions.filter(
+      (r) => r.message.broadcastId === id && r.value === "DISLIKE",
+    ).length,
+  });
 
   const initial = await Promise.all(
     rows.reverse().map(async (b) => ({
@@ -19,6 +43,7 @@ export default async function AdminBroadcast() {
         : null,
       sentCount: b.sentCount,
       createdAt: b.createdAt.toISOString(),
+      ...stat(b.id),
     })),
   );
 

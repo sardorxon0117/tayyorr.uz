@@ -7,6 +7,7 @@ import { ChatFileView, humanSize } from "@/components/chat-file";
 import { Linkify } from "@/components/linkify";
 import { RocketIcon } from "@/components/icons";
 import { AutoTextarea } from "@/components/admin/auto-textarea";
+import { PeopleModal, type Person } from "@/components/admin/people-modal";
 import { prepareBroadcastFile, type PreparedChatFile } from "@/lib/upload-client";
 
 interface Item {
@@ -17,6 +18,9 @@ interface Item {
   fileUrl?: string | null;
   sentCount: number;
   createdAt: string;
+  readCount?: number;
+  likeCount?: number;
+  dislikeCount?: number;
 }
 
 const MAX_FILE = 25 * 1024 * 1024;
@@ -43,13 +47,34 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
   const [menu, setMenu] = useState<{ item: Item; left: number; top: number } | null>(
     null,
   );
+  const [people, setPeople] = useState<
+    { title: string; loading: boolean; list: Person[] } | null
+  >(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
+  async function openPeople(it: Item, kind: "likes" | "dislikes" | "reads") {
+    setMenu(null);
+    const title =
+      kind === "likes"
+        ? "Yoqtirganlar"
+        : kind === "dislikes"
+          ? "Yoqtirmaganlar"
+          : "Ko'rganlar";
+    setPeople({ title, loading: true, list: [] });
+    try {
+      const res = await fetch(`/api/admin/broadcast/${it.id}/stats`);
+      const data = await res.json();
+      setPeople({ title, loading: false, list: data[kind] ?? [] });
+    } catch {
+      setPeople({ title, loading: false, list: [] });
+    }
+  }
+
   function openMenu(it: Item, btn: HTMLElement) {
     const r = btn.getBoundingClientRect();
-    const W = 176;
-    const H = 92;
+    const W = 200;
+    const H = 132;
     const M = 8;
     let left = r.right - W;
     if (left < M) left = M;
@@ -176,7 +201,10 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      setItems((p) => [...p, data.broadcast]);
+      setItems((p) => [
+        ...p,
+        { readCount: 0, likeCount: 0, dislikeCount: 0, ...data.broadcast },
+      ]);
       setText("");
       setAttachment(null);
       setCount(null);
@@ -290,6 +318,28 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
                   <Linkify text={it.body} mine />
                 </div>
               )}
+              {((it.likeCount ?? 0) > 0 || (it.dislikeCount ?? 0) > 0) && (
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {(it.likeCount ?? 0) > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => openPeople(it, "likes")}
+                      className="flex items-center gap-1 rounded-full bg-white/15 px-2 py-0.5 text-xs hover:bg-white/25"
+                    >
+                      👍 {it.likeCount}
+                    </button>
+                  )}
+                  {(it.dislikeCount ?? 0) > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => openPeople(it, "dislikes")}
+                      className="flex items-center gap-1 rounded-full bg-white/15 px-2 py-0.5 text-xs hover:bg-white/25"
+                    >
+                      👎 {it.dislikeCount}
+                    </button>
+                  )}
+                </div>
+              )}
               <div className="text-right text-[10px] text-indigo-200">
                 {it.sentCount} ta · {fmt(it.createdAt)}
               </div>
@@ -381,10 +431,17 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
         createPortal(
           <div className="fixed inset-0 z-[70]" onClick={() => setMenu(null)}>
             <div
-              className="absolute w-44 overflow-hidden rounded-xl border border-white/10 bg-zinc-900 py-1 text-sm shadow-xl"
+              className="absolute w-52 overflow-hidden rounded-xl border border-white/10 bg-zinc-900 py-1 text-sm shadow-xl"
               style={{ left: menu.left, top: menu.top }}
               onClick={(e) => e.stopPropagation()}
             >
+              <button
+                type="button"
+                onClick={() => openPeople(menu.item, "reads")}
+                className="block w-full px-3 py-2 text-left text-zinc-200 hover:bg-white/5"
+              >
+                👁 {menu.item.readCount ?? 0} kishi ko'rdi
+              </button>
               <button
                 type="button"
                 onClick={() => editItem(menu.item)}
@@ -403,6 +460,15 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
           </div>,
           document.body,
         )}
+
+      {people && (
+        <PeopleModal
+          title={people.title}
+          people={people.list}
+          loading={people.loading}
+          onClose={() => setPeople(null)}
+        />
+      )}
     </div>
   );
 }
