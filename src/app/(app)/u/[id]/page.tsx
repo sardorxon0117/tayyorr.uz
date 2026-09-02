@@ -1,10 +1,10 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { blockState } from "@/lib/chat";
 import { Stars } from "@/components/stars";
+import { BackLink } from "@/components/back-link";
 import { BlockedIcon } from "@/components/icons";
 import { presenceText } from "@/lib/presence";
 
@@ -62,9 +62,7 @@ export default async function PublicProfile({
   if (blockedMe) {
     return (
       <div className="mx-auto flex max-w-2xl flex-col gap-6">
-        <Link href="/messages" className="text-sm text-zinc-500 hover:text-white">
-          ‹ orqaga
-        </Link>
+        <BackLink />
         <div className="flex items-center gap-4">
           <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-zinc-500">
             <BlockedIcon className="h-8 w-8" />
@@ -97,9 +95,7 @@ export default async function PublicProfile({
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-6">
-      <Link href="/messages" className="text-sm text-zinc-500 hover:text-white">
-        ‹ orqaga
-      </Link>
+      <BackLink />
 
       {/* bosh qism */}
       <div className="flex items-center gap-4">
