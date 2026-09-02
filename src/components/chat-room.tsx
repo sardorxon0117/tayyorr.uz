@@ -649,11 +649,11 @@ export function ChatRoom({
                 <div
                   key={m.id}
                   id={`msg-${m.id}`}
-                  className={`flex rounded-2xl transition ${
+                  className={`group flex rounded-2xl transition ${
                     m.mine ? "justify-end" : "justify-start"
                   }`}
                 >
-                  <div className="group flex max-w-[86%] items-end gap-1.5">
+                  <div className="flex max-w-[86%] items-end gap-1.5">
                     {m.mine && MenuBtn}
 
                     <div

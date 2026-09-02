@@ -264,7 +264,7 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
               type="button"
               onClick={(e) => openMenu(it, e.currentTarget)}
               title="Amallar"
-              className="mb-1 shrink-0 rounded-lg px-1.5 py-1 text-sm leading-none text-zinc-400 opacity-100 transition hover:text-white [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100"
+              className="mb-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-white/15 bg-white/10 text-zinc-300 opacity-100 transition hover:bg-white/20 hover:text-white [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100"
             >
               ⋮
             </button>
