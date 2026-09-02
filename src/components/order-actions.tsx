@@ -18,7 +18,6 @@ interface OfferView {
     name: string;
     login: string | null;
     about: string | null;
-    isAvailable: boolean;
     rating: number | null;
     ratingCount: number;
   };
@@ -269,13 +268,6 @@ export function OrderActions(props: Props) {
                     <span className="text-zinc-400"> @{o.preparer.login}</span>
                   )}
                 </Link>
-                <span
-                  className={`shrink-0 text-xs ${
-                    o.preparer.isAvailable ? "text-emerald-400" : "text-amber-400"
-                  }`}
-                >
-                  {o.preparer.isAvailable ? "bo'sh" : "band"}
-                </span>
               </div>
               <Link
                 href={`/u/${o.preparerId}`}

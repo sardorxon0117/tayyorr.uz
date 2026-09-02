@@ -3,6 +3,14 @@
 import { useMemo, useRef, useState } from "react";
 import Link from "next/link";
 
+const SORTS = [
+  { key: "new", label: "Yangi" },
+  { key: "old", label: "Eski" },
+  { key: "offers", label: "Takliflar" },
+  { key: "budget", label: "Byudjet" },
+] as const;
+type SortKey = (typeof SORTS)[number]["key"];
+
 import { timeAgo } from "@/lib/time-ago";
 import { useDismiss } from "@/components/use-dismiss";
 
@@ -67,11 +75,20 @@ function Chip({
   );
 }
 
-export function OrdersBrowser({ orders }: { orders: OrderRow[] }) {
+export function OrdersBrowser({
+  orders,
+  title,
+  newOrderHref,
+}: {
+  orders: OrderRow[];
+  title?: string;
+  newOrderHref?: string;
+}) {
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
   const [types, setTypes] = useState<Set<string>>(new Set());
   const [buckets, setBuckets] = useState<Set<string>>(new Set());
+  const [sort, setSort] = useState<SortKey>("new");
   const sheetRef = useRef<HTMLDivElement>(null);
   useDismiss(open, () => setOpen(false), [sheetRef]);
 
@@ -85,7 +102,7 @@ export function OrdersBrowser({ orders }: { orders: OrderRow[] }) {
 
   const filtered = useMemo(() => {
     const needle = q.trim().toLowerCase();
-    return orders.filter((o) => {
+    const list = orders.filter((o) => {
       if (types.size && !types.has(o.type)) return false;
       if (buckets.size) {
         const ok = OFFER_BUCKETS.some(
@@ -101,24 +118,67 @@ export function OrdersBrowser({ orders }: { orders: OrderRow[] }) {
       }
       return true;
     });
-  }, [orders, q, types, buckets]);
+    const by: Record<SortKey, (a: OrderRow, b: OrderRow) => number> = {
+      new: (a, b) => b.createdAt.localeCompare(a.createdAt),
+      old: (a, b) => a.createdAt.localeCompare(b.createdAt),
+      offers: (a, b) => b.offers - a.offers,
+      budget: (a, b) => (b.budget ?? 0) - (a.budget ?? 0),
+    };
+    return [...list].sort(by[sort]);
+  }, [orders, q, types, buckets, sort]);
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center gap-2">
-        <input
-          className="input min-w-0 flex-1"
-          placeholder="Sarlavha, tavsif yoki tur bo'yicha qidirish…"
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-        />
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          className="btn-ghost shrink-0"
-        >
-          Filtr{activeCount > 0 && ` · ${activeCount}`}
-        </button>
+    <div className="flex flex-col gap-3">
+      <div className="sticky top-[4.25rem] z-20 -mx-4 flex flex-col gap-2 border-b border-white/10 bg-[#0b0b12]/85 px-4 py-3 backdrop-blur-xl sm:top-[4.75rem] sm:-mx-6 sm:px-6 lg:top-0 lg:-mx-6">
+        {(title || newOrderHref) && (
+          <div className="flex items-center justify-between gap-2">
+            {title && (
+              <h1 className="text-lg font-semibold tracking-tight text-white">
+                {title}
+              </h1>
+            )}
+            {newOrderHref && (
+              <Link href={newOrderHref} className="btn-primary shrink-0 text-sm">
+                + Yangi buyurtma
+              </Link>
+            )}
+          </div>
+        )}
+        <div className="flex flex-wrap items-center gap-2">
+          <input
+            className="input min-w-0 flex-1"
+            placeholder="Sarlavha, tavsif yoki tur bo'yicha qidirish…"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+          />
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            className="btn-ghost shrink-0"
+          >
+            Filtr{activeCount > 0 && ` · ${activeCount}`}
+          </button>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-1.5">
+          {SORTS.map((s) => (
+            <button
+              key={s.key}
+              type="button"
+              onClick={() => setSort(s.key)}
+              className={`rounded-full px-2.5 py-1 text-xs transition ${
+                sort === s.key
+                  ? "bg-indigo-500/20 text-white"
+                  : "text-zinc-500 hover:text-white"
+              }`}
+            >
+              {s.label}
+            </button>
+          ))}
+          <span className="ml-auto text-xs text-zinc-600">
+            {filtered.length} ta
+          </span>
+        </div>
       </div>
 
       {activeCount > 0 && (
@@ -165,8 +225,6 @@ export function OrdersBrowser({ orders }: { orders: OrderRow[] }) {
           </button>
         </div>
       )}
-
-      <p className="text-xs text-zinc-600">{filtered.length} ta buyurtma</p>
 
       {filtered.length === 0 ? (
         <div className="card text-sm text-zinc-500">

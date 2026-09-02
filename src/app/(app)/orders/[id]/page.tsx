@@ -47,7 +47,6 @@ export default async function OrderDetailPage({
               id: true,
               name: true,
               login: true,
-              isAvailable: true,
               ratingCount: true,
               ratingSum: true,
               about: true,
@@ -190,7 +189,6 @@ export default async function OrderDetailPage({
             name: o.preparer.name ?? o.preparer.login ?? "—",
             login: o.preparer.login,
             about: o.preparer.about,
-            isAvailable: o.preparer.isAvailable,
             rating: o.preparer.ratingCount
               ? o.preparer.ratingSum / o.preparer.ratingCount
               : null,

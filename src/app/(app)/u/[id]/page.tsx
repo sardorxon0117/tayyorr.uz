@@ -40,7 +40,6 @@ export default async function PublicProfile({
       about: true,
       avatarUrl: true,
       image: true,
-      isAvailable: true,
       ratingSum: true,
       ratingCount: true,
       isSupport: true,
@@ -135,13 +134,6 @@ export default async function PublicProfile({
               : user.role === "ORDERER"
                 ? "Buyurtma beruvchi"
                 : "—"}
-            {user.role === "PREPARER" && (
-              <span
-                className={`ml-2 ${user.isAvailable ? "text-emerald-400" : "text-amber-400"}`}
-              >
-                {user.isAvailable ? "bo'sh" : "band"}
-              </span>
-            )}
           </div>
           {(() => {
             const p = presenceText(user.lastSeenAt);
