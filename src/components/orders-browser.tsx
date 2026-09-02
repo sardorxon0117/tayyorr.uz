@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import Link from "next/link";
 
 import { timeAgo } from "@/lib/time-ago";
+import { useDismiss } from "@/components/use-dismiss";
 
 const TYPE_LABEL: Record<string, string> = {
   PRESENTATION: "Prezentatsiya",
@@ -71,6 +72,8 @@ export function OrdersBrowser({ orders }: { orders: OrderRow[] }) {
   const [open, setOpen] = useState(false);
   const [types, setTypes] = useState<Set<string>>(new Set());
   const [buckets, setBuckets] = useState<Set<string>>(new Set());
+  const sheetRef = useRef<HTMLDivElement>(null);
+  useDismiss(open, () => setOpen(false), [sheetRef]);
 
   const toggle = (set: Set<string>, key: string) => {
     const next = new Set(set);
@@ -205,6 +208,7 @@ export function OrdersBrowser({ orders }: { orders: OrderRow[] }) {
           onClick={() => setOpen(false)}
         >
           <div
+            ref={sheetRef}
             className="w-full max-w-md overflow-hidden rounded-t-2xl border border-white/10 bg-[#14141b] shadow-2xl sm:rounded-2xl"
             onClick={(e) => e.stopPropagation()}
           >

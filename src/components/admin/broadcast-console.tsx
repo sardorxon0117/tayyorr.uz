@@ -8,6 +8,7 @@ import { Linkify } from "@/components/linkify";
 import { RocketIcon } from "@/components/icons";
 import { AutoTextarea } from "@/components/admin/auto-textarea";
 import { PeopleModal, type Person } from "@/components/admin/people-modal";
+import { useDismiss } from "@/components/use-dismiss";
 import { prepareBroadcastFile, type PreparedChatFile } from "@/lib/upload-client";
 
 interface Item {
@@ -47,6 +48,8 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
   const [menu, setMenu] = useState<{ item: Item; left: number; top: number } | null>(
     null,
   );
+  const menuRef = useRef<HTMLDivElement>(null);
+  useDismiss(!!menu, () => setMenu(null), [menuRef]);
   const [people, setPeople] = useState<
     { title: string; loading: boolean; list: Person[] } | null
   >(null);
@@ -431,6 +434,7 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
         createPortal(
           <div className="fixed inset-0 z-[70]" onClick={() => setMenu(null)}>
             <div
+              ref={menuRef}
               className="absolute w-52 overflow-hidden rounded-xl border border-white/10 bg-zinc-900 py-1 text-sm shadow-xl"
               style={{ left: menu.left, top: menu.top }}
               onClick={(e) => e.stopPropagation()}

@@ -9,6 +9,7 @@ import { prepareAdminChatFile, type PreparedChatFile } from "@/lib/upload-client
 import { RocketIcon } from "@/components/icons";
 import { AutoTextarea } from "@/components/admin/auto-textarea";
 import { PeopleModal, type Person } from "@/components/admin/people-modal";
+import { useDismiss } from "@/components/use-dismiss";
 
 interface ReplyPreview {
   id: string;
@@ -56,6 +57,8 @@ export function AdminChatThread({
   const [menu, setMenu] = useState<{ msg: Msg; left: number; top: number } | null>(
     null,
   );
+  const menuRef = useRef<HTMLDivElement>(null);
+  useDismiss(!!menu, () => setMenu(null), [menuRef]);
   const [replyingTo, setReplyingTo] = useState<ReplyPreview | null>(null);
   const [editing, setEditing] = useState<{ id: string } | null>(null);
   const [people, setPeople] = useState<
@@ -530,11 +533,9 @@ export function AdminChatThread({
       {menu &&
         createPortal(
           <>
+            <div className="fixed inset-0 z-[70]" onClick={() => setMenu(null)} />
             <div
-              className="fixed inset-0 z-[70]"
-              onClick={() => setMenu(null)}
-            />
-            <div
+              ref={menuRef}
               className="fixed z-[71] w-[200px] overflow-hidden rounded-xl border border-white/10 bg-[#14141b] text-sm shadow-2xl shadow-black/50"
               style={{ left: menu.left, top: menu.top }}
             >

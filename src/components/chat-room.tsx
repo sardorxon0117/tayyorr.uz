@@ -10,6 +10,7 @@ import { ChatFileView, humanSize, type ChatFile } from "@/components/chat-file";
 import { Linkify } from "@/components/linkify";
 import { RocketIcon, BlockedIcon } from "@/components/icons";
 import { canGoBack } from "@/components/nav-history";
+import { useDismiss } from "@/components/use-dismiss";
 import { prepareChatFile, type PreparedChatFile } from "@/lib/upload-client";
 import { presenceText } from "@/lib/presence";
 
@@ -101,17 +102,8 @@ export function ChatRoom({
     });
   }
 
-  // tashqariga bosilsa yopiladi (scroll qilishga xalaqit bermaydi)
-  useEffect(() => {
-    if (!hdrMenu) return;
-    const onDown = (e: PointerEvent) => {
-      const t = e.target as Node;
-      if (hdrMenuRef.current?.contains(t) || hdrBtnRef.current?.contains(t)) return;
-      setHdrMenu(null);
-    };
-    document.addEventListener("pointerdown", onDown, true);
-    return () => document.removeEventListener("pointerdown", onDown, true);
-  }, [hdrMenu]);
+  // tashqariga bosilsa / Escape — yopiladi (scrollga xalaqit bermaydi)
+  useDismiss(!!hdrMenu, () => setHdrMenu(null), [hdrMenuRef, hdrBtnRef]);
   const blocked = iBlocked || theyBlocked;
 
   async function toggleBlock() {
@@ -168,6 +160,8 @@ export function ChatRoom({
   const [menu, setMenu] = useState<{ msg: Msg; left: number; top: number } | null>(
     null,
   );
+  const msgMenuRef = useRef<HTMLDivElement>(null);
+  useDismiss(!!menu, () => setMenu(null), [msgMenuRef]);
   const [report, setReport] = useState<{ suspectId: string; messageId: string } | null>(
     null,
   );
@@ -942,11 +936,9 @@ export function ChatRoom({
       {menu &&
         createPortal(
           <>
+            <div className="fixed inset-0 z-[70]" onClick={() => setMenu(null)} />
             <div
-              className="fixed inset-0 z-[70]"
-              onClick={() => setMenu(null)}
-            />
-            <div
+              ref={msgMenuRef}
               className="menu-panel fixed z-[71] w-[184px] overflow-hidden rounded-xl border border-white/10 bg-[#14141b] text-sm shadow-2xl shadow-black/50"
               style={{ left: menu.left, top: menu.top }}
             >
