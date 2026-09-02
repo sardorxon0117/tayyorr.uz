@@ -208,6 +208,19 @@ model Broadcast {
   @@index([createdAt])
 }
 
+model Announcement {
+  id         String   @id @default(cuid())
+  title      String
+  body       String
+  buttonText String?
+  buttonUrl  String?
+  active     Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([active, updatedAt])
+}
+
 model PushSubscription {
   id        String   @id @default(cuid())
   userId    String

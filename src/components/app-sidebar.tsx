@@ -24,9 +24,6 @@ export interface SidebarUser {
 /** Kompyuterda chap tomonda turadigan doimiy panel (headerni almashtiradi). */
 export function AppSidebar({ user }: { user: SidebarUser }) {
   const pathname = usePathname();
-  // chat ichida chap ustunni ChatRoom o'zi (kontaktlar) egallaydi
-  if (/^\/messages\/[^/]+$/.test(pathname)) return null;
-
   const displayName =
     user.name || (user.login ? `@${user.login}` : "Foydalanuvchi");
 

@@ -21,11 +21,9 @@ export function ChatContactsRail({ rows }: { rows: ConvRow[] }) {
   const activeId = pathname.split("/")[2] ?? "";
 
   return (
-    <aside className="fixed left-0 top-0 z-40 hidden h-screen w-72 flex-col border-r border-white/10 bg-[#0b0b12]/95 backdrop-blur-xl lg:flex">
+    <aside className="fixed left-0 top-0 z-40 hidden h-screen w-72 flex-col border-r border-white/10 bg-[#0b0b12]/95 backdrop-blur-xl lg:left-64 lg:flex">
       <div className="flex items-center justify-between px-4 py-3.5">
-        <Link href="/dashboard" className="text-sm font-semibold tracking-tight">
-          tayyorr<span className="text-indigo-400">.uz</span>
-        </Link>
+        <span className="text-sm font-semibold text-white">Suhbatlar</span>
         <Link href="/messages" className="text-xs text-zinc-500 hover:text-white">
           Hammasi
         </Link>

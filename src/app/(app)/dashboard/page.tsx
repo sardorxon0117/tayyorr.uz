@@ -1,7 +1,9 @@
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { getRestriction } from "@/lib/restriction";
+import { getActiveAnnouncement } from "@/lib/announcement";
 import { RestrictionNotice } from "@/components/restriction-notice";
+import { AnnouncementBanner } from "@/components/announcement-banner";
 import { OrdersBrowser, type OrderRow } from "@/components/orders-browser";
 
 export default async function DashboardPage() {
@@ -11,6 +13,8 @@ export default async function DashboardPage() {
 
   const me = session!.user;
   const isPreparer = me.role === "PREPARER";
+
+  const announcement = await getActiveAnnouncement();
 
   const orders = await db.order.findMany({
     where: isPreparer
@@ -36,10 +40,13 @@ export default async function DashboardPage() {
   }));
 
   return (
-    <OrdersBrowser
-      orders={rows}
-      title={isPreparer ? "Buyurtmalar" : "Buyurtmalarim"}
-      newOrderHref={isPreparer ? undefined : "/orders/new"}
-    />
+    <>
+      {announcement && <AnnouncementBanner a={announcement} />}
+      <OrdersBrowser
+        orders={rows}
+        title={isPreparer ? "Buyurtmalar" : "Buyurtmalarim"}
+        newOrderHref={isPreparer ? undefined : "/orders/new"}
+      />
+    </>
   );
 }
