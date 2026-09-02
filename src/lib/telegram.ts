@@ -99,3 +99,28 @@ export async function postOrderToChannel(order: ChannelOrder): Promise<void> {
     console.error("[telegram] post error", e instanceof Error ? e.message : e);
   }
 }
+
+/** Diagnostika: konfiguratsiya bor-yo'qligi + kanalga sinov xabari. */
+export async function telegramSelfTest(): Promise<Record<string, unknown>> {
+  const hasToken = !!TOKEN;
+  const channel = CHANNEL ?? null;
+  if (!hasToken || !channel) {
+    return { ok: false, hasToken, channel, reason: "env yo'q (TELEGRAM_BOT_TOKEN / TELEGRAM_CHANNEL_ID)" };
+  }
+  try {
+    const res = await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: channel,
+        text: "✅ tayyorr.uz — sinov xabari (Telegram ulanishi ishlayapti).",
+        disable_web_page_preview: true,
+      }),
+      signal: AbortSignal.timeout(8000),
+    });
+    const json = (await res.json().catch(() => ({}))) as Record<string, unknown>;
+    return { ok: res.ok, status: res.status, channel, response: json };
+  } catch (e) {
+    return { ok: false, channel, error: e instanceof Error ? e.message : String(e) };
+  }
+}

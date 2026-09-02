@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { auth } from "@/auth";
@@ -7,6 +6,7 @@ import { PRIVATE_BUCKET, presignGet } from "@/lib/r2";
 import { getRestriction } from "@/lib/restriction";
 import { RestrictionNotice } from "@/components/restriction-notice";
 import { OrderActions } from "@/components/order-actions";
+import { BackLink } from "@/components/back-link";
 
 const TYPE_LABEL: Record<string, string> = {
   PRESENTATION: "Prezentatsiya",
@@ -94,12 +94,7 @@ export default async function OrderDetailPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <Link
-        href="/orders"
-        className="inline-flex items-center gap-1 text-sm text-zinc-500 hover:text-white"
-      >
-        ‹ orqaga
-      </Link>
+      <BackLink fallback="/orders" />
       <div>
         <div className="text-xs uppercase tracking-wide text-indigo-400">
           {TYPE_LABEL[order.type]} · {STATUS_LABEL[order.status]}

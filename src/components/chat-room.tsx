@@ -9,6 +9,7 @@ import { ReportDialog } from "@/components/report-button";
 import { ChatFileView, humanSize, type ChatFile } from "@/components/chat-file";
 import { Linkify } from "@/components/linkify";
 import { RocketIcon, BlockedIcon } from "@/components/icons";
+import { canGoBack } from "@/components/nav-history";
 import { prepareChatFile, type PreparedChatFile } from "@/lib/upload-client";
 import { presenceText } from "@/lib/presence";
 
@@ -546,13 +547,14 @@ export function ChatRoom({
       {/* ---- birlashgan header (sayt + suhbat) ---- */}
       <header className="shrink-0 border-b border-white/10 bg-[#0b0b12]/80 backdrop-blur-2xl">
         <div className="mx-auto flex max-w-3xl items-center gap-2.5 px-3 py-2.5 sm:px-4">
-          <Link
-            href="/messages"
+          <button
+            type="button"
+            onClick={() => (canGoBack() ? router.back() : router.push("/messages"))}
             className="-ml-1 rounded-lg px-1.5 py-1 text-lg text-zinc-400 transition hover:bg-white/5 hover:text-white"
             aria-label="Orqaga"
           >
             ‹
-          </Link>
+          </button>
           <Link
             href={other.isSupport || !other.id ? "#" : `/u/${other.id}`}
             className="flex min-w-0 flex-1 items-center gap-2.5"

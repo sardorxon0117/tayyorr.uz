@@ -1,4 +1,4 @@
-import { NextResponse, after } from "next/server";
+import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { auth } from "@/auth";
@@ -88,8 +88,8 @@ export async function POST(req: Request) {
     },
   });
 
-  // javob yuborilgach kanalga joylaymiz — buyurtma yaratilishiga ta'sir qilmaydi
-  after(() => postOrderToChannel(order));
+  // kanalga joylaymiz — helper hech qachon xato tashlamaydi (try/catch + 8s timeout)
+  await postOrderToChannel(order);
 
   return NextResponse.json({ order }, { status: 201 });
 }
