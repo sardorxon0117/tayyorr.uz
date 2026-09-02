@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 import { ChatFileView, humanSize } from "@/components/chat-file";
 import { RocketIcon } from "@/components/icons";
@@ -38,8 +39,44 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
   const [uploading, setUploading] = useState(false);
   const [uploadPct, setUploadPct] = useState(0);
   const [uploadName, setUploadName] = useState("");
+  const [menu, setMenu] = useState<{ item: Item; left: number; top: number } | null>(
+    null,
+  );
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  function openMenu(it: Item, btn: HTMLElement) {
+    const r = btn.getBoundingClientRect();
+    const W = 176;
+    const H = 92;
+    const M = 8;
+    let left = r.right - W;
+    if (left < M) left = M;
+    let top = r.bottom + 6;
+    if (top + H > window.innerHeight - M) top = r.top - H - 6;
+    if (top < M) top = M;
+    setMenu({ item: it, left, top });
+  }
+
+  async function editItem(it: Item) {
+    setMenu(null);
+    const next = window.prompt("Xabar matnini tahrirlang:", it.body);
+    if (next == null) return;
+    const body = next.trim();
+    if (!body || body === it.body) return;
+    try {
+      const res = await fetch(`/api/admin/broadcast/${it.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ body }),
+      });
+      if (res.ok) {
+        setItems((p) => p.map((x) => (x.id === it.id ? { ...x, body } : x)));
+      }
+    } catch {
+      /* ignore */
+    }
+  }
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -78,6 +115,7 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
   }
 
   async function delItem(id: string) {
+    setMenu(null);
     if (!window.confirm("Bu ommaviy xabar barcha foydalanuvchilardan o'chiriladi. Davom etilsinmi?"))
       return;
     try {
@@ -223,11 +261,11 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
           <div key={it.id} className="group flex items-center justify-end gap-1.5">
             <button
               type="button"
-              onClick={() => delItem(it.id)}
-              title="Hamma uchun o'chirish"
-              className="shrink-0 rounded-lg px-1.5 py-1 text-xs text-zinc-500 opacity-0 transition hover:text-red-400 group-hover:opacity-100"
+              onClick={(e) => openMenu(it, e.currentTarget)}
+              title="Amallar"
+              className="shrink-0 rounded-lg px-1.5 py-1 text-sm leading-none text-zinc-500 opacity-0 transition hover:text-white group-hover:opacity-100"
             >
-              🗑
+              ⋮
             </button>
             <div className="max-w-[80%] space-y-1.5 rounded-2xl bg-indigo-600 px-3.5 py-2 text-sm text-white">
               {it.fileUrl && (
@@ -335,6 +373,33 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
           </button>
         </form>
       </div>
+
+      {menu &&
+        createPortal(
+          <div className="fixed inset-0 z-[70]" onClick={() => setMenu(null)}>
+            <div
+              className="absolute w-44 overflow-hidden rounded-xl border border-white/10 bg-zinc-900 py-1 text-sm shadow-xl"
+              style={{ left: menu.left, top: menu.top }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                type="button"
+                onClick={() => editItem(menu.item)}
+                className="block w-full px-3 py-2 text-left text-zinc-200 hover:bg-white/5"
+              >
+                Tahrirlash
+              </button>
+              <button
+                type="button"
+                onClick={() => delItem(menu.item.id)}
+                className="block w-full px-3 py-2 text-left text-red-400 hover:bg-white/5"
+              >
+                Hamma uchun o'chirish
+              </button>
+            </div>
+          </div>,
+          document.body,
+        )}
     </div>
   );
 }
