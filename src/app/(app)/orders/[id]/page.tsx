@@ -74,6 +74,10 @@ export default async function OrderDetailPage({
   const isAssigned = order.preparerId === me.id;
   const isParty = isOrderer || isAssigned;
 
+  // OPEN bo'lmagan buyurtma faqat ishtirokchilarga ko'rinadi
+  // (band bo'lgan / bekor qilingan / tugallangan — boshqalarga yo'q)
+  if (!isParty && order.status !== "OPEN") notFound();
+
   // takliflar: buyurtma egasiga hammasi, tayyorlovchiga faqat o'ziniki
   const visibleOffers = isOrderer
     ? order.offers

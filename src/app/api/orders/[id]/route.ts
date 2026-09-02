@@ -54,6 +54,11 @@ export async function GET(
   const isParty =
     order.ordererId === session.user.id || order.preparerId === session.user.id;
 
+  // OPEN bo'lmagan buyurtma faqat ishtirokchilarga
+  if (!isParty && order.status !== "OPEN") {
+    return NextResponse.json({ error: "Topilmadi" }, { status: 404 });
+  }
+
   // yopiq fayllarni faqat ishtirokchilarga vaqtinchalik link bilan beramiz
   const files = await Promise.all(
     order.files.map(async (f) => ({
