@@ -259,12 +259,12 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
           </p>
         )}
         {items.map((it) => (
-          <div key={it.id} className="group flex items-center justify-end gap-1.5">
+          <div key={it.id} className="group flex items-end justify-end gap-1.5">
             <button
               type="button"
               onClick={(e) => openMenu(it, e.currentTarget)}
               title="Amallar"
-              className="shrink-0 rounded-lg px-1.5 py-1 text-sm leading-none text-zinc-500 opacity-0 transition hover:text-white group-hover:opacity-100"
+              className="mb-1 shrink-0 rounded-lg px-1.5 py-1 text-sm leading-none text-zinc-400 opacity-100 transition hover:text-white [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100"
             >
               ⋮
             </button>

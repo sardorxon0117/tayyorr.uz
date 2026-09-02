@@ -638,7 +638,7 @@ export function ChatRoom({
                 <button
                   type="button"
                   onClick={(e) => openMenu(m, e.currentTarget)}
-                  className="flex h-7 w-7 shrink-0 items-center justify-center self-end rounded-lg border border-white/15 bg-white/10 text-zinc-300 transition hover:bg-white/20 hover:text-white"
+                  className="flex h-7 w-7 shrink-0 items-center justify-center self-end rounded-lg border border-white/15 bg-white/10 text-zinc-300 opacity-100 transition hover:bg-white/20 hover:text-white [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100"
                   aria-label="Xabar menyusi"
                 >
                   ⋮
@@ -653,7 +653,7 @@ export function ChatRoom({
                     m.mine ? "justify-end" : "justify-start"
                   }`}
                 >
-                  <div className="flex max-w-[86%] items-end gap-1.5">
+                  <div className="group flex max-w-[86%] items-end gap-1.5">
                     {m.mine && MenuBtn}
 
                     <div
