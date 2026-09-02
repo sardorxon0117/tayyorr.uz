@@ -82,7 +82,7 @@ export function AnnouncementCarousel({
           type="button"
           aria-label={`E'lon ${n + 1}`}
           onClick={() => go(n)}
-          className="relative h-0.5 flex-1 overflow-hidden rounded-full bg-white/15"
+          className="relative h-0.5 w-4 overflow-hidden rounded-full bg-white/20"
         >
           {n < i && (
             <span className="absolute inset-0 rounded-full bg-white/50" />
