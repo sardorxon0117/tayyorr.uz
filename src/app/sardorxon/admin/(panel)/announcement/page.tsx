@@ -1,26 +1,34 @@
 import { db } from "@/lib/db";
-import { AnnouncementForm } from "@/components/admin/announcement-form";
+import {
+  AnnouncementManager,
+  type Banner,
+} from "@/components/admin/announcement-manager";
 
 export default async function AdminAnnouncement() {
-  const a = await db.announcement.findFirst({ orderBy: { updatedAt: "desc" } });
+  const rows = await db.announcement.findMany({
+    orderBy: { createdAt: "desc" },
+  });
+
+  const initial: Banner[] = rows.map((a) => ({
+    id: a.id,
+    title: a.title,
+    body: a.body,
+    buttonText: a.buttonText ?? "",
+    buttonUrl: a.buttonUrl ?? "",
+    role: (a.role as Banner["role"]) ?? "",
+    active: a.active,
+  }));
 
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <h1 className="text-xl font-semibold text-white">E'lon banneri</h1>
+        <h1 className="text-xl font-semibold text-white">E'lon bannerlari</h1>
         <p className="mt-1 text-sm text-zinc-500">
-          Buyurtmalar ro'yxati ustida (faqat kompyuterda) ko'rinadigan e'lon.
+          Buyurtmalar ro'yxati ustida (faqat kompyuterda) ko'rinadi. Bir nechta
+          faol bo'lsa navbatlashib turadi.
         </p>
       </div>
-      <AnnouncementForm
-        initial={{
-          title: a?.title ?? "",
-          body: a?.body ?? "",
-          buttonText: a?.buttonText ?? "",
-          buttonUrl: a?.buttonUrl ?? "",
-          active: a?.active ?? true,
-        }}
-      />
+      <AnnouncementManager initial={initial} />
     </div>
   );
 }

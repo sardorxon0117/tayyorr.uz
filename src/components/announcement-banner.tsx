@@ -1,13 +1,21 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 
 import type { ActiveAnnouncement } from "@/lib/announcement";
 
-/** Buyurtmalar ustida turadigan e'lon — faqat kompyuterda ko'rinadi. */
-export function AnnouncementBanner({ a }: { a: ActiveAnnouncement }) {
-  const external = !!a.buttonUrl && /^https?:\/\//i.test(a.buttonUrl);
+const ROTATE_MS = 6500;
 
+/** Bitta e'lon kartasi (ko'rinish). */
+export function AnnouncementBanner({
+  a,
+}: {
+  a: Omit<ActiveAnnouncement, "id">;
+}) {
+  const external = !!a.buttonUrl && /^https?:\/\//i.test(a.buttonUrl);
   return (
-    <div className="hidden overflow-hidden rounded-2xl border border-indigo-400/25 bg-gradient-to-br from-indigo-500/15 to-fuchsia-500/10 p-4 lg:block">
+    <div className="overflow-hidden rounded-2xl border border-indigo-400/25 bg-gradient-to-br from-indigo-500/15 to-fuchsia-500/10 p-4">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="min-w-0">
           <div className="text-base font-semibold text-white">{a.title}</div>
@@ -27,6 +35,68 @@ export function AnnouncementBanner({ a }: { a: ActiveAnnouncement }) {
           </Link>
         )}
       </div>
+    </div>
+  );
+}
+
+/** Bir nechta e'lon — kompyuterda navbatlashib turadi + pastda indikator. */
+export function AnnouncementCarousel({
+  items,
+}: {
+  items: ActiveAnnouncement[];
+}) {
+  const [i, setI] = useState(0);
+  const [tick, setTick] = useState(0); // indikator animatsiyasini restart qilish uchun
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const many = items.length > 1;
+
+  useEffect(() => {
+    if (!many) return;
+    if (i > items.length - 1) setI(0);
+    timer.current = setTimeout(() => {
+      setI((p) => (p + 1) % items.length);
+      setTick((t) => t + 1);
+    }, ROTATE_MS);
+    return () => {
+      if (timer.current) clearTimeout(timer.current);
+    };
+  }, [i, many, items.length]);
+
+  if (items.length === 0) return null;
+  const cur = items[Math.min(i, items.length - 1)];
+
+  function go(n: number) {
+    setI(n);
+    setTick((t) => t + 1);
+  }
+
+  return (
+    <div className="hidden lg:block">
+      <AnnouncementBanner a={cur} />
+      {many && (
+        <div className="mt-2 flex items-center gap-1.5">
+          {items.map((it, n) => (
+            <button
+              key={it.id}
+              type="button"
+              aria-label={`E'lon ${n + 1}`}
+              onClick={() => go(n)}
+              className="relative h-1 flex-1 overflow-hidden rounded-full bg-white/10"
+            >
+              {n < i && (
+                <span className="absolute inset-0 rounded-full bg-indigo-400/60" />
+              )}
+              {n === i && (
+                <span
+                  key={tick}
+                  className="animate-ann-progress absolute inset-y-0 left-0 rounded-full bg-indigo-400"
+                />
+              )}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

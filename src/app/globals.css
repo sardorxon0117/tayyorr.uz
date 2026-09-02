@@ -220,6 +220,15 @@ select.input option {
   animation-delay: calc(var(--i, 0) * 0.04s);
 }
 
+/* e'lon karusel indikatori */
+@keyframes ann-progress {
+  from { width: 0%; }
+  to { width: 100%; }
+}
+.animate-ann-progress {
+  animation: ann-progress 6.5s linear both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-float-a,
   .animate-float-b,

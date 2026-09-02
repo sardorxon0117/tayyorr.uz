@@ -214,11 +214,12 @@ model Announcement {
   body       String
   buttonText String?
   buttonUrl  String?
+  role       String? // null = hammaga, "ORDERER" | "PREPARER"
   active     Boolean  @default(true)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  @@index([active, updatedAt])
+  @@index([active, createdAt])
 }
 
 model PushSubscription {
