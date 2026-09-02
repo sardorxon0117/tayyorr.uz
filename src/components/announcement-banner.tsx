@@ -7,11 +7,13 @@ import type { ActiveAnnouncement } from "@/lib/announcement";
 
 const ROTATE_MS = 6500;
 
-/** Bitta e'lon kartasi (ko'rinish). */
+/** Bitta e'lon kartasi. Indikator karta ichida, pastda turadi. */
 export function AnnouncementBanner({
   a,
+  indicator,
 }: {
   a: Omit<ActiveAnnouncement, "id">;
+  indicator?: React.ReactNode;
 }) {
   const external = !!a.buttonUrl && /^https?:\/\//i.test(a.buttonUrl);
   return (
@@ -35,18 +37,19 @@ export function AnnouncementBanner({
           </Link>
         )}
       </div>
+      {indicator && <div className="mt-3">{indicator}</div>}
     </div>
   );
 }
 
-/** Bir nechta e'lon — kompyuterda navbatlashib turadi + pastda indikator. */
+/** Bir nechta e'lon — kompyuterda navbatlashib turadi. */
 export function AnnouncementCarousel({
   items,
 }: {
   items: ActiveAnnouncement[];
 }) {
   const [i, setI] = useState(0);
-  const [tick, setTick] = useState(0); // indikator animatsiyasini restart qilish uchun
+  const [tick, setTick] = useState(0);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const many = items.length > 1;
@@ -71,32 +74,33 @@ export function AnnouncementCarousel({
     setTick((t) => t + 1);
   }
 
+  const indicator = many ? (
+    <div className="flex items-center gap-1">
+      {items.map((it, n) => (
+        <button
+          key={it.id}
+          type="button"
+          aria-label={`E'lon ${n + 1}`}
+          onClick={() => go(n)}
+          className="relative h-0.5 flex-1 overflow-hidden rounded-full bg-white/15"
+        >
+          {n < i && (
+            <span className="absolute inset-0 rounded-full bg-white/50" />
+          )}
+          {n === i && (
+            <span
+              key={tick}
+              className="animate-ann-progress absolute inset-y-0 left-0 rounded-full bg-white"
+            />
+          )}
+        </button>
+      ))}
+    </div>
+  ) : undefined;
+
   return (
     <div className="hidden lg:block">
-      <AnnouncementBanner a={cur} />
-      {many && (
-        <div className="mt-2 flex items-center gap-1.5">
-          {items.map((it, n) => (
-            <button
-              key={it.id}
-              type="button"
-              aria-label={`E'lon ${n + 1}`}
-              onClick={() => go(n)}
-              className="relative h-1 flex-1 overflow-hidden rounded-full bg-white/10"
-            >
-              {n < i && (
-                <span className="absolute inset-0 rounded-full bg-indigo-400/60" />
-              )}
-              {n === i && (
-                <span
-                  key={tick}
-                  className="animate-ann-progress absolute inset-y-0 left-0 rounded-full bg-indigo-400"
-                />
-              )}
-            </button>
-          ))}
-        </div>
-      )}
+      <AnnouncementBanner a={cur} indicator={indicator} />
     </div>
   );
 }
