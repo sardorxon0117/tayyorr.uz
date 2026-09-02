@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 import { ChatFileView, humanSize } from "@/components/chat-file";
+import { Linkify } from "@/components/linkify";
 import { RocketIcon } from "@/components/icons";
 import { AutoTextarea } from "@/components/admin/auto-textarea";
 import { prepareBroadcastFile, type PreparedChatFile } from "@/lib/upload-client";
@@ -285,7 +286,9 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
                 </div>
               )}
               {it.body && (
-                <div className="whitespace-pre-wrap break-words">{it.body}</div>
+                <div className="whitespace-pre-wrap break-words">
+                  <Linkify text={it.body} mine />
+                </div>
               )}
               <div className="text-right text-[10px] text-indigo-200">
                 {it.sentCount} ta · {fmt(it.createdAt)}
