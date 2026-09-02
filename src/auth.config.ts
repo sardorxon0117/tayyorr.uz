@@ -1,4 +1,5 @@
 import type { NextAuthConfig } from "next-auth";
+import { NextResponse } from "next/server";
 import Google from "next-auth/providers/google";
 
 /**
@@ -18,7 +19,8 @@ export const authConfig = {
     signIn: "/login",
   },
   callbacks: {
-    authorized({ auth, request: { nextUrl } }) {
+    authorized({ auth, request }) {
+      const { nextUrl } = request;
       const isLoggedIn = !!auth?.user;
       const path = nextUrl.pathname;
 
@@ -33,7 +35,25 @@ export const authConfig = {
         path.startsWith("/register");
 
       if (isPublic) return true;
-      return isLoggedIn;
+      if (isLoggedIn) return true;
+
+      // Admin (tyr_admin cookie) — user sahifalarini admin ko'rinishiga yo'naltiramiz.
+      // Imzo bu yerda (edge) tekshirilmaydi — admin sahifalarining o'zi tekshiradi.
+      if (request.cookies.get("tyr_admin")?.value) {
+        const rules: Array<[RegExp, (m: RegExpMatchArray) => string]> = [
+          [/^\/orders\/([^/]+)\/?$/, (m) => `/sardorxon/admin/orders/${m[1]}`],
+          [/^\/orders\/?$/, () => `/sardorxon/admin/orders`],
+          [/^\/u\/([^/]+)\/?$/, (m) => `/sardorxon/admin/users/${m[1]}`],
+          [/^\/messages\/([^/]+)\/?$/, (m) => `/sardorxon/admin/chats/${m[1]}`],
+          [/^\/messages\/?$/, () => `/sardorxon/admin/chats`],
+        ];
+        for (const [re, to] of rules) {
+          const mm = path.match(re);
+          if (mm) return NextResponse.redirect(new URL(to(mm), nextUrl));
+        }
+      }
+
+      return false;
     },
   },
 } satisfies NextAuthConfig;

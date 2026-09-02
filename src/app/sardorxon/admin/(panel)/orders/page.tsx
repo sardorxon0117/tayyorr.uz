@@ -56,7 +56,7 @@ export default async function AdminOrders() {
                 </td>
                 <td className="px-4 py-2">
                   <Link
-                    href={`/orders/${o.id}`}
+                    href={`/sardorxon/admin/orders/${o.id}`}
                     className="text-indigo-400 hover:underline"
                   >
                     {o.title}

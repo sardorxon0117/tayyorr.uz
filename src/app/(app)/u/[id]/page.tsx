@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { auth } from "@/auth";
@@ -81,17 +82,29 @@ export default async function PublicProfile({
   }
 
   const avg = user.ratingCount ? user.ratingSum / user.ratingCount : 0;
+  const isOwn = me === id;
 
-  // tayyorlovchining bajarilgan ishlari + har biriga qo'yilgan baho
+  // PREPARER: bajarilgan ishlar (ommaviy portfolio)
+  // ORDERER: yakunlangan buyurtmalar (faqat o'z profilида)
   const doneOrders =
     user.role === "PREPARER"
       ? await db.order.findMany({
           where: { preparerId: id, status: "DONE" },
           orderBy: { updatedAt: "desc" },
-          take: 30,
+          take: 100,
           include: { review: true },
         })
-      : [];
+      : isOwn
+        ? await db.order.findMany({
+            where: { ordererId: id, status: "DONE" },
+            orderBy: { updatedAt: "desc" },
+            take: 100,
+            include: { review: true },
+          })
+        : [];
+  const showDone = user.role === "PREPARER" || (isOwn && user.role === "ORDERER");
+  const doneTitle =
+    user.role === "PREPARER" ? "Bajarilgan ishlar" : "Yakunlangan buyurtmalar";
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-6">
@@ -180,44 +193,51 @@ export default async function PublicProfile({
         )}
       </div>
 
-      {/* bajarilgan ishlar + baholar */}
-      {user.role === "PREPARER" && (
+      {/* bajarilgan ishlar / yakunlangan buyurtmalar */}
+      {showDone && (
         <div>
           <h2 className="mb-3 font-semibold text-white">
-            Bajarilgan ishlar ({doneOrders.length})
+            {doneTitle} ({doneOrders.length})
           </h2>
           {doneOrders.length === 0 ? (
-            <div className="card text-sm text-zinc-500">Hozircha ish yo'q.</div>
+            <div className="card text-sm text-zinc-500">Hozircha yo'q.</div>
           ) : (
             <ul className="flex flex-col gap-2">
               {doneOrders.map((o) => (
-                <li key={o.id} className="card">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <div className="truncate font-medium text-white">{o.title}</div>
-                      <div className="mt-0.5 text-xs text-zinc-500">
-                        {TYPE_LABEL[o.type] ?? o.type} ·{" "}
-                        {o.updatedAt.toLocaleDateString("uz")}
-                      </div>
-                    </div>
-                    {o.review ? (
-                      <div className="shrink-0 text-right">
-                        <Stars value={o.review.stars} />
-                        <div className="text-xs text-zinc-400">
-                          {o.review.stars}.0
+                <li key={o.id}>
+                  <Link
+                    href={`/orders/${o.id}`}
+                    className="card block transition hover:border-white/15 hover:bg-white/[0.06]"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="truncate font-medium text-white">
+                          {o.title}
+                        </div>
+                        <div className="mt-0.5 text-xs text-zinc-500">
+                          {TYPE_LABEL[o.type] ?? o.type} ·{" "}
+                          {o.updatedAt.toLocaleDateString("uz")}
                         </div>
                       </div>
-                    ) : (
-                      <span className="shrink-0 text-xs text-zinc-600">
-                        baholanmagan
-                      </span>
+                      {o.review ? (
+                        <div className="shrink-0 text-right">
+                          <Stars value={o.review.stars} />
+                          <div className="text-xs text-zinc-400">
+                            {o.review.stars}.0
+                          </div>
+                        </div>
+                      ) : (
+                        <span className="shrink-0 text-xs text-zinc-600">
+                          baholanmagan
+                        </span>
+                      )}
+                    </div>
+                    {o.review?.comment && (
+                      <p className="mt-2 text-sm text-zinc-400">
+                        «{o.review.comment}»
+                      </p>
                     )}
-                  </div>
-                  {o.review?.comment && (
-                    <p className="mt-2 text-sm text-zinc-400">
-                      «{o.review.comment}»
-                    </p>
-                  )}
+                  </Link>
                 </li>
               ))}
             </ul>
