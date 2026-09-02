@@ -98,7 +98,7 @@ export default async function OrderDetailPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <BackLink fallback="/orders" />
+      <BackLink fallback="/dashboard" />
       <div>
         <div className="text-xs uppercase tracking-wide text-indigo-400">
           {TYPE_LABEL[order.type]} · {STATUS_LABEL[order.status]}

@@ -18,6 +18,11 @@ export function NavHistoryTracker() {
       if (last === pathname) return; // bir xil sahifa
       if (prev === pathname) {
         stack.pop(); // orqaga qaytildi
+      } else if (
+        last === "/orders/new" &&
+        /^\/orders\/[^/]+$/.test(pathname)
+      ) {
+        stack[stack.length - 1] = pathname; // yaratildi -> new'ni almashtiramiz
       } else {
         stack.push(pathname); // yangi sahifa
       }

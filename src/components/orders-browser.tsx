@@ -166,7 +166,11 @@ export function OrdersBrowser({ orders }: { orders: OrderRow[] }) {
       <p className="text-xs text-zinc-600">{filtered.length} ta buyurtma</p>
 
       {filtered.length === 0 ? (
-        <div className="card text-sm text-zinc-500">Mos buyurtma topilmadi.</div>
+        <div className="card text-sm text-zinc-500">
+          {orders.length === 0
+            ? "Hali buyurtma yo'q."
+            : "Mos buyurtma topilmadi."}
+        </div>
       ) : (
         <ul className="flex flex-col gap-3">
           {filtered.map((o) => (

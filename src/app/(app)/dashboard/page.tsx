@@ -6,20 +6,18 @@ import { ensureWalletCode, formatSom } from "@/lib/wallet";
 import { getRestriction } from "@/lib/restriction";
 import { RestrictionNotice } from "@/components/restriction-notice";
 import { AvailabilityToggle } from "@/components/availability-toggle";
+import { OrdersBrowser, type OrderRow } from "@/components/orders-browser";
 
 export default async function DashboardPage() {
   const session = await auth();
   const restriction = await getRestriction(session!.user.id);
   if (restriction) return <RestrictionNotice restriction={restriction} />;
+
   const user = await db.user.findUnique({
     where: { id: session!.user.id },
     include: {
       _count: {
-        select: {
-          ordersCreated: true,
-          ordersTaken: true,
-          offers: true,
-        },
+        select: { ordersCreated: true, ordersTaken: true, offers: true },
       },
     },
   });
@@ -28,80 +26,92 @@ export default async function DashboardPage() {
   const walletCode = await ensureWalletCode(user.id);
   const isPreparer = user.role === "PREPARER";
 
-  return (
-    <div className="flex flex-col gap-8">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-white">
-            Salom, {user.firstName || user.name}!
-          </h1>
-          <p className="mt-1 text-sm text-zinc-400">
-            {isPreparer ? "Tayyorlovchi" : "Buyurtma beruvchi"} kabineti
-          </p>
-        </div>
-        {isPreparer && <AvailabilityToggle initial={user.isAvailable} />}
-      </div>
+  const orders = await db.order.findMany({
+    where: isPreparer
+      ? { OR: [{ status: "OPEN" }, { preparerId: user.id }] }
+      : { ordererId: user.id },
+    orderBy: { createdAt: "desc" },
+    include: {
+      orderer: { select: { name: true, login: true } },
+      _count: { select: { offers: true } },
+    },
+  });
 
-      {/* hisob (balans) */}
-      <div className="relative overflow-hidden rounded-2xl glass-strong p-6">
-        <div
-          aria-hidden
-          className="blob"
-          style={{
-            top: "-9rem",
-            right: "-7rem",
-            width: "24rem",
-            height: "24rem",
-            background: "radial-gradient(circle, #6366f1, transparent 70%)",
-            opacity: 0.3,
-          }}
-        />
-        <div className="relative flex flex-wrap items-end justify-between gap-4">
+  const rows: OrderRow[] = orders.map((o) => ({
+    id: o.id,
+    title: o.title,
+    description: o.description,
+    type: o.type,
+    status: o.status,
+    budget: o.budget,
+    offers: o._count.offers,
+    createdAt: o.createdAt.toISOString(),
+    ordererLabel: isPreparer ? o.orderer.login ?? o.orderer.name ?? null : null,
+  }));
+
+  return (
+    <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
+      {/* ---- chet: hisob ma'lumotlari ---- */}
+      <aside className="flex w-full shrink-0 flex-col gap-4 lg:w-72">
+        <div className="flex items-center justify-between gap-3">
           <div>
-            <div className="text-sm text-zinc-400">Hisobingizdagi pul</div>
-            <div className="mt-1 text-3xl font-semibold tracking-tight text-white">
-              {formatSom(user.balance)}
-            </div>
-            <div className="mt-2 text-xs text-zinc-500">
-              Hisob kodi: <span className="font-mono text-zinc-300">{walletCode}</span>
-            </div>
+            <h1 className="text-lg font-semibold tracking-tight text-white">
+              {user.firstName || user.name}
+            </h1>
+            <p className="text-xs text-zinc-500">
+              {isPreparer ? "Tayyorlovchi" : "Buyurtma beruvchi"} kabineti
+            </p>
           </div>
-          <Link href="/wallet" className="btn-white">
+          {isPreparer && <AvailabilityToggle initial={user.isAvailable} />}
+        </div>
+
+        <div className="rounded-2xl glass-strong p-4">
+          <div className="text-xs text-zinc-400">Hisobingizdagi pul</div>
+          <div className="mt-1 text-2xl font-semibold tracking-tight text-white">
+            {formatSom(user.balance)}
+          </div>
+          <div className="mt-1.5 text-[11px] text-zinc-500">
+            Hisob kodi:{" "}
+            <span className="font-mono text-zinc-300">{walletCode}</span>
+          </div>
+          <Link href="/wallet" className="btn-white mt-3 w-full text-center text-sm">
             Hisobni to'ldirish
           </Link>
         </div>
-      </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        {isPreparer ? (
-          <>
-            <Stat label="Yuborilgan takliflar" value={user._count.offers} />
-            <Stat label="Olingan ishlar" value={user._count.ordersTaken} />
-            <Stat
-              label="Reyting"
-              value={
-                user.ratingCount
-                  ? (user.ratingSum / user.ratingCount).toFixed(1)
-                  : "—"
-              }
-            />
-          </>
-        ) : (
-          <>
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-1">
+          {isPreparer ? (
+            <>
+              <Stat label="Yuborilgan takliflar" value={user._count.offers} />
+              <Stat label="Olingan ishlar" value={user._count.ordersTaken} />
+              <Stat
+                label="Reyting"
+                value={
+                  user.ratingCount
+                    ? (user.ratingSum / user.ratingCount).toFixed(1)
+                    : "—"
+                }
+              />
+            </>
+          ) : (
             <Stat label="Buyurtmalarim" value={user._count.ordersCreated} />
-            <Link
-              href="/orders/new"
-              className="card flex items-center justify-center gap-2 font-medium text-indigo-300 transition hover:bg-white/[0.06]"
-            >
-              + Yangi buyurtma
-            </Link>
-          </>
-        )}
-      </div>
+          )}
+        </div>
 
-      <Link href="/orders" className="btn-primary w-fit">
-        {isPreparer ? "Ochiq buyurtmalarni ko'rish" : "Buyurtmalarim"}
-      </Link>
+        {!isPreparer && (
+          <Link href="/orders/new" className="btn-primary w-full text-center">
+            + Yangi buyurtma
+          </Link>
+        )}
+      </aside>
+
+      {/* ---- asosiy: buyurtmalar (saralash / qidiruv) ---- */}
+      <div className="min-w-0 flex-1">
+        <h2 className="mb-3 text-lg font-semibold text-white">
+          {isPreparer ? "Buyurtmalar" : "Buyurtmalarim"}
+        </h2>
+        <OrdersBrowser orders={rows} />
+      </div>
     </div>
   );
 }
@@ -109,8 +119,8 @@ export default async function DashboardPage() {
 function Stat({ label, value }: { label: string; value: number | string }) {
   return (
     <div className="card">
-      <div className="text-2xl font-semibold text-white">{value}</div>
-      <div className="mt-1 text-sm text-zinc-500">{label}</div>
+      <div className="text-xl font-semibold text-white">{value}</div>
+      <div className="mt-1 text-xs text-zinc-500">{label}</div>
     </div>
   );
 }
