@@ -667,7 +667,7 @@ export function ChatRoom({
             {messages.map((m) => {
               if (m.system) {
                 return (
-                  <div key={m.id} className="flex justify-center">
+                  <div key={m.id} className="blur-in flex justify-center">
                     <div className="max-w-[85%] rounded-lg bg-white/5 px-3 py-1.5 text-center text-xs text-zinc-400">
                       {m.body}
                     </div>
@@ -692,7 +692,7 @@ export function ChatRoom({
                 <div
                   key={m.id}
                   id={`msg-${m.id}`}
-                  className={`group flex rounded-2xl transition ${
+                  className={`blur-in group flex rounded-2xl transition ${
                     m.mine ? "justify-end" : "justify-start"
                   }`}
                 >

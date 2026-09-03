@@ -74,7 +74,7 @@ export default async function MessagesPage() {
       ) : (
         <ul className="flex flex-col gap-2">
           {rows.map(({ c, other, unread, last, isSupport, blockedMe }) => (
-            <li key={c.id}>
+            <li key={c.id} className="blur-in">
               <Link
                 href={`/messages/${c.id}`}
                 className={`card flex items-center gap-3 py-3 transition hover:border-white/15 hover:bg-white/[0.06] ${

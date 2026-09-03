@@ -41,7 +41,7 @@ export function ChatContactsRail({ rows }: { rows: ConvRow[] }) {
             <Link
               key={c.id}
               href={`/messages/${c.id}`}
-              className={`flex items-center gap-2.5 rounded-xl px-2.5 py-2 transition ${
+              className={`blur-in flex items-center gap-2.5 rounded-xl px-2.5 py-2 transition ${
                 active ? "bg-indigo-500/15" : "hover:bg-white/5"
               }`}
             >

@@ -343,7 +343,9 @@ export function AdminChatThread({
           return (
             <div
               key={m.id}
-              className={`group flex ${m.mine ? "justify-end" : "justify-start"}`}
+              className={`blur-in group flex ${
+                m.mine ? "justify-end" : "justify-start"
+              }`}
             >
               <div className="flex max-w-[82%] items-end gap-1.5">
                 {m.mine && MenuBtn}

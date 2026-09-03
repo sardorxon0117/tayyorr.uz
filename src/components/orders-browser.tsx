@@ -238,7 +238,7 @@ export function OrdersBrowser({
       ) : (
         <ul className="flex flex-col gap-3">
           {filtered.map((o) => (
-            <li key={o.id}>
+            <li key={o.id} className="blur-in">
               <Link
                 href={`/orders/${o.id}`}
                 className="card flex items-center justify-between gap-4 transition hover:border-white/15 hover:bg-white/[0.06]"
@@ -270,7 +270,7 @@ export function OrdersBrowser({
         >
           <div
             ref={sheetRef}
-            className="w-full max-w-md overflow-hidden rounded-t-2xl border border-white/10 bg-[#14141b] shadow-2xl sm:rounded-2xl"
+            className="blur-in w-full max-w-md overflow-hidden rounded-t-2xl border border-white/10 bg-[#14141b] shadow-2xl sm:rounded-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
