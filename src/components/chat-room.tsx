@@ -592,7 +592,7 @@ export function ChatRoom({
             </div>
           </Link>
 
-          {other.id && (
+          {other.id && !other.isSupport && (
             <div className="shrink-0">
               <button
                 ref={hdrBtnRef}
@@ -637,13 +637,15 @@ export function ChatRoom({
                 </button>
               </>
             )}
-            <button
-              type="button"
-              onClick={deleteConversation}
-              className="block w-full px-3 py-2.5 text-left text-red-400 hover:bg-white/5"
-            >
-              🗑 Suhbatni o'chirish
-            </button>
+            {!other.isSupport && (
+              <button
+                type="button"
+                onClick={deleteConversation}
+                className="block w-full px-3 py-2.5 text-left text-red-400 hover:bg-white/5"
+              >
+                🗑 Suhbatni o'chirish
+              </button>
+            )}
           </div>,
           document.body,
         )}

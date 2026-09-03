@@ -56,9 +56,16 @@ export function AccountForm({
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Xatolik");
+      // JWT sessiyani DB dan qayta o'qitamiz (rol/login token ichida keshlanadi)
       await update();
       setPw("");
       setPw2("");
+      if (data.roleChanged || payload.role) {
+        // rol o'zgardi — server yangi sessiya cookie bilan qayta yuklansin
+        setMsg({ ok: true, text: "Rol o'zgartirildi, qayta yuklanmoqda…" });
+        window.location.assign("/dashboard");
+        return;
+      }
       setMsg({ ok: true, text: "Saqlandi" });
       router.refresh();
     } catch (err) {

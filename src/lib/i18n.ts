@@ -10,7 +10,7 @@ export const LOCALE_SHORT: Record<Locale, string> = {
 type Dict = Record<string, string>;
 
 const uz: Dict = {
-  "nav.dashboard": "Kabinet",
+  "nav.dashboard": "Asosiy menyu",
   "nav.messages": "Xabarlar",
   "nav.wallet": "Hamyon",
   "nav.profile": "Profil",

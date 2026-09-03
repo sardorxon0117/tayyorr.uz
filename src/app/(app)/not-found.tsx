@@ -17,7 +17,7 @@ export default function AppNotFound() {
       </p>
       <div className="mt-2 flex gap-2">
         <Link href="/dashboard" className="btn-primary">
-          Kabinetga qaytish
+          Asosiy menyuga qaytish
         </Link>
         <Link href="/messages" className="btn-ghost">
           Xabarlar

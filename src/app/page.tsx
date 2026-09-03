@@ -71,7 +71,7 @@ export default async function Home() {
                 href="/dashboard"
                 className="rounded-xl bg-white px-4 py-2 text-sm font-medium text-black transition hover:bg-zinc-200"
               >
-                Kabinet
+                Asosiy menyu
               </Link>
             ) : (
               <>
@@ -128,7 +128,7 @@ export default async function Home() {
             href={loggedIn ? "/dashboard" : "/register"}
             className="group inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-semibold text-black transition hover:bg-zinc-200"
           >
-            {loggedIn ? "Kabinetga o'tish" : "Bepul boshlash"}
+            {loggedIn ? "Asosiy menyuga o'tish" : "Bepul boshlash"}
             <span className="transition-transform group-hover:translate-x-0.5">
               →
             </span>
@@ -311,7 +311,7 @@ export default async function Home() {
             href={loggedIn ? "/dashboard" : "/register"}
             className="relative mt-8 inline-flex items-center gap-2 rounded-xl bg-white px-7 py-3 text-sm font-semibold text-black transition hover:bg-zinc-200"
           >
-            {loggedIn ? "Kabinetga o'tish" : "Hoziroq boshlash"} →
+            {loggedIn ? "Asosiy menyuga o'tish" : "Hoziroq boshlash"} →
           </Link>
         </div>
       </section>

@@ -82,6 +82,19 @@ export async function DELETE(
   const conv = await getConversationForUser(id, session.user.id);
   if (!conv) return NextResponse.json({ error: "Suhbat topilmadi" }, { status: 404 });
 
+  // support suhbatini o'chirib bo'lmaydi
+  const otherId = otherUserId(conv, session.user.id);
+  const other = await db.user.findUnique({
+    where: { id: otherId },
+    select: { isSupport: true },
+  });
+  if (other?.isSupport) {
+    return NextResponse.json(
+      { error: "«tayyorr.uz support» suhbatini o'chirib bo'lmaydi" },
+      { status: 400 },
+    );
+  }
+
   await db.conversation.update({
     where: { id },
     data: { deletedByUsersAt: new Date() },

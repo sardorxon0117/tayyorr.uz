@@ -28,7 +28,7 @@ export default function AppError({
           Qaytadan
         </button>
         <Link href="/dashboard" className="btn-ghost">
-          Kabinet
+          Asosiy menyu
         </Link>
       </div>
     </div>
