@@ -1,62 +1,37 @@
 "use client";
 
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import { createContext, useContext, useEffect } from "react";
 
-import { translate, type Locale } from "@/lib/i18n";
+import { translate } from "@/lib/i18n";
 
 interface Ctx {
-  locale: Locale;
-  setLocale: (l: Locale) => void;
+  locale: "uz";
+  setLocale: (l: string) => void;
   t: (key: string) => string;
 }
 
-const LocaleCtx = createContext<Ctx>({
+// v1 — faqat o'zbekcha. Boshqa tillar v2 da.
+const VALUE: Ctx = {
   locale: "uz",
   setLocale: () => {},
   t: (k) => translate("uz", k),
-});
+};
+
+const LocaleCtx = createContext<Ctx>(VALUE);
 
 export function LocaleProvider({ children }: { children: React.ReactNode }) {
-  const [locale, setLoc] = useState<Locale>("uz");
-
   useEffect(() => {
+    // eski til sozlamalarini tozalaymiz
     try {
-      const s = localStorage.getItem("tyr_locale") as Locale | null;
-      if (s === "uz" || s === "ru" || s === "en") setLoc(s);
+      localStorage.removeItem("tyr_locale");
     } catch {
       /* ignore */
     }
+    document.cookie = "tyr_locale=; path=/; max-age=0";
+    document.documentElement.lang = "uz";
   }, []);
 
-  const setLocale = useCallback((l: Locale) => {
-    setLoc(l);
-    try {
-      localStorage.setItem("tyr_locale", l);
-    } catch {
-      /* ignore */
-    }
-    document.cookie = `tyr_locale=${l};path=/;max-age=31536000`;
-    document.documentElement.lang = l;
-    fetch("/api/me/locale", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ locale: l }),
-    }).catch(() => {});
-  }, []);
-
-  const t = useCallback((key: string) => translate(locale, key), [locale]);
-
-  return (
-    <LocaleCtx.Provider value={{ locale, setLocale, t }}>
-      {children}
-    </LocaleCtx.Provider>
-  );
+  return <LocaleCtx.Provider value={VALUE}>{children}</LocaleCtx.Provider>;
 }
 
 export const useLocale = () => useContext(LocaleCtx);
