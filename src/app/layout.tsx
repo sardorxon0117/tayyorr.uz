@@ -35,6 +35,9 @@ export const metadata: Metadata = {
   creator: "tayyorr.uz",
   publisher: "tayyorr.uz",
   category: "education",
+  verification: {
+    google: "cn2c3fohiFjMAQjoBh_bpX60G_9uMLvDxFveVN0K2QU",
+  },
   formatDetection: { telephone: false, email: false, address: false },
   manifest: "/manifest.webmanifest",
   icons: {
