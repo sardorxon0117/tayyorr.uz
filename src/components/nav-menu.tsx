@@ -4,9 +4,12 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { useLocale } from "@/components/locale-provider";
+
 export interface NavLink {
   href: string;
   label: string;
+  tkey?: string;
   icon: string;
   badge?: number;
 }
@@ -26,6 +29,7 @@ export function NavMenu({
   const [open, setOpen] = useState(false);
   const [closing, setClosing] = useState(false);
   const pathname = usePathname();
+  const { t } = useLocale();
 
   function close() {
     setClosing(true);
@@ -97,7 +101,9 @@ export function NavMenu({
                   }`}
                 >
                   <span className="text-base">{l.icon}</span>
-                  <span className="flex-1">{l.label}</span>
+                  <span className="flex-1">
+                    {l.tkey ? t(l.tkey) : l.label}
+                  </span>
                   {!!l.badge && l.badge > 0 && (
                     <span className="rounded-full bg-indigo-500 px-1.5 text-xs font-semibold text-white">
                       {l.badge}

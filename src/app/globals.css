@@ -397,6 +397,12 @@ html.js-reveal .blur-in.reveal-in {
   animation: blur-in 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+/* ro'yxat filtr/saralashдан keyin darhol ketma-ket ochiladi */
+.blur-in-now {
+  animation: blur-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: var(--rd, 0ms);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-float-a,
   .animate-float-b,
@@ -409,6 +415,7 @@ html.js-reveal .blur-in.reveal-in {
   .menu-backdrop,
   .ann-rise,
   .blur-in,
+  .blur-in-now,
   .pop-in,
   html.js-reveal .blur-in,
   html.js-reveal .blur-in.reveal-in {

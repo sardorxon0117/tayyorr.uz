@@ -5,13 +5,9 @@ import { usePathname } from "next/navigation";
 
 import { APP_NAV } from "@/lib/nav";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { LanguageToggle } from "@/components/language-toggle";
 import { BalanceAmount } from "@/components/balance-amount";
-
-function roleLabel(role: string | null) {
-  if (role === "PREPARER") return "Tayyorlovchi";
-  if (role === "ORDERER") return "Buyurtma beruvchi";
-  return "";
-}
+import { useLocale } from "@/components/locale-provider";
 
 export interface SidebarUser {
   name: string | null;
@@ -25,8 +21,15 @@ export interface SidebarUser {
 /** Kompyuterda chap tomonda turadigan doimiy panel (headerni almashtiradi). */
 export function AppSidebar({ user }: { user: SidebarUser }) {
   const pathname = usePathname();
+  const { t } = useLocale();
   const displayName =
     user.name || (user.login ? `@${user.login}` : "Foydalanuvchi");
+  const roleLabel =
+    user.role === "PREPARER"
+      ? t("role.preparer")
+      : user.role === "ORDERER"
+        ? t("role.orderer")
+        : "";
 
   return (
     <aside className="fixed left-0 top-0 z-40 hidden h-screen w-64 flex-col border-r border-white/10 bg-[#0b0b12]/95 backdrop-blur-xl lg:flex">
@@ -57,13 +60,15 @@ export function AppSidebar({ user }: { user: SidebarUser }) {
               {displayName}
             </span>
             <span className="block truncate text-xs text-zinc-500">
-              {roleLabel(user.role)}
+              {roleLabel}
             </span>
           </span>
         </Link>
 
         <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
-          <div className="text-[11px] text-zinc-500">Hisobingizdagi pul</div>
+          <div className="text-[11px] text-zinc-500">
+            {t("wallet.balanceLabel")}
+          </div>
           <BalanceAmount
             value={user.balance}
             className="mt-0.5 text-lg font-semibold text-white"
@@ -78,7 +83,7 @@ export function AppSidebar({ user }: { user: SidebarUser }) {
             href="/wallet"
             className="mt-2 block text-xs text-indigo-300 hover:underline"
           >
-            Hisobni to'ldirish →
+            {t("wallet.topup")} →
           </Link>
         </div>
 
@@ -97,14 +102,15 @@ export function AppSidebar({ user }: { user: SidebarUser }) {
                 }`}
               >
                 <span className="text-base">{l.icon}</span>
-                {l.label}
+                {l.tkey ? t(l.tkey) : l.label}
               </Link>
             );
           })}
         </nav>
       </div>
 
-      <div className="border-t border-white/10 p-3">
+      <div className="flex flex-col gap-2 border-t border-white/10 p-3">
+        <LanguageToggle />
         <ThemeToggle />
       </div>
     </aside>

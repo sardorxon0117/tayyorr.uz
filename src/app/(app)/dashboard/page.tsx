@@ -42,7 +42,7 @@ export default async function DashboardPage() {
   return (
     <OrdersBrowser
       orders={rows}
-      title={isPreparer ? "Buyurtmalar" : "Buyurtmalarim"}
+      mine={!isPreparer}
       newOrderHref={isPreparer ? undefined : "/orders/new"}
       banner={
         announcements.length > 0 ? (

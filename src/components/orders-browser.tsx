@@ -1,18 +1,14 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-
-const SORTS = [
-  { key: "new", label: "Yangi" },
-  { key: "old", label: "Eski" },
-  { key: "offers", label: "Takliflar" },
-  { key: "budget", label: "Byudjet" },
-] as const;
-type SortKey = (typeof SORTS)[number]["key"];
 
 import { timeAgo } from "@/lib/time-ago";
 import { useDismiss } from "@/components/use-dismiss";
+import { useLocale } from "@/components/locale-provider";
+
+const SORT_KEYS = ["new", "old", "offers", "budget"] as const;
+type SortKey = (typeof SORT_KEYS)[number];
 
 const TYPE_LABEL: Record<string, string> = {
   PRESENTATION: "Prezentatsiya",
@@ -77,22 +73,30 @@ function Chip({
 
 export function OrdersBrowser({
   orders,
-  title,
+  mine = false,
   newOrderHref,
   banner,
 }: {
   orders: OrderRow[];
-  title?: string;
+  mine?: boolean;
   newOrderHref?: string;
   banner?: React.ReactNode;
 }) {
+  const { t } = useLocale();
+  const title = mine ? t("orders.title.mine") : t("orders.title.all");
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
   const [types, setTypes] = useState<Set<string>>(new Set());
   const [buckets, setBuckets] = useState<Set<string>>(new Set());
   const [sort, setSort] = useState<SortKey>("new");
+  const [gen, setGen] = useState(0);
   const sheetRef = useRef<HTMLDivElement>(null);
   useDismiss(open, () => setOpen(false), [sheetRef]);
+
+  // saralash / filtr o'zgarganда ro'yxatni qayta "blur bilan" ochamiz
+  useEffect(() => {
+    setGen((g) => g + 1);
+  }, [sort, types, buckets]);
 
   const toggle = (set: Set<string>, key: string) => {
     const next = new Set(set);
@@ -142,7 +146,7 @@ export function OrdersBrowser({
             )}
             {newOrderHref && (
               <Link href={newOrderHref} className="btn-primary shrink-0 text-sm">
-                + Yangi buyurtma
+                {t("orders.new")}
               </Link>
             )}
           </div>
@@ -150,7 +154,7 @@ export function OrdersBrowser({
         <div className="flex flex-wrap items-center gap-2">
           <input
             className="input min-w-0 flex-1"
-            placeholder="Sarlavha, tavsif yoki tur bo'yicha qidirish…"
+            placeholder={t("orders.search")}
             value={q}
             onChange={(e) => setQ(e.target.value)}
           />
@@ -159,27 +163,28 @@ export function OrdersBrowser({
             onClick={() => setOpen(true)}
             className="btn-ghost shrink-0"
           >
-            Filtr{activeCount > 0 && ` · ${activeCount}`}
+            {t("orders.filter")}
+            {activeCount > 0 && ` · ${activeCount}`}
           </button>
         </div>
 
         <div className="flex flex-wrap items-center gap-1.5">
-          {SORTS.map((s) => (
+          {SORT_KEYS.map((k) => (
             <button
-              key={s.key}
+              key={k}
               type="button"
-              onClick={() => setSort(s.key)}
+              onClick={() => setSort(k)}
               className={`rounded-full px-2.5 py-1 text-xs transition ${
-                sort === s.key
+                sort === k
                   ? "bg-indigo-500/20 text-white"
                   : "text-zinc-500 hover:text-white"
               }`}
             >
-              {s.label}
+              {t(`sort.${k}`)}
             </button>
           ))}
           <span className="ml-auto text-xs text-zinc-600">
-            {filtered.length} ta
+            {filtered.length} {t("orders.count")}
           </span>
         </div>
       </div>
@@ -231,14 +236,20 @@ export function OrdersBrowser({
 
       {filtered.length === 0 ? (
         <div className="card text-sm text-zinc-500">
-          {orders.length === 0
-            ? "Hali buyurtma yo'q."
-            : "Mos buyurtma topilmadi."}
+          {orders.length === 0 ? t("orders.empty") : t("orders.noMatch")}
         </div>
       ) : (
         <ul className="flex flex-col gap-3">
-          {filtered.map((o) => (
-            <li key={o.id} className="blur-in">
+          {filtered.map((o, idx) => (
+            <li
+              key={`${gen}:${o.id}`}
+              className={gen === 0 ? "blur-in" : "blur-in-now"}
+              style={
+                gen === 0
+                  ? undefined
+                  : { ["--rd" as string]: `${Math.min(idx, 12) * 45}ms` }
+              }
+            >
               <Link
                 href={`/orders/${o.id}`}
                 className="card flex items-center justify-between gap-4 transition hover:border-white/15 hover:bg-white/[0.06]"
