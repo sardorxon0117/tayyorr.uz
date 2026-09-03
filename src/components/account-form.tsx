@@ -2,19 +2,12 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
 
 import { PasswordInput } from "@/components/password-input";
 
-export function AccountForm({
-  initial,
-}: {
-  initial: { role: "ORDERER" | "PREPARER"; login: string };
-}) {
+export function AccountForm({ initial }: { initial: { login: string } }) {
   const router = useRouter();
-  const { update } = useSession();
 
-  const [role, setRole] = useState(initial.role);
   const [login, setLogin] = useState(initial.login);
   const [pw, setPw] = useState("");
   const [pw2, setPw2] = useState("");
@@ -37,7 +30,6 @@ export function AccountForm({
     }
 
     const payload: Record<string, string> = {};
-    if (role !== initial.role) payload.role = role;
     if (login.trim() && login.trim() !== initial.login)
       payload.login = login.trim();
     if (pw) payload.newPassword = pw;
@@ -56,16 +48,8 @@ export function AccountForm({
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Xatolik");
-      // JWT sessiyani DB dan qayta o'qitamiz (rol/login token ichida keshlanadi)
-      await update();
       setPw("");
       setPw2("");
-      if (data.roleChanged || payload.role) {
-        // rol o'zgardi — server yangi sessiya cookie bilan qayta yuklansin
-        setMsg({ ok: true, text: "Rol o'zgartirildi, qayta yuklanmoqda…" });
-        window.location.assign("/dashboard");
-        return;
-      }
       setMsg({ ok: true, text: "Saqlandi" });
       router.refresh();
     } catch (err) {
@@ -78,21 +62,6 @@ export function AccountForm({
   return (
     <form onSubmit={save} className="card flex flex-col gap-3">
       <h2 className="font-semibold text-white">Akkaunt</h2>
-
-      <div>
-        <label className="label">Rol</label>
-        <select
-          className="input"
-          value={role}
-          onChange={(e) => setRole(e.target.value as typeof role)}
-        >
-          <option value="ORDERER">Buyurtma beruvchi</option>
-          <option value="PREPARER">Tayyorlovchi</option>
-        </select>
-        <p className="mt-1 text-[11px] text-zinc-600">
-          Faol buyurtma yoki takliflar bo'lsa rolni o'zgartirib bo'lmaydi.
-        </p>
-      </div>
 
       <div>
         <label className="label">Login</label>

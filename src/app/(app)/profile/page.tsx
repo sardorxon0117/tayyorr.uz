@@ -51,12 +51,7 @@ export default async function ProfilePage() {
       />
 
       <div className="mt-4">
-        <AccountForm
-          initial={{
-            role: user.role === "PREPARER" ? "PREPARER" : "ORDERER",
-            login: user.login ?? "",
-          }}
-        />
+        <AccountForm initial={{ login: user.login ?? "" }} />
       </div>
 
       <div className="mt-8 border-t border-white/10 pt-6">

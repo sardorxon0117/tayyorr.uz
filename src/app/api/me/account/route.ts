@@ -8,7 +8,6 @@ import { restrictionApiError } from "@/lib/restriction";
 import { logActivity } from "@/lib/activity";
 
 const schema = z.object({
-  role: z.enum(["ORDERER", "PREPARER"]).optional(),
   login: z
     .string()
     .min(3)
@@ -33,39 +32,10 @@ export async function PATCH(req: Request) {
       { status: 400 },
     );
   }
-  const { role, login, newPassword } = parsed.data;
+  const { login, newPassword } = parsed.data;
   const me = session.user.id;
 
-  const user = await db.user.findUnique({
-    where: { id: me },
-    select: { role: true },
-  });
-  if (!user) return NextResponse.json({ error: "Topilmadi" }, { status: 404 });
-
   const data: Record<string, unknown> = {};
-
-  // ---- rol ----
-  if (role && role !== user.role) {
-    const activeOrders = await db.order.count({
-      where: {
-        OR: [{ ordererId: me }, { preparerId: me }],
-        status: { notIn: ["DONE", "CANCELLED"] },
-      },
-    });
-    const activeOffers = await db.offer.count({
-      where: { preparerId: me, status: { in: ["PENDING", "ACCEPTED"] } },
-    });
-    if (activeOrders > 0 || activeOffers > 0) {
-      return NextResponse.json(
-        {
-          error:
-            "Faol buyurtma yoki takliflaringiz bor — rolni hozir o'zgartirib bo'lmaydi.",
-        },
-        { status: 400 },
-      );
-    }
-    data.role = role;
-  }
 
   // ---- login ----
   if (login) {
@@ -91,7 +61,6 @@ export async function PATCH(req: Request) {
   await db.user.update({ where: { id: me }, data });
 
   const changed: string[] = [];
-  if ("role" in data) changed.push(`rol → ${role}`);
   if ("login" in data) changed.push(`login → @${login}`);
   if ("passwordHash" in data) changed.push("parol yangilandi");
   await logActivity(
@@ -100,5 +69,5 @@ export async function PATCH(req: Request) {
     `Hisob sozlamalari: ${changed.join(", ")}`,
   );
 
-  return NextResponse.json({ ok: true, roleChanged: "role" in data });
+  return NextResponse.json({ ok: true });
 }

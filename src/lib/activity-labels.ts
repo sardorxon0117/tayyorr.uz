@@ -4,7 +4,7 @@ export const ACTIVITY_LABEL: Record<string, string> = {
   AUTH_LOGIN: "Saytga kirdi",
   REGISTER: "Ro'yxatdan o'tdi",
   PROFILE_UPDATE: "Profilni tahrirladi",
-  ACCOUNT_UPDATE: "Login / parol / rolni o'zgartirdi",
+  ACCOUNT_UPDATE: "Login / parolni o'zgartirdi",
 
   ORDER_CREATE: "Buyurtma yaratdi",
   ORDER_DELETE: "Buyurtmani o'chirdi",
