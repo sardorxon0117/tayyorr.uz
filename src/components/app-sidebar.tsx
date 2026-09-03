@@ -35,7 +35,7 @@ export function AppSidebar({ user }: { user: SidebarUser }) {
     <aside className="fixed left-0 top-0 z-40 hidden h-screen w-64 flex-col border-r border-white/10 bg-[#0b0b12]/95 backdrop-blur-xl lg:flex">
       <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4">
         <Link href="/dashboard" className="px-1">
-          <Logo className="h-8" />
+          <Logo className="h-6" />
         </Link>
 
         <Link
