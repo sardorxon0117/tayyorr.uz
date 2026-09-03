@@ -3,6 +3,7 @@ import Link from "next/link";
 import { db } from "@/lib/db";
 import { formatSom } from "@/lib/wallet";
 import { AdminPostButton } from "@/components/admin/admin-post-button";
+import { shortDate } from "@/lib/date";
 
 export const dynamic = "force-dynamic";
 
@@ -59,7 +60,7 @@ export default async function AdminOrders() {
                 }`}
               >
                 <td className="whitespace-nowrap px-4 py-2 text-zinc-400">
-                  {o.createdAt.toLocaleDateString("uz")}
+                  {shortDate(o.createdAt)}
                 </td>
                 <td className="px-4 py-2">
                   <Link

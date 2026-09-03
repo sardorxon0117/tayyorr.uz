@@ -10,6 +10,7 @@ import { RocketIcon } from "@/components/icons";
 import { AutoTextarea } from "@/components/admin/auto-textarea";
 import { PeopleModal, type Person } from "@/components/admin/people-modal";
 import { useDismiss } from "@/components/use-dismiss";
+import { smartTime } from "@/lib/date";
 
 interface ReplyPreview {
   id: string;
@@ -37,7 +38,7 @@ interface Msg {
 const MAX_FILE = 25 * 1024 * 1024;
 
 function fmt(ms: number) {
-  return new Date(ms).toLocaleString("uz", { dateStyle: "short", timeStyle: "short" });
+  return smartTime(ms);
 }
 
 export function AdminChatThread({

@@ -6,6 +6,7 @@ import { formatSom } from "@/lib/wallet";
 import { AdminPostButton } from "@/components/admin/admin-post-button";
 import { BanForm } from "@/components/admin/ban-form";
 import { SupportMessageForm } from "@/components/admin/support-message-form";
+import { shortDateTime, shortDate } from "@/lib/date";
 
 const TYPE_LABEL: Record<string, string> = {
   TOPUP: "To'ldirish",
@@ -64,7 +65,7 @@ export default async function AdminUserDetail({
     ["Rol", user.role ?? "—"],
     ["Hisob kodi", user.walletCode ?? "—"],
     ["Balans", formatSom(user.balance)],
-    ["Ro'yxatdan", user.createdAt.toLocaleString("uz")],
+    ["Ro'yxatdan", shortDateTime(user.createdAt)],
     [
       "Buyurtma/Taklif",
       `${user._count.ordersCreated} / ${user._count.ordersTaken} / ${user._count.offers}`,
@@ -100,7 +101,7 @@ export default async function AdminUserDetail({
             @{user.login}
             {banned && (
               <span className="ml-2 rounded bg-amber-500/15 px-1.5 py-0.5 text-xs text-amber-300">
-                {user.bannedUntil!.toLocaleDateString("uz")} gacha cheklangan
+                {shortDate(user.bannedUntil!)} gacha cheklangan
               </span>
             )}
           </p>
@@ -130,7 +131,7 @@ export default async function AdminUserDetail({
           {banned ? (
             <div className="flex flex-col gap-3">
               <p className="text-sm text-amber-300">
-                {user.bannedUntil!.toLocaleString("uz")} gacha cheklangan.
+                {shortDateTime(user.bannedUntil!)} gacha cheklangan.
                 {user.banReason ? ` Sabab: ${user.banReason}` : ""}
               </p>
               <AdminPostButton
@@ -208,10 +209,7 @@ export default async function AdminUserDetail({
               {user.walletTxns.map((t) => (
                 <tr key={t.id} className="border-t border-white/5">
                   <td className="whitespace-nowrap px-4 py-2 text-zinc-400">
-                    {t.createdAt.toLocaleString("uz", {
-                      dateStyle: "short",
-                      timeStyle: "short",
-                    })}
+                    {shortDateTime(t.createdAt)}
                   </td>
                   <td className="px-4 py-2">{TYPE_LABEL[t.type] ?? t.type}</td>
                   <td

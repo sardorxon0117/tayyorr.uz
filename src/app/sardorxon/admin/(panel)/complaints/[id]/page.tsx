@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { orderedPair } from "@/lib/chat";
 import { formatSom } from "@/lib/wallet";
 import { ComplaintForm } from "@/components/admin/complaint-form";
+import { shortDateTime, shortDate } from "@/lib/date";
 
 function AccountCard({
   title,
@@ -52,7 +53,7 @@ function AccountCard({
           Holat:{" "}
           {banned ? (
             <span className="text-amber-400">
-              {user.bannedUntil!.toLocaleDateString("uz")} gacha cheklangan
+              {shortDate(user.bannedUntil!)} gacha cheklangan
             </span>
           ) : (
             <span className="text-emerald-400">faol</span>
@@ -150,7 +151,7 @@ export default async function AdminComplaintDetail({
       <div>
         <h1 className="text-xl font-semibold text-white">Shikoyat</h1>
         <p className="text-sm text-zinc-500">
-          {c.createdAt.toLocaleString("uz")}
+          {shortDateTime(c.createdAt)}
           {order && ` · buyurtma: ${order.title}`}
         </p>
       </div>
@@ -166,7 +167,7 @@ export default async function AdminComplaintDetail({
             Shikoyat qilingan xabar
           </h2>
           <p className="text-xs text-zinc-500">
-            {reportedMsg.createdAt.toLocaleString("uz")}
+            {shortDateTime(reportedMsg.createdAt)}
             {reportedMsg.deletedAt && " · (keyinchalik o'chirilgan)"}
           </p>
           <p className="mt-1 whitespace-pre-wrap text-sm text-zinc-100">

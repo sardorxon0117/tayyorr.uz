@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { db } from "@/lib/db";
 import { formatSom } from "@/lib/wallet";
+import { shortDateTime } from "@/lib/date";
 import { AdminPostButton } from "@/components/admin/admin-post-button";
 
 const STATUS: Record<string, string> = {
@@ -48,10 +49,7 @@ export default async function AdminPayouts() {
             {rows.map((p) => (
               <tr key={p.id} className="border-t border-white/5">
                 <td className="whitespace-nowrap px-4 py-2 text-zinc-400">
-                  {p.createdAt.toLocaleString("uz", {
-                    dateStyle: "short",
-                    timeStyle: "short",
-                  })}
+                  {shortDateTime(p.createdAt)}
                 </td>
                 <td className="px-4 py-2">
                   <Link

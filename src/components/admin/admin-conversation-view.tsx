@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 import { ChatFileView, type ChatFile } from "@/components/chat-file";
 import { Linkify } from "@/components/linkify";
+import { smartTime } from "@/lib/date";
 
 interface Msg {
   id: string;
@@ -26,7 +27,7 @@ interface Party {
 }
 
 function fmt(ms: number) {
-  return new Date(ms).toLocaleString("uz", { dateStyle: "short", timeStyle: "short" });
+  return smartTime(ms);
 }
 
 /** Admin uchun ikki foydalanuvchi yozishmasini oddiy chat ko'rinishida (faqat o'qish). */

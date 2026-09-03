@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { db } from "@/lib/db";
+import { shortDateTime } from "@/lib/date";
 
 export default async function AdminChats() {
   const convs = await db.conversation.findMany({
@@ -43,10 +44,7 @@ export default async function AdminChats() {
                 </td>
                 <td className="px-4 py-2 text-zinc-400">{c._count.messages}</td>
                 <td className="whitespace-nowrap px-4 py-2 text-zinc-400">
-                  {c.lastMessageAt.toLocaleString("uz", {
-                    dateStyle: "short",
-                    timeStyle: "short",
-                  })}
+                  {shortDateTime(c.lastMessageAt)}
                 </td>
                 <td className="px-4 py-2">
                   {c.hiddenFromUsersAt ? (

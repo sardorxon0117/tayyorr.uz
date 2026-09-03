@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { formatSom } from "@/lib/wallet";
 import { PRIVATE_BUCKET, presignGet } from "@/lib/r2";
 import { AdminPostButton } from "@/components/admin/admin-post-button";
+import { shortDateTime, shortDate } from "@/lib/date";
 
 const TYPE: Record<string, string> = {
   PRESENTATION: "Prezentatsiya",
@@ -72,7 +73,7 @@ export default async function AdminOrderDetail({
     ["Byudjet", order.budget ? formatSom(order.budget) : "—"],
     [
       "Muddat",
-      order.deadline ? order.deadline.toLocaleDateString("uz") : "—",
+      order.deadline ? shortDate(order.deadline) : "—",
     ],
     [
       "Buyurtmachi",
@@ -98,15 +99,13 @@ export default async function AdminOrderDetail({
         "—"
       ),
     ],
-    ["Yaratilgan", order.createdAt.toLocaleString("uz")],
-    ["Yangilangan", order.updatedAt.toLocaleString("uz")],
+    ["Yaratilgan", shortDateTime(order.createdAt)],
+    ["Yangilangan", shortDateTime(order.updatedAt)],
     ...(order.deletedAt
       ? ([
           [
             "O'chirilgan",
-            `${order.deletedByRole === "ADMIN" ? "Admin" : "Buyurtmachi"} · ${order.deletedAt.toLocaleString(
-              "uz",
-            )}`,
+            `${order.deletedByRole === "ADMIN" ? "Admin" : "Buyurtmachi"} · ${shortDateTime(order.deletedAt)}`,
           ],
           ["O'chirish sababi", order.deleteReason ?? "—"],
         ] as [string, React.ReactNode][])
@@ -118,10 +117,7 @@ export default async function AdminOrderDetail({
           return (
             <span className="text-emerald-400">
               ✅ Yuborildi · {order.telegramStatus} ·{" "}
-              {order.telegramSentAt.toLocaleString("uz", {
-                dateStyle: "short",
-                timeStyle: "short",
-              })}
+              {shortDateTime(order.telegramSentAt)}
             </span>
           );
         }
@@ -273,7 +269,7 @@ export default async function AdminOrderDetail({
                 </div>
                 {c.note && <p className="mt-1 text-zinc-400">{c.note}</p>}
                 <div className="mt-1 text-xs text-zinc-600">
-                  {c.createdAt.toLocaleString("uz")}
+                  {shortDateTime(c.createdAt)}
                   {c.commissionAmount
                     ? ` · komissiya ${formatSom(c.commissionAmount)}`
                     : ""}

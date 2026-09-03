@@ -5,13 +5,14 @@ import { db } from "@/lib/db";
 import { getSupportUserId } from "@/lib/support";
 import { getT } from "@/lib/i18n-server";
 import { BlockedIcon } from "@/components/icons";
+import { shortDate } from "@/lib/date";
 
 function timeAgo(d: Date) {
   const s = Math.floor((Date.now() - d.getTime()) / 1000);
   if (s < 60) return "hozir";
   if (s < 3600) return `${Math.floor(s / 60)} daq oldin`;
   if (s < 86400) return `${Math.floor(s / 3600)} soat oldin`;
-  return d.toLocaleDateString("uz");
+  return shortDate(d);
 }
 
 export default async function MessagesPage() {

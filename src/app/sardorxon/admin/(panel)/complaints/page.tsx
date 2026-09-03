@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { db } from "@/lib/db";
+import { shortDateTime } from "@/lib/date";
 
 const STATUS_LABEL: Record<string, string> = {
   OPEN: "Yangi",
@@ -59,7 +60,7 @@ export default async function AdminComplaints() {
               </div>
               <p className="mt-1 line-clamp-2 text-sm text-zinc-400">{c.body}</p>
               <p className="mt-1 text-xs text-zinc-600">
-                {c.createdAt.toLocaleString("uz")}
+                {shortDateTime(c.createdAt)}
               </p>
             </Link>
           </li>

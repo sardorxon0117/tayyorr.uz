@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 
 import { BlockedIcon } from "@/components/icons";
 import type { ConvRow } from "@/lib/conversations";
+import { shortDate } from "@/lib/date";
 
 function fmt(iso: string | null) {
   if (!iso) return "";
@@ -12,7 +13,7 @@ function fmt(iso: string | null) {
   const s = Math.floor((Date.now() - d.getTime()) / 1000);
   if (s < 3600) return `${Math.max(1, Math.floor(s / 60))} daq`;
   if (s < 86400) return `${Math.floor(s / 3600)} soat`;
-  return d.toLocaleDateString("uz", { day: "numeric", month: "short" });
+  return shortDate(d);
 }
 
 /** Kompyuterda chat ichida chap tomonda turadigan kontaktlar ustuni. */

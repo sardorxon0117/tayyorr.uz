@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { db } from "@/lib/db";
 import { formatSom } from "@/lib/wallet";
+import { shortDateTime } from "@/lib/date";
 
 const TYPE_LABEL: Record<string, string> = {
   TOPUP: "To'ldirish",
@@ -45,10 +46,7 @@ export default async function AdminPayments() {
             {txns.map((t) => (
               <tr key={t.id} className="border-t border-white/5">
                 <td className="whitespace-nowrap px-4 py-2 text-zinc-400">
-                  {t.createdAt.toLocaleString("uz", {
-                    dateStyle: "short",
-                    timeStyle: "short",
-                  })}
+                  {shortDateTime(t.createdAt)}
                 </td>
                 <td className="px-4 py-2">
                   <Link

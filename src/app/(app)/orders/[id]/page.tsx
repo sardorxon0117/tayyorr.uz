@@ -10,6 +10,7 @@ import { RestrictionNotice } from "@/components/restriction-notice";
 import { OrderActions } from "@/components/order-actions";
 import { OrderDeleteButton } from "@/components/order-delete-button";
 import { BackLink } from "@/components/back-link";
+import { shortDateTime, shortDate } from "@/lib/date";
 
 const TYPE_LABEL: Record<string, string> = {
   PRESENTATION: "Prezentatsiya",
@@ -51,7 +52,16 @@ export default async function OrderDetailPage({
           lastSeenAt: true,
         },
       },
-      preparer: { select: { id: true, name: true, login: true } },
+      preparer: {
+        select: {
+          id: true,
+          name: true,
+          login: true,
+          avatarUrl: true,
+          image: true,
+          lastSeenAt: true,
+        },
+      },
       offers: {
         include: {
           preparer: {
@@ -121,10 +131,7 @@ export default async function OrderDetailPage({
               ? "Administrator tomonidan"
               : "Buyurtmachi tomonidan"}
             {order.deletedAt &&
-              ` · ${order.deletedAt.toLocaleString("uz", {
-                dateStyle: "short",
-                timeStyle: "short",
-              })}`}
+              ` · ${shortDateTime(order.deletedAt)}`}
           </div>
           {order.deleteReason && (
             <div className="mt-1 text-zinc-300">
@@ -137,47 +144,12 @@ export default async function OrderDetailPage({
         </div>
       )}
 
-      {!isOrderer &&
-        (() => {
-          const o = order.orderer;
-          const p = presenceText(o.lastSeenAt);
-          const img = o.avatarUrl ?? o.image;
-          return (
-            <Link
-              href={`/u/${o.id}`}
-              className="card flex items-center gap-3 transition hover:border-white/15 hover:bg-white/[0.06]"
-            >
-              <span className="h-11 w-11 shrink-0 overflow-hidden rounded-full border border-white/10 bg-white/5">
-                {img && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={img}
-                    alt=""
-                    className="h-full w-full object-cover"
-                  />
-                )}
-              </span>
-              <span className="min-w-0">
-                <span className="block truncate font-medium text-white">
-                  {o.name ?? (o.login ? `@${o.login}` : "Buyurtmachi")}
-                </span>
-                <span className="mt-0.5 flex items-center gap-1.5 text-xs">
-                  <span
-                    className={`inline-block h-1.5 w-1.5 rounded-full ${
-                      p.online ? "bg-emerald-400" : "bg-zinc-600"
-                    }`}
-                  />
-                  <span className={p.online ? "text-emerald-400" : "text-zinc-500"}>
-                    {p.text}
-                  </span>
-                </span>
-              </span>
-              <span className="ml-auto shrink-0 text-xs text-zinc-600">
-                profilга ›
-              </span>
-            </Link>
-          );
-        })()}
+      {!isOrderer && (
+        <PersonCard person={order.orderer} role="Buyurtmachi" />
+      )}
+      {order.preparer && !isAssigned && (
+        <PersonCard person={order.preparer} role="Tayyorlovchi" />
+      )}
 
       <div>
         <div className="text-xs uppercase tracking-wide text-indigo-400">
@@ -186,11 +158,6 @@ export default async function OrderDetailPage({
         <h1 className="mt-2 text-2xl font-semibold tracking-tight text-white">
           {order.title}
         </h1>
-        {order.preparer && (
-          <p className="mt-1 text-sm text-zinc-500">
-            Tayyorlovchi: @{order.preparer.login ?? order.preparer.name}
-          </p>
-        )}
       </div>
 
       <div className="card whitespace-pre-wrap text-sm text-zinc-300">
@@ -199,7 +166,7 @@ export default async function OrderDetailPage({
 
       <div className="flex flex-wrap gap-4 text-sm text-zinc-400">
         {order.deadline && (
-          <span>Muddat: {order.deadline.toLocaleDateString("uz")}</span>
+          <span>Muddat: {shortDate(order.deadline)}</span>
         )}
         {order.budget && <span>Byudjet: {order.budget.toLocaleString()} so'm</span>}
       </div>
@@ -286,5 +253,54 @@ export default async function OrderDetailPage({
         </div>
       )}
     </div>
+  );
+}
+
+function PersonCard({
+  person,
+  role,
+}: {
+  person: {
+    id: string;
+    name: string | null;
+    login: string | null;
+    avatarUrl: string | null;
+    image: string | null;
+    lastSeenAt: Date | null;
+  };
+  role: string;
+}) {
+  const p = presenceText(person.lastSeenAt);
+  const img = person.avatarUrl ?? person.image;
+  return (
+    <Link
+      href={`/u/${person.id}`}
+      className="card flex items-center gap-3 transition hover:border-white/15 hover:bg-white/[0.06]"
+    >
+      <span className="h-11 w-11 shrink-0 overflow-hidden rounded-full border border-white/10 bg-white/5">
+        {img && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={img} alt="" className="h-full w-full object-cover" />
+        )}
+      </span>
+      <span className="min-w-0">
+        <span className="block truncate font-medium text-white">
+          {person.name ?? (person.login ? `@${person.login}` : role)}
+        </span>
+        <span className="mt-0.5 flex items-center gap-1.5 text-xs">
+          <span
+            className={`inline-block h-1.5 w-1.5 rounded-full ${
+              p.online ? "bg-emerald-400" : "bg-zinc-600"
+            }`}
+          />
+          <span className={p.online ? "text-emerald-400" : "text-zinc-500"}>
+            {p.text}
+          </span>
+        </span>
+      </span>
+      <span className="ml-auto shrink-0 text-xs text-zinc-600">
+        {role} · profilga ›
+      </span>
+    </Link>
   );
 }

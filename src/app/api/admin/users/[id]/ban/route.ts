@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { adminApiGuard } from "@/lib/admin";
 import { createMessage, getOrCreateConversation } from "@/lib/chat";
 import { getSupportUserId } from "@/lib/support";
+import { shortDateTime } from "@/lib/date";
 import { deliverMessage } from "@/lib/chat-notify";
 
 const schema = z.object({
@@ -47,10 +48,7 @@ export async function POST(
   if (notify) {
     const supportId = await getSupportUserId();
     const conv = await getOrCreateConversation(supportId, id);
-    const when =
-      days && days > 0
-        ? until.toLocaleString("uz", { dateStyle: "medium", timeStyle: "short" })
-        : "muddatsiz";
+    const when = days && days > 0 ? shortDateTime(until) : "muddatsiz";
     const body = `Hisobingiz ${when} cheklandi.${
       reason ? ` Sabab: ${reason}.` : ""
     } Bu davrda siz faqat «tayyorr.uz support» bilan yozisha olasiz. Savollaringiz bo'lsa shu yerga yozing.`;

@@ -13,6 +13,7 @@ import { canGoBack } from "@/components/nav-history";
 import { useDismiss } from "@/components/use-dismiss";
 import { prepareChatFile, type PreparedChatFile } from "@/lib/upload-client";
 import { presenceText } from "@/lib/presence";
+import { smartTime } from "@/lib/date";
 
 interface ReplyPreview {
   id: string;
@@ -61,7 +62,7 @@ interface Props {
 }
 
 function fmtTime(ms: number) {
-  return new Date(ms).toLocaleTimeString("uz", { hour: "2-digit", minute: "2-digit" });
+  return smartTime(ms);
 }
 
 const MAX_FILE = 100 * 1024 * 1024;
@@ -565,29 +566,29 @@ export function ChatRoom({
             </div>
             <div className="min-w-0">
               <div className="truncate font-medium text-white">{other.name}</div>
-              <div className="flex items-center gap-1.5 truncate text-xs text-zinc-500">
-                {theyBlocked ? (
-                  <span>uzoq vaqt kirmagan</span>
-                ) : other.isSupport ? (
-                  <span>{live ? "onlayn" : "ulanmoqda…"}</span>
-                ) : (
-                  (() => {
-                    const p = presenceText(otherSeen);
-                    return (
-                      <>
-                        <span
-                          className={`inline-block h-1.5 w-1.5 rounded-full ${
-                            p.online ? "bg-emerald-400" : "bg-zinc-600"
-                          }`}
-                        />
-                        <span className={p.online ? "text-emerald-400" : ""}>
-                          {p.text}
-                        </span>
-                      </>
-                    );
-                  })()
-                )}
-              </div>
+              {!other.isSupport && (
+                <div className="flex items-center gap-1.5 truncate text-xs text-zinc-500">
+                  {theyBlocked ? (
+                    <span>uzoq vaqt kirmagan</span>
+                  ) : (
+                    (() => {
+                      const p = presenceText(otherSeen);
+                      return (
+                        <>
+                          <span
+                            className={`inline-block h-1.5 w-1.5 rounded-full ${
+                              p.online ? "bg-emerald-400" : "bg-zinc-600"
+                            }`}
+                          />
+                          <span className={p.online ? "text-emerald-400" : ""}>
+                            {p.text}
+                          </span>
+                        </>
+                      );
+                    })()
+                  )}
+                </div>
+              )}
             </div>
           </Link>
 

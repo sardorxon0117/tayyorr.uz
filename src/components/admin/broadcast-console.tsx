@@ -10,6 +10,7 @@ import { AutoTextarea } from "@/components/admin/auto-textarea";
 import { PeopleModal, type Person } from "@/components/admin/people-modal";
 import { useDismiss } from "@/components/use-dismiss";
 import { prepareBroadcastFile, type PreparedChatFile } from "@/lib/upload-client";
+import { smartTime } from "@/lib/date";
 
 interface Item {
   id: string;
@@ -27,7 +28,7 @@ interface Item {
 const MAX_FILE = 25 * 1024 * 1024;
 
 function fmt(iso: string) {
-  return new Date(iso).toLocaleString("uz", { dateStyle: "short", timeStyle: "short" });
+  return smartTime(iso);
 }
 
 export function BroadcastConsole({ initial }: { initial: Item[] }) {

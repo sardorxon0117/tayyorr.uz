@@ -8,6 +8,7 @@ import { WalletPayout } from "@/components/wallet-payout";
 import { PayoutCancelButton } from "@/components/payout-cancel-button";
 import { BalanceAmount } from "@/components/balance-amount";
 import { WalletCode } from "@/components/wallet-code";
+import { shortDateTime } from "@/lib/date";
 
 
 const TXN_LABEL: Record<string, string> = {
@@ -124,7 +125,7 @@ export default async function WalletPage() {
                     </span>
                   </div>
                   <div className="mt-0.5 text-xs text-zinc-500">
-                    {p.createdAt.toLocaleString("uz")}
+                    {shortDateTime(p.createdAt)}
                     {p.adminNote ? ` · ${p.adminNote}` : ""}
                   </div>
                 </div>
@@ -165,7 +166,7 @@ export default async function WalletPage() {
                       )}
                     </div>
                     <div className="mt-0.5 text-xs text-zinc-500">
-                      {tx.createdAt.toLocaleString("uz")}
+                      {shortDateTime(tx.createdAt)}
                       {tx.note ? ` · ${tx.note}` : ""}
                     </div>
                   </div>

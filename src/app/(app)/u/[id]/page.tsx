@@ -8,6 +8,7 @@ import { Stars } from "@/components/stars";
 import { BackLink } from "@/components/back-link";
 import { BlockedIcon } from "@/components/icons";
 import { presenceText } from "@/lib/presence";
+import { shortDate } from "@/lib/date";
 
 const STATUS_LABEL: Record<string, string> = {
   OPEN: "Ochiq",
@@ -178,7 +179,7 @@ export default async function PublicProfile({
           <Row k="Email" v={user.email ?? "—"} />
           <Row
             k="Ro'yxatdan o'tgan"
-            v={user.createdAt.toLocaleDateString("uz", { dateStyle: "long" })}
+            v={shortDate(user.createdAt)}
           />
           {user.role === "PREPARER" ? (
             <Row k="Olingan ishlar" v={String(user._count.ordersTaken)} />
@@ -216,10 +217,7 @@ export default async function PublicProfile({
                         </div>
                         <div className="mt-0.5 text-xs text-zinc-500">
                           {TYPE_LABEL[o.type] ?? o.type} ·{" "}
-                          {(isPreparerProfile
-                            ? o.updatedAt
-                            : o.createdAt
-                          ).toLocaleDateString("uz")}
+                          {shortDate(isPreparerProfile ? o.updatedAt : o.createdAt)}
                           {!isPreparerProfile &&
                             ` · ${STATUS_LABEL[o.status] ?? o.status}`}
                         </div>

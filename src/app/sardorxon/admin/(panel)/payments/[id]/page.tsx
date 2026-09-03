@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { formatSom } from "@/lib/wallet";
 import { AdminPostButton } from "@/components/admin/admin-post-button";
+import { shortDateTime } from "@/lib/date";
 
 export default async function AdminPaymentReceipt({
   params,
@@ -21,7 +22,7 @@ export default async function AdminPaymentReceipt({
 
   const rows: [string, string][] = [
     ["Amal ID", t.id],
-    ["Sana", t.createdAt.toLocaleString("uz")],
+    ["Sana", shortDateTime(t.createdAt)],
     ["Foydalanuvchi", `@${t.user.login ?? t.user.name ?? t.user.id}`],
     ["Tur", t.type],
     ["Summa", `${t.reversedAt ? "−" : ""}${formatSom(t.amount)}`],
@@ -30,7 +31,7 @@ export default async function AdminPaymentReceipt({
     ["Izoh", t.note ?? "—"],
     ["Karta", typeof meta.card === "string" ? meta.card : "—"],
     ["Demo", meta.demo ? "ha" : "yo'q"],
-    ["Bekor qilingan", t.reversedAt ? t.reversedAt.toLocaleString("uz") : "—"],
+    ["Bekor qilingan", t.reversedAt ? shortDateTime(t.reversedAt) : "—"],
     ["Foydalanuvchi joriy balansi", formatSom(t.user.balance)],
   ];
 

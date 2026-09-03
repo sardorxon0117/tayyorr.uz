@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { shortDateTime } from "@/lib/date";
 
 export interface Restriction {
   until: Date;
@@ -48,9 +49,7 @@ export async function restrictionApiError(userId: string) {
 }
 
 export function restrictionText(r: Restriction) {
-  const when = r.permanent
-    ? "muddatsiz"
-    : r.until.toLocaleString("uz", { dateStyle: "medium", timeStyle: "short" });
+  const when = r.permanent ? "muddatsiz" : shortDateTime(r.until);
   return `Hisobingiz ${when} cheklangan${
     r.reason ? `. Sabab: ${r.reason}` : ""
   }. Savollaringiz bo'lsa «tayyorr.uz support» bilan yozishing.`;

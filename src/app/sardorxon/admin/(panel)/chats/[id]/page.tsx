@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { toClientMessages } from "@/lib/chat-messages";
 import { AdminPostButton } from "@/components/admin/admin-post-button";
 import { AdminConversationView } from "@/components/admin/admin-conversation-view";
+import { shortDateTime } from "@/lib/date";
 
 export default async function AdminChatView({
   params,
@@ -101,7 +102,7 @@ export default async function AdminChatView({
 
       {conv.hiddenFromUsersAt && (
         <p className="rounded-lg border border-amber-400/30 bg-amber-500/10 p-3 text-sm text-amber-200">
-          Bu suhbat {conv.hiddenFromUsersAt.toLocaleString("uz")} da yashirilgan —
+          Bu suhbat {shortDateTime(conv.hiddenFromUsersAt)} da yashirilgan —
           foydalanuvchilar ko'rmaydi, lekin bazada saqlanmoqda.
         </p>
       )}
