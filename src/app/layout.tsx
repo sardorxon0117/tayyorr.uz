@@ -8,6 +8,13 @@ export const metadata: Metadata = {
   title: "tayyorr.uz — prezentatsiya va kurs ishlari",
   description:
     "Buyurtma bering yoki tayyorlang: prezentatsiya, kurs ishi, referat va boshqalar.",
+  icons: {
+    icon: [
+      { url: "/favicon.png", sizes: "32x32", type: "image/png" },
+      { url: "/icon.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: "/apple-icon.png",
+  },
 };
 
 export default async function RootLayout({

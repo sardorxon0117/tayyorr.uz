@@ -424,6 +424,22 @@ html.light .ann-ind-past {
 html.light .ann-ind-fill {
   background: #4338ca;
 }
+.ann-nav {
+  font-size: 15px;
+  line-height: 1;
+  padding: 0 3px;
+  color: rgba(255, 255, 255, 0.65);
+  transition: color 0.15s;
+}
+.ann-nav:hover {
+  color: #fff;
+}
+html.light .ann-nav {
+  color: rgba(49, 46, 129, 0.6);
+}
+html.light .ann-nav:hover {
+  color: #312e81;
+}
 @keyframes ann-rise {
   from { opacity: 0; filter: blur(8px); transform: translateY(12px); }
   to { opacity: 1; filter: blur(0); transform: translateY(0); }

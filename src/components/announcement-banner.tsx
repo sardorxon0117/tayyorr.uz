@@ -7,7 +7,11 @@ import type { AnnItem } from "@/lib/announcement";
 import { useLocale } from "@/components/locale-provider";
 import { BlurText } from "@/components/blur-text";
 
-const ROTATE_MS = 6500;
+// o'qish uchun vaqt: har bir belgiga ~55ms + 2.5s asos (+1–2s zaxira), [4s..18s]
+function readMs(text: string) {
+  const chars = text.replace(/\s/g, "").length;
+  return Math.min(18000, Math.max(4000, 2500 + chars * 55 + 1500));
+}
 
 interface Resolved {
   title: string;
@@ -65,52 +69,82 @@ export function AnnouncementCarousel({ items }: { items: AnnItem[] }) {
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const many = items.length > 1;
+  const n = items.length;
+
+  const idx = n ? Math.min(i, n - 1) : 0;
+  const raw = n ? items[idx] : null;
+  const cur: Resolved = raw
+    ? {
+        title: raw.title[locale] || raw.title.uz,
+        body: raw.body[locale] || raw.body.uz,
+        buttonText: raw.buttonText[locale] || raw.buttonText.uz || null,
+        buttonUrl: raw.buttonUrl,
+      }
+    : { title: "", body: "", buttonText: null, buttonUrl: null };
+
+  // joriy e'lonni o'qish uchun kerakli vaqt (barcha harflar, buttondagi ham)
+  const dur = readMs(
+    `${cur.title} ${cur.body} ${cur.buttonText ?? ""}`,
+  );
 
   useEffect(() => {
     if (!many) return;
-    if (i > items.length - 1) setI(0);
     timer.current = setTimeout(() => {
-      setI((p) => (p + 1) % items.length);
+      setI((p) => (p + 1) % n);
       setTick((t) => t + 1);
-    }, ROTATE_MS);
+    }, dur);
     return () => {
       if (timer.current) clearTimeout(timer.current);
     };
-  }, [i, many, items.length]);
+  }, [i, many, n, dur]);
 
-  if (items.length === 0) return null;
-  const raw = items[Math.min(i, items.length - 1)];
-  const cur: Resolved = {
-    title: raw.title[locale] || raw.title.uz,
-    body: raw.body[locale] || raw.body.uz,
-    buttonText: raw.buttonText[locale] || raw.buttonText.uz || null,
-    buttonUrl: raw.buttonUrl,
-  };
-
-  function go(n: number) {
-    setI(n);
+  function go(to: number) {
+    setI((to + n) % n);
     setTick((t) => t + 1);
   }
 
+  if (n === 0) return null;
+
   const indicator = many ? (
-    <div className="flex items-center gap-1">
-      {items.map((it, n) => (
-        <button
-          key={it.id}
-          type="button"
-          aria-label={`${n + 1}`}
-          onClick={() => go(n)}
-          className="ann-ind relative h-0.5 w-4 overflow-hidden rounded-full"
-        >
-          {n < i && <span className="ann-ind-past absolute inset-0 rounded-full" />}
-          {n === i && (
-            <span
-              key={tick}
-              className="ann-ind-fill animate-ann-progress absolute inset-y-0 left-0 rounded-full"
-            />
-          )}
-        </button>
-      ))}
+    <div className="flex items-center gap-2">
+      <button
+        type="button"
+        onClick={() => go(idx - 1)}
+        aria-label="Oldingi"
+        className="ann-nav"
+      >
+        ‹
+      </button>
+      <div className="flex items-center gap-1">
+        {items.map((it, k) => (
+          <button
+            key={it.id}
+            type="button"
+            aria-label={`${k + 1}`}
+            onClick={() => go(k)}
+            className="ann-ind relative h-0.5 w-4 overflow-hidden rounded-full"
+          >
+            {k < idx && (
+              <span className="ann-ind-past absolute inset-0 rounded-full" />
+            )}
+            {k === idx && (
+              <span
+                key={tick}
+                className="ann-ind-fill absolute inset-y-0 left-0 rounded-full"
+                style={{ animation: `ann-progress ${dur}ms linear both` }}
+              />
+            )}
+          </button>
+        ))}
+      </div>
+      <button
+        type="button"
+        onClick={() => go(idx + 1)}
+        aria-label="Keyingi"
+        className="ann-nav"
+      >
+        ›
+      </button>
     </div>
   ) : undefined;
 

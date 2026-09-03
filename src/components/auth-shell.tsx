@@ -15,7 +15,7 @@ export function AuthShell({
       <ForceDark />
       <AuroraBackground />
       <Link href="/" className="mb-8">
-        <Logo className="h-7 w-auto" />
+        <Logo className="h-9" />
       </Link>
       <div className={`w-full ${width} animate-rise`}>{children}</div>
     </main>

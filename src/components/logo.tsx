@@ -1,25 +1,19 @@
-/* tayyorr.uz logotipi — mavzuga qarab (yorug'/qorong'i) rasm almashadi.
-   public/logo-dark.png  — qorong'i rejim uchun (oq logo)
-   public/logo-light.png — yorug' rejim uchun (qora logo) */
-export function Logo({
-  className = "h-6 w-auto",
-}: {
-  className?: string;
-}) {
+/* tayyorr.uz logotipi — mavzuга qarab rasm almashadi. */
+export function Logo({ className = "h-7" }: { className?: string }) {
   return (
-    <span className="inline-flex select-none items-center" aria-label="tayyorr.uz">
+    <span className="inline-flex max-w-full select-none items-center">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src="/logo-dark.png"
         alt="tayyorr.uz"
-        className={`logo-dark ${className}`}
+        className={`logo-dark w-auto max-w-full object-contain ${className}`}
         draggable={false}
       />
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src="/logo-light.png"
         alt="tayyorr.uz"
-        className={`logo-light ${className}`}
+        className={`logo-light w-auto max-w-full object-contain ${className}`}
         draggable={false}
       />
     </span>
