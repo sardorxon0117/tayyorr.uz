@@ -29,10 +29,15 @@ export const authConfig = {
       // admin panel alohida autentifikatsiyaga ega
       if (path.startsWith("/sardorxon")) return true;
 
+      // SEO / statik metadata (robots.txt, sitemap.xml, manifest.webmanifest,
+      // og.png va h.k.) — har doim ochiq
+      if (/\.[a-z0-9]+$/i.test(path)) return true;
+
       const isPublic =
         path === "/" ||
         path.startsWith("/login") ||
-        path.startsWith("/register");
+        path.startsWith("/register") ||
+        path === "/terms";
 
       if (isPublic) return true;
       if (isLoggedIn) return true;
