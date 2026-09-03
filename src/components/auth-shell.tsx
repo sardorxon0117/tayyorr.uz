@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AuroraBackground } from "@/components/aurora-background";
+import { ForceDark } from "@/components/force-dark";
 
 export function AuthShell({
   children,
@@ -10,6 +11,7 @@ export function AuthShell({
 }) {
   return (
     <main className="relative flex min-h-screen flex-col items-center justify-center px-6 py-12">
+      <ForceDark />
       <AuroraBackground />
       <Link
         href="/"

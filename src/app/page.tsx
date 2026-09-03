@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { auth } from "@/auth";
+import { ForceDark } from "@/components/force-dark";
 
 export default async function Home() {
   const session = await auth();
@@ -7,6 +8,7 @@ export default async function Home() {
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#07070c] text-zinc-100 antialiased">
+      <ForceDark />
       {/* ---------- background ---------- */}
       <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute inset-0 bg-grid" />
