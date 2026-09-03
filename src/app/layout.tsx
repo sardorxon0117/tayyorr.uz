@@ -15,6 +15,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="uz">
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('tyr_theme')||'dark';var light=t==='light'||(t==='system'&&window.matchMedia('(prefers-color-scheme: light)').matches);if(light)document.documentElement.classList.add('light');}catch(e){}})();`,
+          }}
+        />
+      </head>
       <body className="min-h-screen antialiased">
         <Providers>{children}</Providers>
       </body>

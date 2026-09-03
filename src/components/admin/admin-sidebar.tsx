@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 
 import type { NavLink } from "@/components/nav-menu";
 import { AdminPostButton } from "@/components/admin/admin-post-button";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 /** Admin panel chap paneli (kompyuterda). */
 export function AdminSidebar({ nav }: { nav: NavLink[] }) {
@@ -45,7 +46,8 @@ export function AdminSidebar({ nav }: { nav: NavLink[] }) {
         })}
       </nav>
 
-      <div className="border-t border-white/10 p-3">
+      <div className="flex flex-col gap-2 border-t border-white/10 p-3">
+        <ThemeToggle />
         <AdminPostButton
           url="/api/admin/logout"
           label="⏻ Chiqish"

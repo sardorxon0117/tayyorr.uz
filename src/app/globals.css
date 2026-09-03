@@ -13,6 +13,90 @@ body {
   color: #e4e4e7;
 }
 
+/* ================= yorug' rejim ================= */
+html.light {
+  color-scheme: light;
+}
+html.light body {
+  background: #f3f3f5;
+  color: #1b1b1f;
+}
+/* asosiy sirtlar */
+html.light .card {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.08);
+}
+html.light .input,
+html.light select.input,
+html.light textarea.input {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.14);
+  color: #1b1b1f;
+}
+html.light .glass,
+html.light .glass-strong {
+  background: rgba(255, 255, 255, 0.7);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+html.light .btn-ghost {
+  background: rgba(0, 0, 0, 0.04);
+  color: #3f3f46;
+}
+html.light .btn-white {
+  background: #18181b;
+  color: #fff;
+}
+html.light .menu-panel {
+  background: #ffffff !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+  color: #1b1b1f;
+}
+/* qattiq kodlangan panel foni (header/sidebar/menyu) */
+html.light [class*="bg-[#0b0b12]"],
+html.light [class*="bg-[#08080d]"],
+html.light [class*="bg-[#14141b]"],
+html.light [class*="bg-[#0e0e16]"] {
+  background-color: rgba(255, 255, 255, 0.88) !important;
+}
+/* matn ranglari */
+html.light .text-white {
+  color: #18181b;
+}
+html.light .text-zinc-100,
+html.light .text-zinc-200,
+html.light .text-zinc-300 {
+  color: #27272a;
+}
+html.light .text-zinc-400,
+html.light .text-zinc-500 {
+  color: #52525b;
+}
+html.light .text-zinc-600 {
+  color: #71717a;
+}
+/* oq asosli yarim shaffof fonlar -> qora asosli */
+html.light [class*="bg-white/"] {
+  background-color: rgba(0, 0, 0, 0.05) !important;
+}
+html.light [class*="border-white/"] {
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+html.light [class*="divide-white/"] > * + * {
+  border-color: rgba(0, 0, 0, 0.08) !important;
+}
+/* rangli tugmalar/nishonlarda matn oq qolsin */
+html.light .btn-primary,
+html.light .btn-primary .text-white,
+html.light [class*="bg-indigo-5"],
+html.light [class*="bg-indigo-6"],
+html.light [class*="bg-emerald-5"],
+html.light [class*="bg-red-5"] {
+  color: #fff;
+}
+html.light .btn-primary {
+  color: #fff;
+}
+
 /* ================= shared UI primitives (dark) ================= */
 
 .btn,

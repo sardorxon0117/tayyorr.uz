@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { APP_NAV } from "@/lib/nav";
-import { SignOutButton } from "@/components/sign-out-button";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { BalanceAmount } from "@/components/balance-amount";
 
 function roleLabel(role: string | null) {
@@ -104,8 +104,8 @@ export function AppSidebar({ user }: { user: SidebarUser }) {
         </nav>
       </div>
 
-      <div className="border-t border-white/10 p-4">
-        <SignOutButton />
+      <div className="border-t border-white/10 p-3">
+        <ThemeToggle />
       </div>
     </aside>
   );

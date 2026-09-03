@@ -17,9 +17,11 @@ export interface NavLink {
 export function NavMenu({
   links,
   onSignOut,
+  footer,
 }: {
   links: NavLink[];
   onSignOut?: () => void;
+  footer?: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
   const [closing, setClosing] = useState(false);
@@ -120,6 +122,13 @@ export function NavMenu({
                   <span className="text-base">⏻</span>
                   Chiqish
                 </button>
+              </>
+            )}
+
+            {footer && (
+              <>
+                <div className="my-1 h-px bg-white/10" />
+                <div className="px-1 pb-1 pt-1">{footer}</div>
               </>
             )}
           </div>

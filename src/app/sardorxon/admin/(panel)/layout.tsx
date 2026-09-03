@@ -6,6 +6,7 @@ import { getSupportUserId } from "@/lib/support";
 import { AdminPostButton } from "@/components/admin/admin-post-button";
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
 import { NavMenu, type NavLink } from "@/components/nav-menu";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const BASE: NavLink[] = [
   { href: "/sardorxon/admin", label: "Bosh", icon: "🏠" },
@@ -66,7 +67,7 @@ export default async function AdminPanelLayout({
               className="rounded-lg px-2 py-1 text-sm text-zinc-500 transition hover:text-red-400"
               redirectTo="/sardorxon/admin/login"
             />
-            <NavMenu links={nav} />
+            <NavMenu links={nav} footer={<ThemeToggle />} />
           </div>
         </div>
       </header>
