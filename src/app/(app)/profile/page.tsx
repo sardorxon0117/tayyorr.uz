@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { getRestriction } from "@/lib/restriction";
 import { RestrictionNotice } from "@/components/restriction-notice";
 import { ProfileForm } from "@/components/profile-form";
+import { AccountForm } from "@/components/account-form";
 import { SignOutButton } from "@/components/sign-out-button";
 
 export default async function ProfilePage() {
@@ -26,6 +27,7 @@ export default async function ProfilePage() {
       role: true,
       about: true,
       avatarUrl: true,
+      passwordHash: true,
     },
   });
   if (!user) return null;
@@ -48,6 +50,16 @@ export default async function ProfilePage() {
           avatarUrl: user.avatarUrl ?? "",
         }}
       />
+
+      <div className="mt-4">
+        <AccountForm
+          initial={{
+            role: user.role === "PREPARER" ? "PREPARER" : "ORDERER",
+            login: user.login ?? "",
+            hasPassword: !!user.passwordHash,
+          }}
+        />
+      </div>
 
       <div className="mt-8 border-t border-white/10 pt-6">
         <p className="mb-3 text-sm text-zinc-500">
