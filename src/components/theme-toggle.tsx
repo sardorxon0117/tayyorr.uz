@@ -2,41 +2,35 @@
 
 import { useEffect, useState } from "react";
 
-import { useLocale } from "@/components/locale-provider";
-
 type Mode = "light" | "dark";
-const KEY = "tyr_theme";
 
 function apply(mode: Mode) {
   document.documentElement.classList.toggle("light", mode === "light");
+  document.cookie = `tyr_theme=${mode}; path=/; max-age=31536000; samesite=lax`;
+  fetch("/api/me/theme", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ theme: mode }),
+  }).catch(() => {});
 }
 
 const OPTS: [Mode, string, string][] = [
-  ["light", "☀️", "theme.light"],
-  ["dark", "🌙", "theme.dark"],
+  ["light", "☀️", "Yorug'"],
+  ["dark", "🌙", "Qorong'i"],
 ];
 
 /** Yorug'/qorong'i rejim tanlagichi. */
 export function ThemeToggle({ className = "" }: { className?: string }) {
-  const { t } = useLocale();
   const [mode, setMode] = useState<Mode>("dark");
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(KEY);
-      setMode(stored === "light" ? "light" : "dark");
-    } catch {
-      /* ignore */
-    }
+    setMode(
+      document.documentElement.classList.contains("light") ? "light" : "dark",
+    );
   }, []);
 
   function pick(m: Mode) {
     setMode(m);
-    try {
-      localStorage.setItem(KEY, m);
-    } catch {
-      /* ignore */
-    }
     apply(m);
   }
 
@@ -44,7 +38,7 @@ export function ThemeToggle({ className = "" }: { className?: string }) {
     <div
       className={`flex gap-1 rounded-xl border border-white/10 bg-white/5 p-1 ${className}`}
     >
-      {OPTS.map(([m, icon, key]) => (
+      {OPTS.map(([m, icon, label]) => (
         <button
           key={m}
           type="button"
@@ -57,7 +51,7 @@ export function ThemeToggle({ className = "" }: { className?: string }) {
           }`}
         >
           <span aria-hidden>{icon}</span>
-          <span>{t(key)}</span>
+          <span>{label}</span>
         </button>
       ))}
     </div>

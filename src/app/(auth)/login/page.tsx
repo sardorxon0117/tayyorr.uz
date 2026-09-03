@@ -5,6 +5,7 @@ import Link from "next/link";
 import { signIn } from "next-auth/react";
 
 import { AuthShell } from "@/components/auth-shell";
+import { PasswordInput } from "@/components/password-input";
 
 export default function LoginPage() {
   const [login, setLogin] = useState("");
@@ -64,9 +65,7 @@ export default function LoginPage() {
           </div>
           <div>
             <label className="label">Parol</label>
-            <input
-              className="input"
-              type="password"
+            <PasswordInput
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}

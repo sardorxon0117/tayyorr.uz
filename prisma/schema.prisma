@@ -119,6 +119,7 @@ model User {
   isPlatform Boolean   @default(false) // sayt komissiya hisobi
   lastSeenAt DateTime? // oxirgi faollik (online holati)
   locale     String? // "uz" | "ru" | "en" — tanlangan til
+  theme      String? // "light" | "dark"
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 
 import { AvatarUpload } from "@/components/avatar-upload";
 import { AuthShell } from "@/components/auth-shell";
+import { PasswordInput } from "@/components/password-input";
 
 type Role = "ORDERER" | "PREPARER";
 
@@ -146,9 +147,7 @@ function OnboardingInner() {
 
         <div>
           <label className="label">Parol</label>
-          <input
-            className="input"
-            type="password"
+          <PasswordInput
             required
             minLength={6}
             value={form.password}

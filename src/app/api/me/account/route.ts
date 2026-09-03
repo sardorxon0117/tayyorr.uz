@@ -14,7 +14,6 @@ const schema = z.object({
     .max(30)
     .regex(/^[a-zA-Z0-9_.]+$/, "Login faqat harf, raqam, _ va . dan iborat")
     .optional(),
-  currentPassword: z.string().optional(),
   newPassword: z.string().min(6).max(100).optional(),
 });
 
@@ -33,12 +32,12 @@ export async function PATCH(req: Request) {
       { status: 400 },
     );
   }
-  const { role, login, currentPassword, newPassword } = parsed.data;
+  const { role, login, newPassword } = parsed.data;
   const me = session.user.id;
 
   const user = await db.user.findUnique({
     where: { id: me },
-    select: { role: true, passwordHash: true },
+    select: { role: true },
   });
   if (!user) return NextResponse.json({ error: "Topilmadi" }, { status: 404 });
 
@@ -81,17 +80,6 @@ export async function PATCH(req: Request) {
 
   // ---- parol ----
   if (newPassword) {
-    if (user.passwordHash) {
-      const ok =
-        !!currentPassword &&
-        (await bcrypt.compare(currentPassword, user.passwordHash));
-      if (!ok) {
-        return NextResponse.json(
-          { error: "Joriy parol noto'g'ri" },
-          { status: 400 },
-        );
-      }
-    }
     data.passwordHash = await bcrypt.hash(newPassword, 10);
   }
 

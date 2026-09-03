@@ -4,40 +4,50 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 
+import { PasswordInput } from "@/components/password-input";
+
 export function AccountForm({
   initial,
 }: {
-  initial: { role: "ORDERER" | "PREPARER"; login: string; hasPassword: boolean };
+  initial: { role: "ORDERER" | "PREPARER"; login: string };
 }) {
   const router = useRouter();
   const { update } = useSession();
 
   const [role, setRole] = useState(initial.role);
   const [login, setLogin] = useState(initial.login);
-  const [curPw, setCurPw] = useState("");
-  const [newPw, setNewPw] = useState("");
+  const [pw, setPw] = useState("");
+  const [pw2, setPw2] = useState("");
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
-    setBusy(true);
     setMsg(null);
+
+    if (pw || pw2) {
+      if (pw.length < 6) {
+        setMsg({ ok: false, text: "Parol kamida 6 belgi" });
+        return;
+      }
+      if (pw !== pw2) {
+        setMsg({ ok: false, text: "Parollar mos emas" });
+        return;
+      }
+    }
 
     const payload: Record<string, string> = {};
     if (role !== initial.role) payload.role = role;
     if (login.trim() && login.trim() !== initial.login)
       payload.login = login.trim();
-    if (newPw) {
-      payload.newPassword = newPw;
-      if (initial.hasPassword) payload.currentPassword = curPw;
-    }
+    if (pw) payload.newPassword = pw;
+
     if (Object.keys(payload).length === 0) {
       setMsg({ ok: false, text: "O'zgartirish kiritilmadi" });
-      setBusy(false);
       return;
     }
 
+    setBusy(true);
     try {
       const res = await fetch("/api/me/account", {
         method: "PATCH",
@@ -47,8 +57,8 @@ export function AccountForm({
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Xatolik");
       await update();
-      setCurPw("");
-      setNewPw("");
+      setPw("");
+      setPw2("");
       setMsg({ ok: true, text: "Saqlandi" });
       router.refresh();
     } catch (err) {
@@ -88,28 +98,20 @@ export function AccountForm({
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
-        {initial.hasPassword && (
-          <div>
-            <label className="label">Joriy parol</label>
-            <input
-              className="input"
-              type="password"
-              value={curPw}
-              onChange={(e) => setCurPw(e.target.value)}
-              autoComplete="current-password"
-            />
-          </div>
-        )}
         <div>
-          <label className="label">
-            {initial.hasPassword ? "Yangi parol" : "Parol o'rnatish"}
-          </label>
-          <input
-            className="input"
-            type="password"
-            value={newPw}
-            onChange={(e) => setNewPw(e.target.value)}
+          <label className="label">Yangi parol</label>
+          <PasswordInput
+            value={pw}
+            onChange={(e) => setPw(e.target.value)}
             placeholder="kamida 6 belgi"
+            autoComplete="new-password"
+          />
+        </div>
+        <div>
+          <label className="label">Parolni takrorlang</label>
+          <PasswordInput
+            value={pw2}
+            onChange={(e) => setPw2(e.target.value)}
             autoComplete="new-password"
           />
         </div>

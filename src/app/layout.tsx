@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
+
 import "./globals.css";
 import { Providers } from "@/components/providers";
 
@@ -8,17 +10,20 @@ export const metadata: Metadata = {
     "Buyurtma bering yoki tayyorlang: prezentatsiya, kurs ishi, referat va boshqalar.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const light = (await cookies()).get("tyr_theme")?.value === "light";
+
   return (
-    <html lang="uz">
+    <html lang="uz" className={light ? "light" : undefined}>
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var p=location.pathname,pub=p==='/'||p.indexOf('/login')===0||p.indexOf('/register')===0;if(!pub&&localStorage.getItem('tyr_theme')==='light')document.documentElement.classList.add('light');document.documentElement.classList.add('js-reveal');}catch(e){}})();`,
+            // landing / login / register — har doim qorong'i
+            __html: `(function(){try{var p=location.pathname;if(p==='/'||p.indexOf('/login')===0||p.indexOf('/register')===0)document.documentElement.classList.remove('light');document.documentElement.classList.add('js-reveal');}catch(e){}})();`,
           }}
         />
       </head>

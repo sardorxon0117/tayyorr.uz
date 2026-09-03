@@ -27,7 +27,6 @@ export default async function ProfilePage() {
       role: true,
       about: true,
       avatarUrl: true,
-      passwordHash: true,
     },
   });
   if (!user) return null;
@@ -56,7 +55,6 @@ export default async function ProfilePage() {
           initial={{
             role: user.role === "PREPARER" ? "PREPARER" : "ORDERER",
             login: user.login ?? "",
-            hasPassword: !!user.passwordHash,
           }}
         />
       </div>
