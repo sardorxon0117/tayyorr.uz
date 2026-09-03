@@ -50,7 +50,12 @@ export default async function AdminOrders() {
           </thead>
           <tbody>
             {orders.map((o) => (
-              <tr key={o.id} className="border-t border-white/5">
+              <tr
+                key={o.id}
+                className={`border-t border-white/5 ${
+                  o.deletedAt ? "opacity-50" : ""
+                }`}
+              >
                 <td className="whitespace-nowrap px-4 py-2 text-zinc-400">
                   {o.createdAt.toLocaleDateString("uz")}
                 </td>
@@ -86,15 +91,29 @@ export default async function AdminOrders() {
                 <td className="px-4 py-2 text-white">
                   {o.budget ? formatSom(o.budget) : "—"}
                 </td>
-                <td className="px-4 py-2 text-zinc-300">{STATUS[o.status] ?? o.status}</td>
+                <td className="px-4 py-2 text-zinc-300">
+                  {o.deletedAt ? (
+                    <span
+                      className="text-red-300"
+                      title={o.deleteReason ?? undefined}
+                    >
+                      🗑 O'chirilgan{" "}
+                      {o.deletedByRole === "ADMIN" ? "(admin)" : "(buyurtmachi)"}
+                    </span>
+                  ) : (
+                    (STATUS[o.status] ?? o.status)
+                  )}
+                </td>
                 <td className="px-4 py-2 text-right">
-                  <AdminPostButton
-                    url={`/api/admin/orders/${o.id}`}
-                    method="DELETE"
-                    label="O'chirish"
-                    className="rounded-lg bg-red-500/15 px-2.5 py-1 text-xs text-red-300 hover:bg-red-500/25"
-                    promptReason="O'chirish sababini yozing (buyurtmachiga ko'rinadi):"
-                  />
+                  {!o.deletedAt && (
+                    <AdminPostButton
+                      url={`/api/admin/orders/${o.id}`}
+                      method="DELETE"
+                      label="O'chirish"
+                      className="rounded-lg bg-red-500/15 px-2.5 py-1 text-xs text-red-300 hover:bg-red-500/25"
+                      promptReason="O'chirish sababini yozing (buyurtmachiga ko'rinadi):"
+                    />
+                  )}
                 </td>
               </tr>
             ))}
