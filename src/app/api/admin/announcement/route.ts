@@ -4,10 +4,17 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { adminApiGuard } from "@/lib/admin";
 
+const s = z.string().trim().max(2000).optional().default("");
 const schema = z.object({
   title: z.string().trim().min(1).max(200),
-  body: z.string().trim().max(2000).optional().default(""),
+  titleRu: s,
+  titleEn: s,
+  body: s,
+  bodyRu: s,
+  bodyEn: s,
   buttonText: z.string().trim().max(60).optional().default(""),
+  buttonTextRu: z.string().trim().max(60).optional().default(""),
+  buttonTextEn: z.string().trim().max(60).optional().default(""),
   buttonUrl: z.string().trim().max(500).optional().default(""),
   role: z.enum(["ORDERER", "PREPARER"]).nullable().optional().default(null),
   active: z.boolean().default(true),
@@ -22,16 +29,22 @@ export async function POST(req: Request) {
   if (!parsed.success) {
     return NextResponse.json({ error: "Sarlavha kerak" }, { status: 400 });
   }
-  const { title, body, buttonText, buttonUrl, role, active } = parsed.data;
+  const d = parsed.data;
 
   const a = await db.announcement.create({
     data: {
-      title,
-      body,
-      buttonText: buttonText || null,
-      buttonUrl: buttonUrl || null,
-      role: role ?? null,
-      active,
+      title: d.title,
+      titleRu: d.titleRu || null,
+      titleEn: d.titleEn || null,
+      body: d.body,
+      bodyRu: d.bodyRu || null,
+      bodyEn: d.bodyEn || null,
+      buttonText: d.buttonText || null,
+      buttonTextRu: d.buttonTextRu || null,
+      buttonTextEn: d.buttonTextEn || null,
+      buttonUrl: d.buttonUrl || null,
+      role: d.role ?? null,
+      active: d.active,
     },
   });
 

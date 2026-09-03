@@ -23,6 +23,10 @@ export async function POST(req: Request) {
 
   const raw = (await req.json().catch(() => ({}))) as Record<string, unknown>;
   const body = str(raw.body) ?? "";
+  const bodyRu = str(raw.bodyRu);
+  const bodyEn = str(raw.bodyEn);
+  const textFor = (loc: string | null | undefined) =>
+    (loc === "ru" ? bodyRu : loc === "en" ? bodyEn : undefined) ?? body;
   const rf = raw.file as
     | { key?: string; name?: string; type?: string; size?: number }
     | undefined;
@@ -83,6 +87,8 @@ export async function POST(req: Request) {
   const record = await db.broadcast.create({
     data: {
       body,
+      bodyRu: bodyRu ?? null,
+      bodyEn: bodyEn ?? null,
       fileKey: file?.key ?? null,
       fileName: file?.name ?? null,
       fileType: file?.type ?? null,
@@ -96,11 +102,15 @@ export async function POST(req: Request) {
     },
   });
 
-  const users = await db.user.findMany({ where, select: { id: true }, take: MAX });
+  const users = await db.user.findMany({
+    where,
+    select: { id: true, locale: true },
+    take: MAX,
+  });
   let sent = 0;
   for (const u of users) {
     try {
-      await sendSupportMessage(u.id, body, file, record.id);
+      await sendSupportMessage(u.id, textFor(u.locale), file, record.id);
       sent++;
     } catch {
       /* birini o'tkazib yuboramiz */

@@ -43,6 +43,11 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
     }
     document.cookie = `tyr_locale=${l};path=/;max-age=31536000`;
     document.documentElement.lang = l;
+    fetch("/api/me/locale", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ locale: l }),
+    }).catch(() => {});
   }, []);
 
   const t = useCallback((key: string) => translate(locale, key), [locale]);

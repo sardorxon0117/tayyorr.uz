@@ -118,6 +118,7 @@ model User {
   isSupport  Boolean   @default(false) // "tayyorr.uz support" tizim hisobi
   isPlatform Boolean   @default(false) // sayt komissiya hisobi
   lastSeenAt DateTime? // oxirgi faollik (online holati)
+  locale     String? // "uz" | "ru" | "en" — tanlangan til
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -193,6 +194,8 @@ model Contract {
 model Broadcast {
   id         String    @id @default(cuid())
   body       String
+  bodyRu     String?
+  bodyEn     String?
   fileKey    String?
   fileName   String?
   fileType   String?
@@ -209,15 +212,21 @@ model Broadcast {
 }
 
 model Announcement {
-  id         String   @id @default(cuid())
-  title      String
-  body       String
-  buttonText String?
-  buttonUrl  String?
-  role       String? // null = hammaga, "ORDERER" | "PREPARER"
-  active     Boolean  @default(true)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id           String   @id @default(cuid())
+  title        String
+  titleRu      String?
+  titleEn      String?
+  body         String
+  bodyRu       String?
+  bodyEn       String?
+  buttonText   String?
+  buttonTextRu String?
+  buttonTextEn String?
+  buttonUrl    String?
+  role         String? // null = hammaga, "ORDERER" | "PREPARER"
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   @@index([active, createdAt])
 }

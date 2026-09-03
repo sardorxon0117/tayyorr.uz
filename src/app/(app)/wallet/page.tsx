@@ -2,18 +2,13 @@ import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { ensureWalletCode, formatSom } from "@/lib/wallet";
 import { getRestriction } from "@/lib/restriction";
+import { getT } from "@/lib/i18n-server";
 import { WalletTopUp } from "@/components/wallet-topup";
 import { WalletPayout } from "@/components/wallet-payout";
 import { PayoutCancelButton } from "@/components/payout-cancel-button";
 import { BalanceAmount } from "@/components/balance-amount";
 import { WalletCode } from "@/components/wallet-code";
 
-const PAYOUT_STATUS: Record<string, string> = {
-  PENDING: "Kartaga o'tkazilmoqda",
-  PAID: "Kartaga o'tkazildi",
-  REJECTED: "Rad etildi (mablag' qaytarildi)",
-  CANCELLED: "Bekor qilindi",
-};
 
 const TXN_LABEL: Record<string, string> = {
   TOPUP: "To'ldirish",
@@ -31,6 +26,13 @@ const OUTFLOW = new Set(["SPEND", "TRANSFER_OUT", "PAYOUT", "HOLD"]);
 export default async function WalletPage() {
   const session = await auth();
   const userId = session!.user.id;
+  const t = await getT();
+  const PAYOUT_STATUS: Record<string, string> = {
+    PENDING: t("payout.PENDING"),
+    PAID: t("payout.PAID"),
+    REJECTED: t("payout.REJECTED"),
+    CANCELLED: t("payout.CANCELLED"),
+  };
   // hisob cheklangan bo'lsa ham hamyon ochiq — foydalanuvchi pulini yechib olishi kerak
   const restriction = await getRestriction(userId);
 
@@ -54,9 +56,9 @@ export default async function WalletPage() {
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-white">Hamyon</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-white">{t("wallet.title")}</h1>
         <p className="mt-1 text-sm text-zinc-400">
-          Hisobingizni to'ldiring, buyurtmalar uchun shu balansdan to'lov qilinadi.
+          {t("wallet.subtitle")}
         </p>
       </div>
 
@@ -75,7 +77,7 @@ export default async function WalletPage() {
           }}
         />
         <div className="relative">
-          <div className="text-sm text-zinc-400">Joriy balans</div>
+          <div className="text-sm text-zinc-400">{t("wallet.current")}</div>
           <BalanceAmount
             value={balance}
             className="mt-1 text-4xl font-semibold tracking-tight text-white"
@@ -99,7 +101,7 @@ export default async function WalletPage() {
 
       {payouts.length > 0 && (
         <div>
-          <h2 className="mb-3 font-semibold text-white">Yechib olishlar</h2>
+          <h2 className="mb-3 font-semibold text-white">{t("wallet.withdrawals")}</h2>
           <ul className="flex flex-col gap-2">
             {payouts.map((p) => (
               <li
@@ -140,18 +142,18 @@ export default async function WalletPage() {
           <div className="card text-sm text-zinc-500">Hozircha amallar yo'q.</div>
         ) : (
           <ul className="flex flex-col gap-2">
-            {txns.map((t) => {
-              const reversed = !!t.reversedAt;
-              const out = reversed || OUTFLOW.has(t.type);
+            {txns.map((tx) => {
+              const reversed = !!tx.reversedAt;
+              const out = reversed || OUTFLOW.has(tx.type);
               return (
                 <li
-                  key={t.id}
+                  key={tx.id}
                   className="card flex items-center justify-between py-3"
                 >
                   <div>
                     <div className="text-sm font-medium text-white">
-                      {TXN_LABEL[t.type] ?? t.type}
-                      {t.method === "DEMO" && (
+                      {TXN_LABEL[tx.type] ?? tx.type}
+                      {tx.method === "DEMO" && (
                         <span className="ml-2 rounded bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-semibold text-amber-300">
                           DEMO
                         </span>
@@ -163,8 +165,8 @@ export default async function WalletPage() {
                       )}
                     </div>
                     <div className="mt-0.5 text-xs text-zinc-500">
-                      {t.createdAt.toLocaleString("uz")}
-                      {t.note ? ` · ${t.note}` : ""}
+                      {tx.createdAt.toLocaleString("uz")}
+                      {tx.note ? ` · ${tx.note}` : ""}
                     </div>
                   </div>
                   <div
@@ -177,7 +179,7 @@ export default async function WalletPage() {
                     }`}
                   >
                     {out ? "−" : "+"}
-                    {formatSom(t.amount)}
+                    {formatSom(tx.amount)}
                   </div>
                 </li>
               );

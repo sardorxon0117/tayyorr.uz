@@ -5,20 +5,37 @@ import { useRouter } from "next/navigation";
 
 import { AnnouncementBanner } from "@/components/announcement-banner";
 
+type Lang = "uz" | "ru" | "en";
+const LANGS: Lang[] = ["uz", "ru", "en"];
+
 export interface Banner {
   id: string;
   title: string;
+  titleRu: string;
+  titleEn: string;
   body: string;
+  bodyRu: string;
+  bodyEn: string;
   buttonText: string;
+  buttonTextRu: string;
+  buttonTextEn: string;
   buttonUrl: string;
   role: "" | "ORDERER" | "PREPARER";
   active: boolean;
 }
 
-const EMPTY: Omit<Banner, "id"> = {
+type Draft = Omit<Banner, "id">;
+
+const EMPTY: Draft = {
   title: "",
+  titleRu: "",
+  titleEn: "",
   body: "",
+  bodyRu: "",
+  bodyEn: "",
   buttonText: "",
+  buttonTextRu: "",
+  buttonTextEn: "",
   buttonUrl: "",
   role: "",
   active: true,
@@ -30,38 +47,65 @@ const ROLE_LABEL: Record<string, string> = {
   PREPARER: "Tayyorlovchilarga",
 };
 
+const F = {
+  uz: { t: "title", b: "body", btn: "buttonText" },
+  ru: { t: "titleRu", b: "bodyRu", btn: "buttonTextRu" },
+  en: { t: "titleEn", b: "bodyEn", btn: "buttonTextEn" },
+} as const;
+
 function Fields({
   v,
   set,
 }: {
-  v: Omit<Banner, "id">;
-  set: (patch: Partial<Omit<Banner, "id">>) => void;
+  v: Draft;
+  set: (patch: Partial<Draft>) => void;
 }) {
+  const [lang, setLang] = useState<Lang>("uz");
+  const k = F[lang];
   return (
     <div className="grid gap-3">
+      <div className="flex gap-1">
+        {LANGS.map((l) => (
+          <button
+            key={l}
+            type="button"
+            onClick={() => setLang(l)}
+            className={`rounded-lg px-2.5 py-1 text-xs uppercase transition ${
+              lang === l
+                ? "bg-indigo-500/20 text-white"
+                : "text-zinc-500 hover:text-white"
+            }`}
+          >
+            {l}
+          </button>
+        ))}
+        <span className="ml-auto self-center text-[11px] text-zinc-600">
+          RU / EN bo'sh bo'lsa — o'zbekchasi ko'rsatiladi
+        </span>
+      </div>
       <input
         className="input"
-        placeholder="Asosiy matn"
-        value={v.title}
-        onChange={(e) => set({ title: e.target.value })}
+        placeholder={`Asosiy matn (${lang})`}
+        value={v[k.t] as string}
+        onChange={(e) => set({ [k.t]: e.target.value } as Partial<Draft>)}
       />
       <textarea
         className="input"
         rows={2}
-        placeholder="Tavsif"
-        value={v.body}
-        onChange={(e) => set({ body: e.target.value })}
+        placeholder={`Tavsif (${lang})`}
+        value={v[k.b] as string}
+        onChange={(e) => set({ [k.b]: e.target.value } as Partial<Draft>)}
       />
       <div className="grid gap-3 sm:grid-cols-2">
         <input
           className="input"
-          placeholder="Tugma matni"
-          value={v.buttonText}
-          onChange={(e) => set({ buttonText: e.target.value })}
+          placeholder={`Tugma matni (${lang})`}
+          value={v[k.btn] as string}
+          onChange={(e) => set({ [k.btn]: e.target.value } as Partial<Draft>)}
         />
         <input
           className="input"
-          placeholder="Tugma URL (/orders/new yoki https://...)"
+          placeholder="Tugma URL (barcha tillarga)"
           value={v.buttonUrl}
           onChange={(e) => set({ buttonUrl: e.target.value })}
         />
@@ -72,9 +116,7 @@ function Fields({
           <select
             className="input"
             value={v.role}
-            onChange={(e) =>
-              set({ role: e.target.value as Banner["role"] })
-            }
+            onChange={(e) => set({ role: e.target.value as Banner["role"] })}
           >
             <option value="">Hammaga</option>
             <option value="ORDERER">Buyurtmachilarga</option>
@@ -94,11 +136,15 @@ function Fields({
   );
 }
 
+function payload(v: Draft) {
+  return { ...v, role: v.role || null };
+}
+
 function Row({ b }: { b: Banner }) {
   const router = useRouter();
   const { id: _bid, ...bFields } = b;
   void _bid;
-  const [v, setV] = useState<Omit<Banner, "id">>(bFields);
+  const [v, setV] = useState<Draft>(bFields);
   const [busy, setBusy] = useState(false);
   const dirty = JSON.stringify(v) !== JSON.stringify(bFields);
 
@@ -107,7 +153,7 @@ function Row({ b }: { b: Banner }) {
     await fetch(`/api/admin/announcement/${b.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...v, role: v.role || null }),
+      body: JSON.stringify(payload(v)),
     });
     setBusy(false);
     router.refresh();
@@ -174,7 +220,7 @@ function Row({ b }: { b: Banner }) {
 
 export function AnnouncementManager({ initial }: { initial: Banner[] }) {
   const router = useRouter();
-  const [draft, setDraft] = useState<Omit<Banner, "id">>(EMPTY);
+  const [draft, setDraft] = useState<Draft>(EMPTY);
   const [busy, setBusy] = useState(false);
 
   async function add() {
@@ -183,7 +229,7 @@ export function AnnouncementManager({ initial }: { initial: Banner[] }) {
     await fetch("/api/admin/announcement", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...draft, role: draft.role || null }),
+      body: JSON.stringify(payload(draft)),
     });
     setDraft(EMPTY);
     setBusy(false);
@@ -208,7 +254,7 @@ export function AnnouncementManager({ initial }: { initial: Banner[] }) {
         {draft.title.trim() && (
           <div className="mt-4">
             <div className="mb-1 text-xs uppercase text-zinc-600">
-              Ko'rinishi
+              Ko'rinishi (o'zbekcha)
             </div>
             <AnnouncementBanner
               a={{
@@ -223,7 +269,7 @@ export function AnnouncementManager({ initial }: { initial: Banner[] }) {
       </div>
 
       <div className="text-xs text-zinc-600">
-        {initial.length} ta e'lon · foydalanuvchida 2+ faol bo'lsa navbatlashib
+        {initial.length} ta e'lon · 2+ faol bo'lsa foydalanuvchida navbatlashib
         ko'rsatiladi (faqat kompyuterda)
       </div>
 

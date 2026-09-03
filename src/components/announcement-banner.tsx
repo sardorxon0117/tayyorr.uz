@@ -3,16 +3,24 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 
-import type { ActiveAnnouncement } from "@/lib/announcement";
+import type { AnnItem } from "@/lib/announcement";
+import { useLocale } from "@/components/locale-provider";
 
 const ROTATE_MS = 6500;
+
+interface Resolved {
+  title: string;
+  body: string;
+  buttonText: string | null;
+  buttonUrl: string | null;
+}
 
 /** Bitta e'lon kartasi. Indikator karta ichida, pastda turadi. */
 export function AnnouncementBanner({
   a,
   indicator,
 }: {
-  a: Omit<ActiveAnnouncement, "id">;
+  a: Resolved;
   indicator?: React.ReactNode;
 }) {
   const external = !!a.buttonUrl && /^https?:\/\//i.test(a.buttonUrl);
@@ -53,12 +61,9 @@ export function AnnouncementBanner({
   );
 }
 
-/** Bir nechta e'lon — kompyuterda navbatlashib turadi. */
-export function AnnouncementCarousel({
-  items,
-}: {
-  items: ActiveAnnouncement[];
-}) {
+/** Bir nechta e'lon — kompyuterda navbatlashib turadi, joriy tilda. */
+export function AnnouncementCarousel({ items }: { items: AnnItem[] }) {
+  const { locale } = useLocale();
   const [i, setI] = useState(0);
   const [tick, setTick] = useState(0);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -78,7 +83,13 @@ export function AnnouncementCarousel({
   }, [i, many, items.length]);
 
   if (items.length === 0) return null;
-  const cur = items[Math.min(i, items.length - 1)];
+  const raw = items[Math.min(i, items.length - 1)];
+  const cur: Resolved = {
+    title: raw.title[locale] || raw.title.uz,
+    body: raw.body[locale] || raw.body.uz,
+    buttonText: raw.buttonText[locale] || raw.buttonText.uz || null,
+    buttonUrl: raw.buttonUrl,
+  };
 
   function go(n: number) {
     setI(n);
@@ -91,7 +102,7 @@ export function AnnouncementCarousel({
         <button
           key={it.id}
           type="button"
-          aria-label={`E'lon ${n + 1}`}
+          aria-label={`${n + 1}`}
           onClick={() => go(n)}
           className="relative h-0.5 w-4 overflow-hidden rounded-full bg-white/20"
         >
@@ -111,8 +122,7 @@ export function AnnouncementCarousel({
 
   return (
     <div className="hidden lg:block">
-      {/* key -> ichki elementlar qayta mount bo'lib, "pastdan blur" animatsiyasi qaytadi */}
-      <AnnouncementBanner key={cur.id} a={cur} indicator={indicator} />
+      <AnnouncementBanner key={raw.id + locale} a={cur} indicator={indicator} />
     </div>
   );
 }

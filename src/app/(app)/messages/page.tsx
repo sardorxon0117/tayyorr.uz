@@ -3,6 +3,7 @@ import Link from "next/link";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { getSupportUserId } from "@/lib/support";
+import { getT } from "@/lib/i18n-server";
 import { BlockedIcon } from "@/components/icons";
 
 function timeAgo(d: Date) {
@@ -16,6 +17,7 @@ function timeAgo(d: Date) {
 export default async function MessagesPage() {
   const session = await auth();
   const me = session!.user.id;
+  const t = await getT();
 
   const convs = await db.conversation.findMany({
     where: {
@@ -64,13 +66,10 @@ export default async function MessagesPage() {
 
   return (
     <div className="flex flex-col gap-5">
-      <h1 className="text-2xl font-semibold tracking-tight text-white">Xabarlar</h1>
+      <h1 className="text-2xl font-semibold tracking-tight text-white">{t("msgs.title")}</h1>
 
       {rows.length === 0 ? (
-        <div className="card text-sm text-zinc-500">
-          Hozircha suhbat yo'q. Buyurtma sahifasida tayyorlovchi yonidagi
-          «Chat» tugmasidan suhbat boshlashingiz mumkin.
-        </div>
+        <div className="card text-sm text-zinc-500">{t("msgs.empty")}</div>
       ) : (
         <ul className="flex flex-col gap-2">
           {rows.map(({ c, other, unread, last, isSupport, blockedMe }) => (
@@ -113,7 +112,7 @@ export default async function MessagesPage() {
                         ? `${last.senderId === me ? "Siz: " : ""}${
                             last.body || "📎 fayl"
                           }`
-                        : "Suhbat boshlandi"}
+                        : t("msgs.started")}
                     </span>
                     {unread > 0 && (
                       <span className="shrink-0 rounded-full bg-indigo-500 px-2 py-0.5 text-xs font-semibold text-white">

@@ -6,8 +6,14 @@ import { adminApiGuard } from "@/lib/admin";
 
 const schema = z.object({
   title: z.string().trim().min(1).max(200).optional(),
+  titleRu: z.string().trim().max(200).optional(),
+  titleEn: z.string().trim().max(200).optional(),
   body: z.string().trim().max(2000).optional(),
+  bodyRu: z.string().trim().max(2000).optional(),
+  bodyEn: z.string().trim().max(2000).optional(),
   buttonText: z.string().trim().max(60).optional(),
+  buttonTextRu: z.string().trim().max(60).optional(),
+  buttonTextEn: z.string().trim().max(60).optional(),
   buttonUrl: z.string().trim().max(500).optional(),
   role: z.enum(["ORDERER", "PREPARER"]).nullable().optional(),
   active: z.boolean().optional(),
@@ -31,14 +37,21 @@ export async function PATCH(
   }
   const d = parsed.data;
 
+  const opt = (val: string | undefined) =>
+    val !== undefined ? { set: val || null } : undefined;
+
   await db.announcement.update({
     where: { id },
     data: {
       ...(d.title !== undefined ? { title: d.title } : {}),
+      titleRu: opt(d.titleRu),
+      titleEn: opt(d.titleEn),
       ...(d.body !== undefined ? { body: d.body } : {}),
-      ...(d.buttonText !== undefined
-        ? { buttonText: d.buttonText || null }
-        : {}),
+      bodyRu: opt(d.bodyRu),
+      bodyEn: opt(d.bodyEn),
+      buttonText: opt(d.buttonText),
+      buttonTextRu: opt(d.buttonTextRu),
+      buttonTextEn: opt(d.buttonTextEn),
       ...(d.buttonUrl !== undefined ? { buttonUrl: d.buttonUrl || null } : {}),
       ...(d.role !== undefined ? { role: d.role } : {}),
       ...(d.active !== undefined ? { active: d.active } : {}),
