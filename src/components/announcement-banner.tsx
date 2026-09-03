@@ -5,6 +5,7 @@ import Link from "next/link";
 
 import type { AnnItem } from "@/lib/announcement";
 import { useLocale } from "@/components/locale-provider";
+import { BlurText } from "@/components/blur-text";
 
 const ROTATE_MS = 6500;
 
@@ -28,19 +29,15 @@ export function AnnouncementBanner({
     <div className="overflow-hidden rounded-2xl border border-indigo-400/25 bg-gradient-to-br from-indigo-500/15 to-fuchsia-500/10 p-4">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="min-w-0">
-          <div
-            className="ann-rise text-base font-semibold text-white"
-            style={{ ["--d" as string]: 0 }}
-          >
-            {a.title}
-          </div>
+          <BlurText
+            text={a.title}
+            className="block text-base font-semibold text-white"
+          />
           {a.body && (
-            <p
-              className="ann-rise mt-1 max-w-2xl text-sm text-zinc-300"
-              style={{ ["--d" as string]: 70 }}
-            >
-              {a.body}
-            </p>
+            <BlurText
+              text={a.body}
+              className="mt-1 block max-w-2xl text-sm text-zinc-300"
+            />
           )}
         </div>
         {a.buttonText && a.buttonUrl && (
@@ -49,10 +46,9 @@ export function AnnouncementBanner({
             {...(external
               ? { target: "_blank", rel: "noopener noreferrer" }
               : {})}
-            className="ann-rise btn-white shrink-0"
-            style={{ ["--d" as string]: 140 }}
+            className="btn-white shrink-0"
           >
-            {a.buttonText}
+            <BlurText text={a.buttonText} />
           </Link>
         )}
       </div>
@@ -122,7 +118,7 @@ export function AnnouncementCarousel({ items }: { items: AnnItem[] }) {
 
   return (
     <div className="hidden lg:block">
-      <AnnouncementBanner key={raw.id + locale} a={cur} indicator={indicator} />
+      <AnnouncementBanner a={cur} indicator={indicator} />
     </div>
   );
 }
