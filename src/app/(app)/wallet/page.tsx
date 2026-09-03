@@ -5,6 +5,7 @@ import { getRestriction } from "@/lib/restriction";
 import { WalletTopUp } from "@/components/wallet-topup";
 import { WalletPayout } from "@/components/wallet-payout";
 import { PayoutCancelButton } from "@/components/payout-cancel-button";
+import { BalanceAmount } from "@/components/balance-amount";
 
 const PAYOUT_STATUS: Record<string, string> = {
   PENDING: "Kartaga o'tkazilmoqda",
@@ -74,9 +75,10 @@ export default async function WalletPage() {
         />
         <div className="relative">
           <div className="text-sm text-zinc-400">Joriy balans</div>
-          <div className="mt-1 text-4xl font-semibold tracking-tight text-white">
-            {formatSom(balance)}
-          </div>
+          <BalanceAmount
+            value={balance}
+            className="mt-1 text-4xl font-semibold tracking-tight text-white"
+          />
           <div className="mt-4 inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-sm">
             <span className="text-zinc-400">Hisob kodi:</span>
             <span className="font-mono font-medium text-white">{walletCode}</span>

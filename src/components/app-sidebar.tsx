@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 
 import { APP_NAV } from "@/lib/nav";
 import { SignOutButton } from "@/components/sign-out-button";
+import { BalanceAmount } from "@/components/balance-amount";
 
 function roleLabel(role: string | null) {
   if (role === "PREPARER") return "Tayyorlovchi";
@@ -63,9 +64,10 @@ export function AppSidebar({ user }: { user: SidebarUser }) {
 
         <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
           <div className="text-[11px] text-zinc-500">Hisobingizdagi pul</div>
-          <div className="mt-0.5 text-lg font-semibold text-white">
-            {user.balance.toLocaleString("ru-RU")} so'm
-          </div>
+          <BalanceAmount
+            value={user.balance}
+            className="mt-0.5 text-lg font-semibold text-white"
+          />
           {user.walletCode && (
             <div className="mt-0.5 text-[10px] text-zinc-600">
               kod:{" "}
