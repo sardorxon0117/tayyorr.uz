@@ -9,6 +9,14 @@ import { BackLink } from "@/components/back-link";
 import { BlockedIcon } from "@/components/icons";
 import { presenceText } from "@/lib/presence";
 
+const STATUS_LABEL: Record<string, string> = {
+  OPEN: "Ochiq",
+  IN_PROGRESS: "Jarayonda",
+  DELIVERED: "Topshirilgan",
+  DONE: "Yakunlangan",
+  CANCELLED: "Bekor qilingan",
+};
+
 const TYPE_LABEL: Record<string, string> = {
   PRESENTATION: "Prezentatsiya",
   COURSE_WORK: "Kurs ishi",
@@ -81,29 +89,29 @@ export default async function PublicProfile({
   }
 
   const avg = user.ratingCount ? user.ratingSum / user.ratingCount : 0;
-  const isOwn = me === id;
+  const isPreparerProfile = user.role === "PREPARER";
 
-  // PREPARER: bajarilgan ishlar (ommaviy portfolio)
-  // ORDERER: yakunlangan buyurtmalar (faqat o'z profilида)
-  const doneOrders =
-    user.role === "PREPARER"
+  // PREPARER: bajarilgan ishlar (portfolio)
+  // ORDERER: bergan (yaratgan) buyurtmalari — hammaga ko'rinadi
+  const doneOrders = isPreparerProfile
+    ? await db.order.findMany({
+        where: { preparerId: id, status: "DONE" },
+        orderBy: { updatedAt: "desc" },
+        take: 100,
+        include: { review: true },
+      })
+    : user.role === "ORDERER"
       ? await db.order.findMany({
-          where: { preparerId: id, status: "DONE" },
-          orderBy: { updatedAt: "desc" },
-          take: 100,
+          where: { ordererId: id, deletedAt: null },
+          orderBy: { createdAt: "desc" },
+          take: 60,
           include: { review: true },
         })
-      : isOwn
-        ? await db.order.findMany({
-            where: { ordererId: id, status: "DONE" },
-            orderBy: { updatedAt: "desc" },
-            take: 100,
-            include: { review: true },
-          })
-        : [];
-  const showDone = user.role === "PREPARER" || (isOwn && user.role === "ORDERER");
-  const doneTitle =
-    user.role === "PREPARER" ? "Bajarilgan ishlar" : "Yakunlangan buyurtmalar";
+      : [];
+  const showDone = !!user.role;
+  const doneTitle = isPreparerProfile
+    ? "Bajarilgan ishlar"
+    : "Berilgan buyurtmalar";
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-6">
@@ -208,23 +216,29 @@ export default async function PublicProfile({
                         </div>
                         <div className="mt-0.5 text-xs text-zinc-500">
                           {TYPE_LABEL[o.type] ?? o.type} ·{" "}
-                          {o.updatedAt.toLocaleDateString("uz")}
+                          {(isPreparerProfile
+                            ? o.updatedAt
+                            : o.createdAt
+                          ).toLocaleDateString("uz")}
+                          {!isPreparerProfile &&
+                            ` · ${STATUS_LABEL[o.status] ?? o.status}`}
                         </div>
                       </div>
-                      {o.review ? (
-                        <div className="shrink-0 text-right">
-                          <Stars value={o.review.stars} />
-                          <div className="text-xs text-zinc-400">
-                            {o.review.stars}.0
+                      {isPreparerProfile &&
+                        (o.review ? (
+                          <div className="shrink-0 text-right">
+                            <Stars value={o.review.stars} />
+                            <div className="text-xs text-zinc-400">
+                              {o.review.stars}.0
+                            </div>
                           </div>
-                        </div>
-                      ) : (
-                        <span className="shrink-0 text-xs text-zinc-600">
-                          baholanmagan
-                        </span>
-                      )}
+                        ) : (
+                          <span className="shrink-0 text-xs text-zinc-600">
+                            baholanmagan
+                          </span>
+                        ))}
                     </div>
-                    {o.review?.comment && (
+                    {isPreparerProfile && o.review?.comment && (
                       <p className="mt-2 text-sm text-zinc-400">
                         «{o.review.comment}»
                       </p>

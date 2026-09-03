@@ -1,5 +1,28 @@
 const ONLINE_MS = 2 * 60 * 1000;
 
+const MONTHS_UZ = [
+  "yan",
+  "fev",
+  "mar",
+  "apr",
+  "may",
+  "iyn",
+  "iyl",
+  "avg",
+  "sen",
+  "okt",
+  "noy",
+  "dek",
+];
+
+/** "3-mar" ko'rinishidagi qisqa sana (kerak bo'lsa yil bilan). */
+export function shortDate(d: Date): string {
+  const s = `${d.getDate()}-${MONTHS_UZ[d.getMonth()]}`;
+  return d.getFullYear() === new Date().getFullYear()
+    ? s
+    : `${s} ${d.getFullYear()}`;
+}
+
 export function presenceText(lastSeenAt: Date | string | null | undefined): {
   online: boolean;
   text: string;
@@ -15,8 +38,5 @@ export function presenceText(lastSeenAt: Date | string | null | undefined): {
   if (hrs < 24) return { online: false, text: `${hrs} soat oldin onlayn` };
   const days = Math.floor(hrs / 24);
   if (days < 7) return { online: false, text: `${days} kun oldin onlayn` };
-  return {
-    online: false,
-    text: `oxirgi: ${d.toLocaleDateString("uz", { dateStyle: "medium" })}`,
-  };
+  return { online: false, text: `oxirgi: ${shortDate(d)}` };
 }
