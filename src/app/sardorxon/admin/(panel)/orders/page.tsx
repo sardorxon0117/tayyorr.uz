@@ -4,6 +4,8 @@ import { db } from "@/lib/db";
 import { formatSom } from "@/lib/wallet";
 import { AdminPostButton } from "@/components/admin/admin-post-button";
 
+export const dynamic = "force-dynamic";
+
 const TYPE: Record<string, string> = {
   PRESENTATION: "Prezentatsiya",
   COURSE_WORK: "Kurs ishi",

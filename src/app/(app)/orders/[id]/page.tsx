@@ -1,9 +1,11 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { PRIVATE_BUCKET, presignGet } from "@/lib/r2";
 import { getRestriction } from "@/lib/restriction";
+import { presenceText } from "@/lib/presence";
 import { RestrictionNotice } from "@/components/restriction-notice";
 import { OrderActions } from "@/components/order-actions";
 import { OrderDeleteButton } from "@/components/order-delete-button";
@@ -39,7 +41,16 @@ export default async function OrderDetailPage({
   const order = await db.order.findUnique({
     where: { id },
     include: {
-      orderer: { select: { id: true, name: true, login: true } },
+      orderer: {
+        select: {
+          id: true,
+          name: true,
+          login: true,
+          avatarUrl: true,
+          image: true,
+          lastSeenAt: true,
+        },
+      },
       preparer: { select: { id: true, name: true, login: true } },
       offers: {
         include: {
@@ -126,6 +137,48 @@ export default async function OrderDetailPage({
         </div>
       )}
 
+      {!isOrderer &&
+        (() => {
+          const o = order.orderer;
+          const p = presenceText(o.lastSeenAt);
+          const img = o.avatarUrl ?? o.image;
+          return (
+            <Link
+              href={`/u/${o.id}`}
+              className="card flex items-center gap-3 transition hover:border-white/15 hover:bg-white/[0.06]"
+            >
+              <span className="h-11 w-11 shrink-0 overflow-hidden rounded-full border border-white/10 bg-white/5">
+                {img && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={img}
+                    alt=""
+                    className="h-full w-full object-cover"
+                  />
+                )}
+              </span>
+              <span className="min-w-0">
+                <span className="block truncate font-medium text-white">
+                  {o.name ?? (o.login ? `@${o.login}` : "Buyurtmachi")}
+                </span>
+                <span className="mt-0.5 flex items-center gap-1.5 text-xs">
+                  <span
+                    className={`inline-block h-1.5 w-1.5 rounded-full ${
+                      p.online ? "bg-emerald-400" : "bg-zinc-600"
+                    }`}
+                  />
+                  <span className={p.online ? "text-emerald-400" : "text-zinc-500"}>
+                    {p.text}
+                  </span>
+                </span>
+              </span>
+              <span className="ml-auto shrink-0 text-xs text-zinc-600">
+                profilга ›
+              </span>
+            </Link>
+          );
+        })()}
+
       <div>
         <div className="text-xs uppercase tracking-wide text-indigo-400">
           {TYPE_LABEL[order.type]} · {STATUS_LABEL[order.status]}
@@ -133,11 +186,11 @@ export default async function OrderDetailPage({
         <h1 className="mt-2 text-2xl font-semibold tracking-tight text-white">
           {order.title}
         </h1>
-        <p className="mt-1 text-sm text-zinc-500">
-          Buyurtmachi: @{order.orderer.login ?? order.orderer.name}
-          {order.preparer &&
-            ` · Tayyorlovchi: @${order.preparer.login ?? order.preparer.name}`}
-        </p>
+        {order.preparer && (
+          <p className="mt-1 text-sm text-zinc-500">
+            Tayyorlovchi: @{order.preparer.login ?? order.preparer.name}
+          </p>
+        )}
       </div>
 
       <div className="card whitespace-pre-wrap text-sm text-zinc-300">
