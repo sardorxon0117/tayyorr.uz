@@ -20,9 +20,19 @@ export function AnnouncementBanner({
     <div className="overflow-hidden rounded-2xl border border-indigo-400/25 bg-gradient-to-br from-indigo-500/15 to-fuchsia-500/10 p-4">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="min-w-0">
-          <div className="text-base font-semibold text-white">{a.title}</div>
+          <div
+            className="ann-rise text-base font-semibold text-white"
+            style={{ ["--d" as string]: 0 }}
+          >
+            {a.title}
+          </div>
           {a.body && (
-            <p className="mt-1 max-w-2xl text-sm text-zinc-300">{a.body}</p>
+            <p
+              className="ann-rise mt-1 max-w-2xl text-sm text-zinc-300"
+              style={{ ["--d" as string]: 70 }}
+            >
+              {a.body}
+            </p>
           )}
         </div>
         {a.buttonText && a.buttonUrl && (
@@ -31,7 +41,8 @@ export function AnnouncementBanner({
             {...(external
               ? { target: "_blank", rel: "noopener noreferrer" }
               : {})}
-            className="btn-white shrink-0"
+            className="ann-rise btn-white shrink-0"
+            style={{ ["--d" as string]: 140 }}
           >
             {a.buttonText}
           </Link>
@@ -100,9 +111,8 @@ export function AnnouncementCarousel({
 
   return (
     <div className="hidden lg:block">
-      <div key={cur.id} className="animate-ann-swap">
-        <AnnouncementBanner a={cur} indicator={indicator} />
-      </div>
+      {/* key -> ichki elementlar qayta mount bo'lib, "pastdan blur" animatsiyasi qaytadi */}
+      <AnnouncementBanner key={cur.id} a={cur} indicator={indicator} />
     </div>
   );
 }

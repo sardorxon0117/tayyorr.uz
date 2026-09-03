@@ -228,12 +228,13 @@ select.input option {
 .animate-ann-progress {
   animation: ann-progress 6.5s linear both;
 }
-@keyframes ann-swap {
-  from { opacity: 0; filter: blur(12px); transform: scale(0.98); }
-  to { opacity: 1; filter: blur(0); transform: scale(1); }
+@keyframes ann-rise {
+  from { opacity: 0; filter: blur(8px); transform: translateY(12px); }
+  to { opacity: 1; filter: blur(0); transform: translateY(0); }
 }
-.animate-ann-swap {
-  animation: ann-swap 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+.ann-rise {
+  animation: ann-rise 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--d, 0) * 1ms);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -246,7 +247,7 @@ select.input option {
   .menu-panel.closing,
   .menu-item,
   .menu-backdrop,
-  .animate-ann-swap {
+  .ann-rise {
     animation: none;
   }
   html { scroll-behavior: auto; }
