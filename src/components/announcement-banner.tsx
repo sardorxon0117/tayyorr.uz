@@ -100,15 +100,13 @@ export function AnnouncementCarousel({ items }: { items: AnnItem[] }) {
           type="button"
           aria-label={`${n + 1}`}
           onClick={() => go(n)}
-          className="relative h-0.5 w-4 overflow-hidden rounded-full bg-white/20"
+          className="ann-ind relative h-0.5 w-4 overflow-hidden rounded-full"
         >
-          {n < i && (
-            <span className="absolute inset-0 rounded-full bg-white/50" />
-          )}
+          {n < i && <span className="ann-ind-past absolute inset-0 rounded-full" />}
           {n === i && (
             <span
               key={tick}
-              className="animate-ann-progress absolute inset-y-0 left-0 rounded-full bg-white"
+              className="ann-ind-fill animate-ann-progress absolute inset-y-0 left-0 rounded-full"
             />
           )}
         </button>

@@ -69,7 +69,7 @@ export default async function AdminPanelLayout({
               className="rounded-lg px-2 py-1 text-sm text-zinc-500 transition hover:text-red-400"
               redirectTo="/sardorxon/admin/login"
             />
-            <NavMenu links={nav} footer={<ThemeToggle />} />
+            <NavMenu links={nav} footer={<ThemeToggle bare />} />
           </div>
         </div>
       </header>

@@ -147,6 +147,17 @@ html.light [class~="bg-indigo-600"] [class*="bg-white/"] {
 html.light [class~="bg-indigo-600"] [class*="border-white/"] {
   border-color: rgba(255, 255, 255, 0.5) !important;
 }
+/* logotip — mavzuga qarab */
+.logo-light {
+  display: none;
+}
+html.light .logo-light {
+  display: inline-block;
+}
+html.light .logo-dark {
+  display: none;
+}
+
 /* dekorativ orqa fon — yorug'da ham yorug' */
 html.light .aurora-fade {
   background-image: linear-gradient(
@@ -379,6 +390,25 @@ select.input option {
 }
 .animate-ann-progress {
   animation: ann-progress 6.5s linear both;
+}
+/* e'lon indikatori — mavzuга qarab kontrastли */
+.ann-ind {
+  background: rgba(255, 255, 255, 0.28);
+}
+.ann-ind-past {
+  background: rgba(255, 255, 255, 0.6);
+}
+.ann-ind-fill {
+  background: #ffffff;
+}
+html.light .ann-ind {
+  background: rgba(49, 46, 129, 0.25);
+}
+html.light .ann-ind-past {
+  background: rgba(49, 46, 129, 0.55);
+}
+html.light .ann-ind-fill {
+  background: #4338ca;
 }
 @keyframes ann-rise {
   from { opacity: 0; filter: blur(8px); transform: translateY(12px); }

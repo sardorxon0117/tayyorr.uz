@@ -20,7 +20,13 @@ const OPTS: [Mode, string, string][] = [
 ];
 
 /** Yorug'/qorong'i rejim tanlagichi. */
-export function ThemeToggle({ className = "" }: { className?: string }) {
+export function ThemeToggle({
+  className = "",
+  bare = false,
+}: {
+  className?: string;
+  bare?: boolean;
+}) {
   const [mode, setMode] = useState<Mode>("dark");
 
   useEffect(() => {
@@ -36,7 +42,9 @@ export function ThemeToggle({ className = "" }: { className?: string }) {
 
   return (
     <div
-      className={`flex gap-1 rounded-xl border border-white/10 bg-white/5 p-1 ${className}`}
+      className={`flex gap-1 ${
+        bare ? "" : "rounded-xl border border-white/10 bg-white/5 p-1"
+      } ${className}`}
     >
       {OPTS.map(([m, icon, label]) => (
         <button

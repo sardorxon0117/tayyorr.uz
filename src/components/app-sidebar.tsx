@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { APP_NAV } from "@/lib/nav";
+import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { BalanceAmount } from "@/components/balance-amount";
 import { useLocale } from "@/components/locale-provider";
@@ -33,11 +34,8 @@ export function AppSidebar({ user }: { user: SidebarUser }) {
   return (
     <aside className="fixed left-0 top-0 z-40 hidden h-screen w-64 flex-col border-r border-white/10 bg-[#0b0b12]/95 backdrop-blur-xl lg:flex">
       <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4">
-        <Link
-          href="/dashboard"
-          className="px-1 text-lg font-semibold tracking-tight"
-        >
-          tayyorr<span className="text-indigo-400">.uz</span>
+        <Link href="/dashboard" className="px-1">
+          <Logo className="h-6 w-auto" />
         </Link>
 
         <Link

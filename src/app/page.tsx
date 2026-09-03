@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { auth } from "@/auth";
 import { ForceDark } from "@/components/force-dark";
+import { Logo } from "@/components/logo";
 
 export default async function Home() {
   const session = await auth();
@@ -52,9 +53,7 @@ export default async function Home() {
       {/* ---------- nav ---------- */}
       <header className="relative z-20">
         <nav className="mx-auto mt-4 flex max-w-6xl items-center justify-between rounded-2xl glass px-5 py-3">
-          <span className="text-lg font-semibold tracking-tight">
-            tayyorr<span className="text-indigo-400">.uz</span>
-          </span>
+          <Logo className="h-6 w-auto" />
           <div className="hidden items-center gap-7 text-sm text-zinc-400 sm:flex">
             <a href="#qanday" className="transition hover:text-white">
               Qanday ishlaydi
