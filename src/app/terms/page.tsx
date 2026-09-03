@@ -1,10 +1,14 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { AuthShell } from "@/components/auth-shell";
 import { TermsContent } from "@/components/terms-content";
 
-export const metadata = {
-  title: "Ommaviy oferta — tayyorr.uz",
+export const metadata: Metadata = {
+  title: "Ommaviy oferta va foydalanish shartlari",
+  description:
+    "tayyorr.uz ommaviy ofertasi: ma'lumotlarni ixtiyoriy taqdim etish, taqiqlangan ishlar, chatda o'zaro hurmat, to'lovlar va cheklovlar.",
+  alternates: { canonical: "/terms" },
 };
 
 export default function TermsPage() {

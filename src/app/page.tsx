@@ -1,7 +1,12 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { auth } from "@/auth";
 import { ForceDark } from "@/components/force-dark";
 import { Logo } from "@/components/logo";
+
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
 
 export default async function Home() {
   const session = await auth();

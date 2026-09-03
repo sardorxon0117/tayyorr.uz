@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { db } from "@/lib/db";
@@ -21,6 +22,11 @@ const BASE: NavLink[] = [
   { href: "/sardorxon/admin/users", label: "Foydalanuvchilar", icon: "👥" },
   { href: "/sardorxon/admin/chats", label: "Suhbatlar", icon: "🗨️" },
 ];
+
+export const metadata: Metadata = {
+  title: "Admin",
+  robots: { index: false, follow: false },
+};
 
 export default async function AdminPanelLayout({
   children,

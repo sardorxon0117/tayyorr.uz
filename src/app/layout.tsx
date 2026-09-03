@@ -1,13 +1,42 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { cookies } from "next/headers";
 
 import "./globals.css";
 import { Providers } from "@/components/providers";
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://tayyorr.uz";
+const TITLE = "tayyorr.uz — prezentatsiya, kurs ishi va referat buyurtma qilish";
+const DESCRIPTION =
+  "tayyorr.uz — talabalar uchun platforma: prezentatsiya, kurs ishi, referat, esse va diplom ishini ishonchli tayyorlovchilarga buyurtma qiling yoki o'zingiz tayyorlab daromad qiling. Xavfsiz to'lov, kelishuv va baholash tizimi.";
+
 export const metadata: Metadata = {
-  title: "tayyorr.uz — prezentatsiya va kurs ishlari",
-  description:
-    "Buyurtma bering yoki tayyorlang: prezentatsiya, kurs ishi, referat va boshqalar.",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: TITLE,
+    template: "%s — tayyorr.uz",
+  },
+  description: DESCRIPTION,
+  applicationName: "tayyorr.uz",
+  keywords: [
+    "prezentatsiya tayyorlash",
+    "kurs ishi",
+    "referat",
+    "esse",
+    "diplom ishi",
+    "mustaqil ish",
+    "slayd tayyorlash",
+    "talabalar uchun",
+    "buyurtma qilish",
+    "tayyorr",
+    "tayyorr.uz",
+    "O'zbekiston",
+  ],
+  authors: [{ name: "tayyorr.uz" }],
+  creator: "tayyorr.uz",
+  publisher: "tayyorr.uz",
+  category: "education",
+  formatDetection: { telephone: false, email: false, address: false },
+  manifest: "/manifest.webmanifest",
   icons: {
     icon: [
       { url: "/favicon.png", sizes: "32x32", type: "image/png" },
@@ -15,6 +44,44 @@ export const metadata: Metadata = {
     ],
     apple: "/apple-icon.png",
   },
+  openGraph: {
+    type: "website",
+    locale: "uz_UZ",
+    url: SITE_URL,
+    siteName: "tayyorr.uz",
+    title: TITLE,
+    description: DESCRIPTION,
+    images: [
+      {
+        url: "/og.png",
+        width: 1200,
+        height: 630,
+        alt: "tayyorr.uz — prezentatsiya, kurs ishi va referat buyurtma qilish",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: TITLE,
+    description: DESCRIPTION,
+    images: ["/og.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#07070c",
+  colorScheme: "dark light",
 };
 
 export default async function RootLayout({
@@ -35,6 +102,32 @@ export default async function RootLayout({
         />
       </head>
       <body className="min-h-screen antialiased">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@graph": [
+                {
+                  "@type": "Organization",
+                  "@id": `${SITE_URL}/#organization`,
+                  name: "tayyorr.uz",
+                  url: SITE_URL,
+                  logo: `${SITE_URL}/icon.png`,
+                },
+                {
+                  "@type": "WebSite",
+                  "@id": `${SITE_URL}/#website`,
+                  url: SITE_URL,
+                  name: "tayyorr.uz",
+                  description: DESCRIPTION,
+                  inLanguage: "uz",
+                  publisher: { "@id": `${SITE_URL}/#organization` },
+                },
+              ],
+            }),
+          }}
+        />
         <Providers>{children}</Providers>
       </body>
     </html>
