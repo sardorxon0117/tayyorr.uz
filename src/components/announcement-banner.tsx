@@ -100,7 +100,9 @@ export function AnnouncementCarousel({
 
   return (
     <div className="hidden lg:block">
-      <AnnouncementBanner a={cur} indicator={indicator} />
+      <div key={cur.id} className="animate-ann-swap">
+        <AnnouncementBanner a={cur} indicator={indicator} />
+      </div>
     </div>
   );
 }

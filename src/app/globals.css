@@ -228,6 +228,13 @@ select.input option {
 .animate-ann-progress {
   animation: ann-progress 6.5s linear both;
 }
+@keyframes ann-swap {
+  from { opacity: 0; filter: blur(12px); transform: scale(0.98); }
+  to { opacity: 1; filter: blur(0); transform: scale(1); }
+}
+.animate-ann-swap {
+  animation: ann-swap 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
 
 @media (prefers-reduced-motion: reduce) {
   .animate-float-a,
@@ -238,7 +245,8 @@ select.input option {
   .menu-panel,
   .menu-panel.closing,
   .menu-item,
-  .menu-backdrop {
+  .menu-backdrop,
+  .animate-ann-swap {
     animation: none;
   }
   html { scroll-behavior: auto; }
