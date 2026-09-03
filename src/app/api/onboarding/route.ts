@@ -5,9 +5,14 @@ import { z } from "zod";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { sendWelcome } from "@/lib/support-actions";
+import { logActivity } from "@/lib/activity";
+import { TERMS_VERSION } from "@/lib/terms";
 
 const schema = z.object({
   role: z.enum(["ORDERER", "PREPARER"]),
+  acceptTerms: z.literal(true, {
+    errorMap: () => ({ message: "Oferta shartlariga rozilik bering" }),
+  }),
   firstName: z.string().min(2).max(50),
   lastName: z.string().min(2).max(50),
   login: z
@@ -34,7 +39,9 @@ export async function POST(req: Request) {
     );
   }
 
-  const { login, password, firstName, lastName, ...rest } = parsed.data;
+  const { login, password, firstName, lastName, acceptTerms, ...rest } =
+    parsed.data;
+  void acceptTerms;
 
   const clash = await db.user.findFirst({
     where: { login, NOT: { id: session.user.id } },
@@ -51,11 +58,18 @@ export async function POST(req: Request) {
       lastName,
       name: `${firstName} ${lastName}`,
       passwordHash: await bcrypt.hash(password, 10),
+      termsAcceptedAt: new Date(),
+      termsVersion: TERMS_VERSION,
       ...rest,
     },
   });
 
   await sendWelcome(session.user.id, firstName).catch(() => {});
+  await logActivity(
+    session.user.id,
+    "REGISTER",
+    `Ro'yxatdan o'tdi — @${login} (${parsed.data.role === "PREPARER" ? "Tayyorlovchi" : "Buyurtma beruvchi"})`,
+  );
 
   return NextResponse.json({ ok: true });
 }

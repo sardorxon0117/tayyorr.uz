@@ -65,6 +65,22 @@ html.light .menu-panel {
   border-color: rgba(0, 0, 0, 0.1) !important;
   color: #1b1b1f;
 }
+/* yorug' rejim: modal / popup orqa foni — fon o'qishga xalaqit bermasin */
+html.light .fixed.inset-0[class*="bg-black/"] {
+  background-color: rgba(228, 228, 233, 0.66) !important;
+  backdrop-filter: blur(14px) saturate(1.05);
+  -webkit-backdrop-filter: blur(14px) saturate(1.05);
+}
+/* rasm ko'ruvchi (lightbox) qorong'i qoladi */
+html.light .fixed.inset-0[class*="bg-black/9"] {
+  background-color: rgba(24, 24, 27, 0.92) !important;
+}
+/* dark rejimda ham modal orqa foni biroz kuchliroq xira bo'lsin */
+.fixed.inset-0[class*="bg-black/6"],
+.fixed.inset-0[class*="bg-black/7"] {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
 /* qattiq kodlangan panel foni (header/sidebar/menyu) */
 html.light [class*="bg-[#0b0b12]"],
 html.light [class*="bg-[#08080d]"],

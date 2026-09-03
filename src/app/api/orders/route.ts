@@ -5,6 +5,7 @@ import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { restrictionApiError } from "@/lib/restriction";
 import { postOrderToChannel } from "@/lib/telegram";
+import { logActivity } from "@/lib/activity";
 
 const createSchema = z.object({
   title: z.string().min(5).max(150),
@@ -91,6 +92,11 @@ export async function POST(req: Request) {
 
   // kanalga joylaymiz — helper hech qachon xato tashlamaydi (try/catch + 8s timeout)
   await postOrderToChannel(order);
+
+  await logActivity(session.user.id, "ORDER_CREATE", `Buyurtma yaratdi: «${title}»`, {
+    orderId: order.id,
+    budget: budget ?? null,
+  });
 
   return NextResponse.json({ order }, { status: 201 });
 }

@@ -5,6 +5,7 @@ import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { restrictionApiError } from "@/lib/restriction";
 import { updateOrderChannelPost } from "@/lib/telegram";
+import { logActivity } from "@/lib/activity";
 
 const schema = z.object({ action: z.enum(["ACCEPT", "REJECT"]) });
 
@@ -39,6 +40,12 @@ export async function PATCH(
       where: { id },
       data: { status: "REJECTED" },
     });
+    await logActivity(
+      session.user.id,
+      "OFFER_REJECT",
+      `Taklifni rad etdi: «${offer.order.title}»`,
+      { orderId: offer.orderId, offerId: id },
+    );
     return NextResponse.json({ offer: rejected });
   }
 
@@ -68,6 +75,13 @@ export async function PATCH(
   });
 
   await updateOrderChannelPost(offer.orderId);
+
+  await logActivity(
+    session.user.id,
+    "OFFER_ACCEPT",
+    `Taklifni qabul qildi: «${offer.order.title}» — ${offer.price.toLocaleString("ru-RU")} so'm`,
+    { orderId: offer.orderId, offerId: id, price: offer.price },
+  );
 
   return NextResponse.json({ offer: result });
 }

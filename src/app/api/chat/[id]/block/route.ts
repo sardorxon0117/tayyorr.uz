@@ -5,6 +5,7 @@ import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { getConversationForUser, otherUserId, blockState } from "@/lib/chat";
 import { getSupportUserId } from "@/lib/support";
+import { logActivity } from "@/lib/activity";
 
 const schema = z.object({ action: z.enum(["BLOCK", "UNBLOCK"]) });
 
@@ -44,6 +45,15 @@ export async function POST(
       .delete({ where: { blockerId_blockedId: { blockerId: me, blockedId: other } } })
       .catch(() => {});
   }
+
+  await logActivity(
+    me,
+    parsed.data.action === "BLOCK" ? "USER_BLOCK" : "USER_UNBLOCK",
+    parsed.data.action === "BLOCK"
+      ? "Suhbatdoshni blokladi"
+      : "Suhbatdoshni blokdan chiqardi",
+    { otherId: other, conversationId: conv.id },
+  );
 
   return NextResponse.json({ ok: true, ...(await blockState(me, other)) });
 }

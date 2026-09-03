@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { restrictionApiError } from "@/lib/restriction";
 import { createMessage, getOrCreateConversation } from "@/lib/chat";
 import { deliverMessage } from "@/lib/chat-notify";
+import { logActivity } from "@/lib/activity";
 
 const schema = z.object({
   preparerId: z.string().min(1),
@@ -133,6 +134,13 @@ export async function POST(
     system: true,
   });
   await deliverMessage(msg);
+
+  await logActivity(
+    me,
+    "CONTRACT_SEND",
+    `Shartnoma yubordi: «${order.title}» — ${amount.toLocaleString("ru-RU")} so'm`,
+    { orderId: id, contractId: contract.id, amount },
+  );
 
   return NextResponse.json({ contract, conversationId: conv.id });
 }

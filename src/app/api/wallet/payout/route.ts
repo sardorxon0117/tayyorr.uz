@@ -4,6 +4,7 @@ import { z } from "zod";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { maskCard } from "@/lib/wallet";
+import { logActivity } from "@/lib/activity";
 
 const MIN = 10_000;
 
@@ -66,6 +67,13 @@ export async function POST(req: Request) {
     });
     return p;
   });
+
+  await logActivity(
+    me,
+    "PAYOUT_REQUEST",
+    `Kartaga yechish so'radi: ${amount.toLocaleString("ru-RU")} so'm — ${maskCard(card)}`,
+    { amount, payoutId: payout.id },
+  );
 
   return NextResponse.json({ ok: true, payoutId: payout.id });
 }

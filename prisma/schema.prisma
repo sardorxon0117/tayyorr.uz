@@ -121,6 +121,10 @@ model User {
   locale     String? // "uz" | "ru" | "en" — tanlangan til
   theme      String? // "light" | "dark"
 
+  // ommaviy oferta / foydalanish shartlariga rozilik
+  termsAcceptedAt DateTime?
+  termsVersion    String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -145,8 +149,25 @@ model User {
   pushSubscriptions PushSubscription[]
   payoutRequests    PayoutRequest[]
   reactions         MessageReaction[]
+  activityLogs      ActivityLog[]
 
   @@index([role, isAvailable])
+}
+
+// ----------------- Faoliyat jurnali (admin uchun) -----------------
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  action    String // "ORDER_CREATE", "OFFER_CREATE", "AUTH_LOGIN" ...
+  summary   String // inson o'qiy oladigan qisqa tavsif (uz)
+  meta      Json? // qo'shimcha kontekst (orderId, amount, ...)
+  ip        String?
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([action, createdAt])
 }
 
 model PayoutRequest {

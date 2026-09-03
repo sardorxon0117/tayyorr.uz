@@ -4,6 +4,7 @@ import { z } from "zod";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { restrictionApiError } from "@/lib/restriction";
+import { logActivity } from "@/lib/activity";
 
 const schema = z.object({
   firstName: z.string().min(2).max(50).optional(),
@@ -58,6 +59,14 @@ export async function PATCH(req: Request) {
     },
     select: { id: true, firstName: true, lastName: true, about: true, avatarUrl: true },
   });
+
+  if (Object.keys(data).length > 0) {
+    await logActivity(
+      session.user.id,
+      "PROFILE_UPDATE",
+      `Profilni tahrirladi: ${Object.keys(data).join(", ")}`,
+    );
+  }
 
   return NextResponse.json({ user: updated });
 }

@@ -7,6 +7,7 @@ import { useSession } from "next-auth/react";
 import { AvatarUpload } from "@/components/avatar-upload";
 import { AuthShell } from "@/components/auth-shell";
 import { PasswordInput } from "@/components/password-input";
+import { TermsGate } from "@/components/terms-gate";
 
 type Role = "ORDERER" | "PREPARER";
 
@@ -26,6 +27,7 @@ function OnboardingInner() {
     about: "",
   });
   const [avatarUrl, setAvatarUrl] = useState("");
+  const [agree, setAgree] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -57,12 +59,16 @@ function OnboardingInner() {
       setErr("Glavniy rasmni yuklang");
       return;
     }
+    if (!agree) {
+      setErr("Davom etish uchun oferta shartlariga rozilik bering");
+      return;
+    }
     setBusy(true);
     try {
       const res = await fetch("/api/onboarding", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ role, ...form, avatarUrl }),
+        body: JSON.stringify({ role, ...form, avatarUrl, acceptTerms: true }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Xatolik");
@@ -175,9 +181,13 @@ function OnboardingInner() {
           <AvatarUpload value={avatarUrl} onChange={setAvatarUrl} />
         </div>
 
+        <div className="border-t border-white/10 pt-4">
+          <TermsGate checked={agree} onChange={setAgree} />
+        </div>
+
         {err && <p className="text-sm text-red-400">{err}</p>}
 
-        <button className="btn-primary" disabled={busy}>
+        <button className="btn-primary" disabled={busy || !agree}>
           {busy ? "..." : "Saqlash va davom etish"}
         </button>
       </form>

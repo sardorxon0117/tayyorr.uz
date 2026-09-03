@@ -4,6 +4,7 @@ import { z } from "zod";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { restrictionApiError } from "@/lib/restriction";
+import { logActivity } from "@/lib/activity";
 
 const schema = z.object({
   price: z.number().int().positive(),
@@ -51,6 +52,13 @@ export async function POST(
       message: parsed.data.message,
     },
   });
+
+  await logActivity(
+    session.user.id,
+    "OFFER_CREATE",
+    `Taklif yubordi: «${order.title}» — ${parsed.data.price.toLocaleString("ru-RU")} so'm`,
+    { orderId: id, price: parsed.data.price },
+  );
 
   return NextResponse.json({ offer }, { status: 201 });
 }

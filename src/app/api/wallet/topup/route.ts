@@ -4,6 +4,7 @@ import { z } from "zod";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { luhnValid, maskCard } from "@/lib/wallet";
+import { logActivity } from "@/lib/activity";
 
 /**
  * DEMO hisobni to'ldirish. Haqiqiy pul yechilmaydi.
@@ -92,9 +93,19 @@ export async function POST(req: Request) {
     return u;
   });
 
+  const forSelf = target.id === session.user.id;
+  await logActivity(
+    session.user.id,
+    "WALLET_TOPUP",
+    `Hisobni to'ldirdi: ${amount.toLocaleString("ru-RU")} so'm${
+      forSelf ? "" : ` (hisob: ${target.walletCode ?? target.login ?? target.id})`
+    }`,
+    { amount, targetId: target.id, forSelf },
+  );
+
   return NextResponse.json({
     ok: true,
     targetBalance: result.balance,
-    self: target.id === session.user.id,
+    self: forSelf,
   });
 }

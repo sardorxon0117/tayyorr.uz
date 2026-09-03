@@ -7,6 +7,7 @@ import { createMessage, getOrCreateConversation } from "@/lib/chat";
 import { deliverMessage } from "@/lib/chat-notify";
 import { getPlatformUserId, commission, COMMISSION_FINAL } from "@/lib/platform";
 import { updateOrderChannelPost } from "@/lib/telegram";
+import { logActivity } from "@/lib/activity";
 
 /** Buyurtmachi ishni yakunlaydi -> eskroudan tayyorlovchiga (95%), saytga (5%). */
 export async function POST(
@@ -88,6 +89,13 @@ export async function POST(
   await deliverMessage(msg);
 
   await updateOrderChannelPost(id);
+
+  await logActivity(
+    me,
+    "ORDER_FINALIZE",
+    `Ishni yakunladi: «${order.title}» — tayyorlovchiga ${payout.toLocaleString("ru-RU")} so'm`,
+    { orderId: id, payout, fee },
+  );
 
   return NextResponse.json({ ok: true });
 }

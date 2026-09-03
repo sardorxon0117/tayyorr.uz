@@ -6,6 +6,7 @@ import { formatSom } from "@/lib/wallet";
 import { AdminPostButton } from "@/components/admin/admin-post-button";
 import { BanForm } from "@/components/admin/ban-form";
 import { SupportMessageForm } from "@/components/admin/support-message-form";
+import { ActivityLogPanel } from "@/components/admin/activity-log-panel";
 import { shortDateTime, shortDate } from "@/lib/date";
 
 const TYPE_LABEL: Record<string, string> = {
@@ -66,6 +67,12 @@ export default async function AdminUserDetail({
     ["Hisob kodi", user.walletCode ?? "—"],
     ["Balans", formatSom(user.balance)],
     ["Ro'yxatdan", shortDateTime(user.createdAt)],
+    [
+      "Oferta",
+      user.termsAcceptedAt
+        ? `qabul qilingan · ${shortDate(user.termsAcceptedAt)}${user.termsVersion ? ` (v${user.termsVersion})` : ""}`
+        : "qabul qilinmagan",
+    ],
     [
       "Buyurtma/Taklif",
       `${user._count.ordersCreated} / ${user._count.ordersTaken} / ${user._count.offers}`,
@@ -251,6 +258,8 @@ export default async function AdminUserDetail({
           </table>
         </div>
       </section>
+
+      <ActivityLogPanel userId={user.id} />
 
       <section className="rounded-xl border border-red-500/25 bg-red-500/5 p-5">
         <h2 className="mb-1 font-semibold text-red-300">Xavfli zona</h2>

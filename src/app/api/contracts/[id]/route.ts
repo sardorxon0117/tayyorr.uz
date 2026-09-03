@@ -8,6 +8,7 @@ import { createMessage, getOrCreateConversation } from "@/lib/chat";
 import { deliverMessage } from "@/lib/chat-notify";
 import { getPlatformUserId, commission, COMMISSION_CANCEL } from "@/lib/platform";
 import { updateOrderChannelPost } from "@/lib/telegram";
+import { logActivity } from "@/lib/activity";
 
 const schema = z.object({ action: z.enum(["ACCEPT", "DECLINE", "CANCEL"]) });
 
@@ -87,6 +88,12 @@ export async function POST(
           ? "📄 Shartnoma rad etildi. Bloklangan mablag' buyurtmachiga qaytarildi."
           : "📄 Shartnoma bekor qilindi. Bloklangan mablag' qaytarildi.",
       );
+      await logActivity(
+        me,
+        action === "DECLINE" ? "CONTRACT_DECLINE" : "CONTRACT_CANCEL",
+        `${action === "DECLINE" ? "Shartnomani rad etdi" : "Shartnomani bekor qildi"}: «${contract.order.title}»`,
+        { orderId: contract.orderId, contractId: id },
+      );
       return NextResponse.json({ ok: true });
     }
 
@@ -126,6 +133,12 @@ export async function POST(
         "✅ Shartnoma qabul qilindi. Ish boshlandi. Yakuniga qadar shu chatда gaplashib turishingiz mumkin.",
       );
       await updateOrderChannelPost(contract.orderId);
+      await logActivity(
+        me,
+        "CONTRACT_ACCEPT",
+        `Shartnomani qabul qildi: «${contract.order.title}» — ${contract.amount.toLocaleString("ru-RU")} so'm`,
+        { orderId: contract.orderId, contractId: id, amount: contract.amount },
+      );
       return NextResponse.json({ ok: true });
     }
 
@@ -197,6 +210,12 @@ export async function POST(
       `📄 Shartnoma bekor qilindi. ${fee.toLocaleString("ru-RU")} so'm (2%) sayt komissiyasi, ${refund.toLocaleString("ru-RU")} so'm buyurtmachiga qaytarildi.`,
     );
     await updateOrderChannelPost(contract.orderId);
+    await logActivity(
+      me,
+      "CONTRACT_CANCEL",
+      `Shartnomani bekor qildi (ish jarayonida): «${contract.order.title}»`,
+      { orderId: contract.orderId, contractId: id, fee, refund },
+    );
     return NextResponse.json({ ok: true });
   }
 

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
+import { logActivity } from "@/lib/activity";
 
 export async function POST(
   _req: Request,
@@ -49,6 +50,13 @@ export async function POST(
       },
     });
   });
+
+  await logActivity(
+    session.user.id,
+    "PAYOUT_CANCEL",
+    `Yechish so'rovini bekor qildi: ${p.amount.toLocaleString("ru-RU")} so'm`,
+    { amount: p.amount, payoutId: id },
+  );
 
   return NextResponse.json({ ok: true });
 }

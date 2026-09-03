@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
+import { logActivity } from "@/lib/activity";
 
 const schema = z.object({
   suspectId: z.string().optional(),
@@ -42,6 +43,13 @@ export async function POST(req: Request) {
       body,
     },
   });
+
+  await logActivity(
+    session.user.id,
+    "COMPLAINT_CREATE",
+    `Shikoyat yubordi${messageId ? " (xabar ustidan)" : orderId ? " (buyurtma bo'yicha)" : ""}`,
+    { suspectId: suspectId || null, orderId: orderId || null, messageId: messageId || null },
+  );
 
   return NextResponse.json({ ok: true });
 }

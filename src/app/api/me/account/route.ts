@@ -5,6 +5,7 @@ import { z } from "zod";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { restrictionApiError } from "@/lib/restriction";
+import { logActivity } from "@/lib/activity";
 
 const schema = z.object({
   role: z.enum(["ORDERER", "PREPARER"]).optional(),
@@ -88,5 +89,16 @@ export async function PATCH(req: Request) {
   }
 
   await db.user.update({ where: { id: me }, data });
+
+  const changed: string[] = [];
+  if ("role" in data) changed.push(`rol → ${role}`);
+  if ("login" in data) changed.push(`login → @${login}`);
+  if ("passwordHash" in data) changed.push("parol yangilandi");
+  await logActivity(
+    me,
+    "ACCOUNT_UPDATE",
+    `Hisob sozlamalari: ${changed.join(", ")}`,
+  );
+
   return NextResponse.json({ ok: true, roleChanged: "role" in data });
 }

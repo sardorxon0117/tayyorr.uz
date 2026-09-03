@@ -7,6 +7,7 @@ import { PRIVATE_BUCKET, presignGet } from "@/lib/r2";
 import { restrictionApiError } from "@/lib/restriction";
 import { updateOrderChannelPost, markOrderRemovedInChannel } from "@/lib/telegram";
 import { softDeleteOrder } from "@/lib/order-delete";
+import { logActivity } from "@/lib/activity";
 
 export async function GET(
   _req: Request,
@@ -132,6 +133,22 @@ export async function PATCH(
 
   await updateOrderChannelPost(id);
 
+  const act =
+    status === "DELIVERED"
+      ? "ORDER_DELIVER"
+      : status === "DONE"
+        ? "ORDER_FINALIZE"
+        : "ORDER_CANCEL";
+  const verb =
+    status === "DELIVERED"
+      ? "Ishni topshirdi"
+      : status === "DONE"
+        ? "Ishni yakunladi"
+        : "Buyurtmani bekor qildi";
+  await logActivity(session.user.id, act, `${verb}: «${order.title}»`, {
+    orderId: id,
+  });
+
   return NextResponse.json({ order: updated });
 }
 
@@ -166,6 +183,13 @@ export async function DELETE(
       null,
     );
   }
+
+  await logActivity(
+    session.user.id,
+    "ORDER_DELETE",
+    `Buyurtmani o'chirdi${full?.title ? `: «${full.title}»` : ""}`,
+    { orderId: id },
+  );
 
   return NextResponse.json({ ok: true });
 }

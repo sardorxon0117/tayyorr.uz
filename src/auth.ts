@@ -6,6 +6,7 @@ import { z } from "zod";
 
 import { db } from "@/lib/db";
 import { authConfig } from "@/auth.config";
+import { logActivity } from "@/lib/activity";
 
 const credentialsSchema = z.object({
   login: z.string().min(3),
@@ -32,6 +33,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         const ok = await bcrypt.compare(password, user.passwordHash);
         if (!ok) return null;
+
+        await logActivity(user.id, "AUTH_LOGIN", "Login/parol bilan kirdi");
 
         return {
           id: user.id,

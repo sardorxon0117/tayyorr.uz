@@ -5,6 +5,7 @@ import Link from "next/link";
 import { signIn } from "next-auth/react";
 
 import { AuthShell } from "@/components/auth-shell";
+import { TermsGate } from "@/components/terms-gate";
 
 type Role = "ORDERER" | "PREPARER";
 
@@ -15,6 +16,7 @@ const ROLES: { id: Role; title: string; desc: string }[] = [
 
 export default function RegisterPage() {
   const [role, setRole] = useState<Role | null>(null);
+  const [agree, setAgree] = useState(false);
   const [busy, setBusy] = useState(false);
 
   return (
@@ -56,16 +58,24 @@ export default function RegisterPage() {
           })}
         </div>
 
+        <div className="mt-5">
+          <TermsGate checked={agree} onChange={setAgree} />
+        </div>
+
         <button
           type="button"
-          className="btn-white mt-5 w-full"
-          disabled={!role || busy}
+          className="btn-white mt-4 w-full"
+          disabled={!role || !agree || busy}
           onClick={() => {
             setBusy(true);
             signIn("google", { callbackUrl: `/onboarding?role=${role}` });
           }}
         >
-          {role ? "Google bilan davom etish" : "Avval rolni tanlang"}
+          {!role
+            ? "Avval rolni tanlang"
+            : !agree
+              ? "Shartlarga rozilik bering"
+              : "Google bilan davom etish"}
         </button>
       </div>
 
@@ -73,6 +83,11 @@ export default function RegisterPage() {
         Akkountingiz bormi?{" "}
         <Link href="/login" className="text-indigo-400 hover:text-indigo-300">
           Kirish
+        </Link>
+      </p>
+      <p className="mt-2 text-center text-xs text-zinc-600">
+        <Link href="/terms" className="hover:text-zinc-400">
+          Ommaviy oferta va foydalanish shartlari
         </Link>
       </p>
     </AuthShell>

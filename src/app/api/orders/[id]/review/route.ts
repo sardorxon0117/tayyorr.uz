@@ -4,6 +4,7 @@ import { z } from "zod";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { restrictionApiError } from "@/lib/restriction";
+import { logActivity } from "@/lib/activity";
 
 const schema = z.object({
   stars: z.coerce.number().int().min(1).max(5),
@@ -68,6 +69,13 @@ export async function POST(
       },
     });
   });
+
+  await logActivity(
+    session.user.id,
+    "REVIEW_CREATE",
+    `Baho qoldirdi: «${order.title}» — ${stars}/5`,
+    { orderId: id, stars },
+  );
 
   return NextResponse.json({ ok: true });
 }
