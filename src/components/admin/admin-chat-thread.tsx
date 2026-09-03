@@ -367,8 +367,8 @@ export function AdminChatThread({
                     <div
                       className={`rounded-md border-l-2 py-1 pl-2 pr-1 text-xs ${
                         m.mine
-                          ? "border-white/50 bg-white/10"
-                          : "border-indigo-400/60 bg-white/5"
+                          ? "border-white/60 bg-white/15"
+                          : "border-indigo-400/70 bg-indigo-500/10"
                       }`}
                     >
                       <div className="truncate opacity-75">{m.replyTo.text}</div>

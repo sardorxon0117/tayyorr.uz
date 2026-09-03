@@ -140,6 +140,13 @@ html.light [class~="bg-indigo-600"] [class*="text-indigo-"] {
 html.light [class~="bg-indigo-600"] a {
   color: #bae6fd !important;
 }
+/* pufak ichidagi oq-shaffof fon/chegara (reply blok, reaksiya chipi) — och qoladi */
+html.light [class~="bg-indigo-600"] [class*="bg-white/"] {
+  background-color: rgba(255, 255, 255, 0.16) !important;
+}
+html.light [class~="bg-indigo-600"] [class*="border-white/"] {
+  border-color: rgba(255, 255, 255, 0.5) !important;
+}
 /* dekorativ orqa fon — yorug'da ham yorug' */
 html.light .aurora-fade {
   background-image: linear-gradient(
