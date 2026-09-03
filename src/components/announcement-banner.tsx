@@ -16,33 +16,6 @@ interface Resolved {
   buttonUrl: string | null;
 }
 
-/** Element o'lchami o'zgarganда silliq (width/height) o'tkazadi. */
-function useSmoothSize<T extends HTMLElement>() {
-  const ref = useRef<T>(null);
-  const prev = useRef<{ w: number; h: number } | null>(null);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el || typeof ResizeObserver === "undefined") return;
-    const ro = new ResizeObserver(() => {
-      const r = el.getBoundingClientRect();
-      const p = prev.current;
-      prev.current = { w: r.width, h: r.height };
-      if (!p) return;
-      if (Math.abs(p.w - r.width) < 1 && Math.abs(p.h - r.height) < 1) return;
-      el.animate(
-        [
-          { width: `${p.w}px`, height: `${p.h}px` },
-          { width: `${r.width}px`, height: `${r.height}px` },
-        ],
-        { duration: 440, easing: "cubic-bezier(0.22, 1, 0.36, 1)" },
-      );
-    });
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
-  return ref;
-}
-
 /** Bitta e'lon kartasi. Indikator karta ichida, pastda turadi. */
 export function AnnouncementBanner({
   a,
@@ -52,7 +25,6 @@ export function AnnouncementBanner({
   indicator?: React.ReactNode;
 }) {
   const external = !!a.buttonUrl && /^https?:\/\//i.test(a.buttonUrl);
-  const btnRef = useSmoothSize<HTMLAnchorElement>();
   return (
     <div className="overflow-hidden rounded-2xl border border-indigo-400/25 bg-gradient-to-br from-indigo-500/15 to-fuchsia-500/10 p-4">
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -70,12 +42,11 @@ export function AnnouncementBanner({
         </div>
         {a.buttonText && a.buttonUrl && (
           <Link
-            ref={btnRef}
             href={a.buttonUrl}
             {...(external
               ? { target: "_blank", rel: "noopener noreferrer" }
               : {})}
-            className="btn-white shrink-0 justify-center overflow-hidden whitespace-nowrap"
+            className="ann-btn btn-white shrink-0 justify-center overflow-hidden whitespace-nowrap"
           >
             <BlurText text={a.buttonText} />
           </Link>

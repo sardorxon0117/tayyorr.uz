@@ -2,6 +2,20 @@
 
 :root {
   color-scheme: dark;
+  /* auto -> auto o'lchamlar orasida silliq o'tish (qo'llab-quvvatlagan brauzerda) */
+  interpolate-size: allow-keywords;
+}
+
+/* e'lon tugmasi — yozuv o'zgarganда o'lchami silliq kattaradi/kichrayadi */
+.ann-btn {
+  transition:
+    width 0.42s cubic-bezier(0.33, 1, 0.68, 1),
+    height 0.42s cubic-bezier(0.33, 1, 0.68, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .ann-btn {
+    transition: none;
+  }
 }
 
 html {
