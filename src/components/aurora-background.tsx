@@ -45,7 +45,7 @@ export function AuroraBackground({ compact = false }: { compact?: boolean }) {
           }}
         />
       )}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#08080d]/40 to-[#08080d]" />
+      <div className="aurora-fade absolute inset-0 bg-gradient-to-b from-transparent via-[#08080d]/40 to-[#08080d]" />
     </div>
   );
 }

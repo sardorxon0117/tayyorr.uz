@@ -34,7 +34,7 @@ export function PeopleModal({
       onClick={onClose}
     >
       <div
-        className="blur-in max-h-[70vh] w-full max-w-sm overflow-hidden rounded-2xl border border-white/10 bg-[#14141b] shadow-2xl"
+        className="pop-in max-h-[70vh] w-full max-w-sm overflow-hidden rounded-2xl border border-white/10 bg-[#14141b] shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">

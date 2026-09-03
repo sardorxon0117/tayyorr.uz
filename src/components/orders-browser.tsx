@@ -270,7 +270,7 @@ export function OrdersBrowser({
         >
           <div
             ref={sheetRef}
-            className="blur-in w-full max-w-md overflow-hidden rounded-t-2xl border border-white/10 bg-[#14141b] shadow-2xl sm:rounded-2xl"
+            className="pop-in w-full max-w-md overflow-hidden rounded-t-2xl border border-white/10 bg-[#14141b] shadow-2xl sm:rounded-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">

@@ -7,6 +7,7 @@ import { AdminPostButton } from "@/components/admin/admin-post-button";
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
 import { NavMenu, type NavLink } from "@/components/nav-menu";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { RevealOnScroll } from "@/components/reveal-on-scroll";
 
 const BASE: NavLink[] = [
   { href: "/sardorxon/admin", label: "Bosh", icon: "🏠" },
@@ -51,6 +52,7 @@ export default async function AdminPanelLayout({
 
   return (
     <div className="min-h-screen bg-[#08080d] text-zinc-100">
+      <RevealOnScroll />
       <AdminSidebar nav={nav} />
 
       {/* mobil header */}

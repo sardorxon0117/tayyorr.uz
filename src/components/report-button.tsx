@@ -58,7 +58,7 @@ export function ReportDialog({
       onClick={() => !busy && onClose()}
     >
       <div
-        className="blur-in w-full max-w-md rounded-2xl border border-white/10 bg-[#14141b] p-6 shadow-2xl shadow-black/50"
+        className="pop-in w-full max-w-md rounded-2xl border border-white/10 bg-[#14141b] p-6 shadow-2xl shadow-black/50"
         onClick={(e) => e.stopPropagation()}
       >
         {done ? (

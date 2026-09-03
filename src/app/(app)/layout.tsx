@@ -9,6 +9,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { PushSetup } from "@/components/push-setup";
 import { PresencePing } from "@/components/presence-ping";
 import { NavHistoryTracker } from "@/components/nav-history";
+import { RevealOnScroll } from "@/components/reveal-on-scroll";
 import { RestrictionBanner } from "@/components/restriction-banner";
 import { getRestriction, restrictionText } from "@/lib/restriction";
 
@@ -56,6 +57,7 @@ export default async function AppLayout({
       <AppHeader image={session.user.image ?? null} />
       <PresencePing />
       <NavHistoryTracker />
+      <RevealOnScroll />
 
       <main className="relative z-10 px-3 py-6 sm:px-5 sm:py-8 lg:pl-[17rem] lg:pr-6">
         <div className="mx-auto w-full max-w-5xl">

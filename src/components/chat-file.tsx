@@ -72,7 +72,7 @@ function Lightbox({ file, onClose }: { file: ChatFile; onClose: () => void }) {
           ✕
         </button>
       </div>
-      <div onClick={(e) => e.stopPropagation()} className="blur-in max-h-full max-w-full">
+      <div onClick={(e) => e.stopPropagation()} className="pop-in max-h-full max-w-full">
         {file.type.startsWith("video/") ? (
           <video
             src={file.url}

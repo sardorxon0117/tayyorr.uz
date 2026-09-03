@@ -18,7 +18,7 @@ export default function RootLayout({
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('tyr_theme')||'dark';var light=t==='light'||(t==='system'&&window.matchMedia('(prefers-color-scheme: light)').matches);if(light)document.documentElement.classList.add('light');}catch(e){}})();`,
+            __html: `(function(){try{var t=localStorage.getItem('tyr_theme')||'dark';var light=t==='light'||(t==='system'&&window.matchMedia('(prefers-color-scheme: light)').matches);if(light)document.documentElement.classList.add('light');document.documentElement.classList.add('js-reveal');}catch(e){}})();`,
           }}
         />
       </head>
