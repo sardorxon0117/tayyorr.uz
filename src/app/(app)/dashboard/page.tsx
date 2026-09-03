@@ -18,7 +18,7 @@ export default async function DashboardPage() {
 
   const orders = await db.order.findMany({
     where: isPreparer
-      ? { OR: [{ status: "OPEN" }, { preparerId: me.id }] }
+      ? { deletedAt: null, OR: [{ status: "OPEN" }, { preparerId: me.id }] }
       : { ordererId: me.id },
     orderBy: { createdAt: "desc" },
     include: {
@@ -37,6 +37,9 @@ export default async function DashboardPage() {
     offers: o._count.offers,
     createdAt: o.createdAt.toISOString(),
     ordererLabel: isPreparer ? o.orderer.login ?? o.orderer.name ?? null : null,
+    deleted: !!o.deletedAt,
+    deleteReason: o.deleteReason,
+    deletedByRole: o.deletedByRole,
   }));
 
   return (

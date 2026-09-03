@@ -8,6 +8,7 @@ export function AdminPostButton({
   body,
   label,
   confirmText,
+  promptReason,
   className = "btn-ghost",
   redirectTo,
   method = "POST",
@@ -16,6 +17,7 @@ export function AdminPostButton({
   body?: unknown;
   label: string;
   confirmText?: string;
+  promptReason?: string;
   className?: string;
   redirectTo?: string;
   method?: "POST" | "DELETE" | "PATCH";
@@ -26,13 +28,19 @@ export function AdminPostButton({
 
   async function run() {
     if (confirmText && !window.confirm(confirmText)) return;
+    let payload: unknown = body;
+    if (promptReason) {
+      const reason = window.prompt(promptReason);
+      if (!reason || !reason.trim()) return;
+      payload = { ...(typeof body === "object" && body ? body : {}), reason: reason.trim() };
+    }
     setBusy(true);
     setErr(null);
     try {
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: body ? JSON.stringify(body) : undefined,
+        body: payload ? JSON.stringify(payload) : undefined,
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Xatolik");

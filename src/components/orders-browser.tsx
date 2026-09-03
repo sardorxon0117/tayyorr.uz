@@ -45,6 +45,9 @@ export interface OrderRow {
   offers: number;
   createdAt: string;
   ordererLabel: string | null;
+  deleted?: boolean;
+  deleteReason?: string | null;
+  deletedByRole?: string | null;
 }
 
 function Chip({
@@ -252,22 +255,44 @@ export function OrdersBrowser({
             >
               <Link
                 href={`/orders/${o.id}`}
-                className="card flex items-center justify-between gap-4 transition hover:border-white/15 hover:bg-white/[0.06]"
+                className={`card flex items-center justify-between gap-4 transition hover:border-white/15 hover:bg-white/[0.06] ${
+                  o.deleted ? "opacity-60" : ""
+                }`}
               >
                 <div className="min-w-0">
-                  <div className="truncate font-medium text-white">{o.title}</div>
+                  <div className="flex items-center gap-2">
+                    {o.deleted && (
+                      <span className="shrink-0 rounded bg-red-500/15 px-1.5 py-0.5 text-[10px] font-semibold text-red-300">
+                        O'CHIRILGAN
+                      </span>
+                    )}
+                    <span className="truncate font-medium text-white">
+                      {o.title}
+                    </span>
+                  </div>
                   <div className="mt-1 text-xs text-zinc-500">
-                    {TYPE_LABEL[o.type] ?? o.type} · {STATUS_LABEL[o.status] ?? o.status}
+                    {TYPE_LABEL[o.type] ?? o.type} ·{" "}
+                    {o.deleted
+                      ? "o'chirilgan"
+                      : STATUS_LABEL[o.status] ?? o.status}
                     {o.ordererLabel && ` · @${o.ordererLabel}`}
                     {o.budget ? ` · ${o.budget.toLocaleString()} so'm` : ""}
                   </div>
-                  <div className="mt-1 text-[11px] text-zinc-600">
-                    {timeAgo(o.createdAt)} · {o.offers} taklif
-                  </div>
+                  {o.deleted && o.deleteReason ? (
+                    <div className="mt-1 text-[11px] text-red-300/80">
+                      Sabab: {o.deleteReason}
+                    </div>
+                  ) : (
+                    <div className="mt-1 text-[11px] text-zinc-600">
+                      {timeAgo(o.createdAt)} · {o.offers} taklif
+                    </div>
+                  )}
                 </div>
-                <span className="shrink-0 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-zinc-400">
-                  {o.offers} taklif
-                </span>
+                {!o.deleted && (
+                  <span className="shrink-0 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-zinc-400">
+                    {o.offers} taklif
+                  </span>
+                )}
               </Link>
             </li>
           ))}

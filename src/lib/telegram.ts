@@ -156,9 +156,10 @@ export async function updateOrderChannelPost(orderId: string): Promise<void> {
         deadline: true,
         status: true,
         telegramMessageId: true,
+        deletedAt: true,
       },
     });
-    if (!o?.telegramMessageId) return;
+    if (!o?.telegramMessageId || o.deletedAt) return;
 
     const res = await tg("editMessageText", {
       chat_id: CHANNEL,
@@ -184,13 +185,24 @@ export async function updateOrderChannelPost(orderId: string): Promise<void> {
 export async function markOrderRemovedInChannel(
   messageId: number,
   title: string,
+  by: string,
+  reason?: string | null,
 ): Promise<void> {
   if (!TOKEN || !CHANNEL || !messageId) return;
   try {
+    const lines = [
+      "🗑 <b>Buyurtma o'chirildi</b>",
+      "",
+      `<s>${esc(clip(title, 200))}</s>`,
+      "",
+      `👤 <b>Kim o'chirdi:</b> ${esc(by)}`,
+    ];
+    if (reason?.trim()) lines.push(`✍️ <b>Sabab:</b> ${esc(clip(reason, 400))}`);
+    lines.push("", "— <i>tayyorr.uz</i>");
     await tg("editMessageText", {
       chat_id: CHANNEL,
       message_id: messageId,
-      text: `🗑 <b>Buyurtma o'chirildi</b>\n\n<s>${esc(clip(title, 200))}</s>\n\n— <i>tayyorr.uz</i>`,
+      text: lines.join("\n"),
       parse_mode: "HTML",
       disable_web_page_preview: true,
     });

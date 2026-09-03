@@ -33,6 +33,7 @@ export async function GET() {
     session.user.role === "ORDERER"
       ? { ordererId: session.user.id }
       : {
+          deletedAt: null,
           OR: [
             { status: "OPEN" as const },
             { preparerId: session.user.id },

@@ -1,46 +1,39 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 
-import { db } from "@/lib/db";
 import { adminApiGuard } from "@/lib/admin";
+import { softDeleteOrder } from "@/lib/order-delete";
 import { markOrderRemovedInChannel } from "@/lib/telegram";
 
-/** Buyurtmani butunlay o'chiradi. Faol/yuborilgan shartnomalardagi bloklangan
- *  mablag' buyurtmachiga qaytariladi. */
+const schema = z.object({ reason: z.string().trim().min(3).max(500) });
+
+/** Buyurtmani o'chiradi (soft). Sabab shart. Faol shartnomadagi mablag' qaytadi. */
 export async function DELETE(
-  _req: Request,
+  req: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const denied = await adminApiGuard();
   if (denied) return denied;
 
   const { id } = await params;
-  const order = await db.order.findUnique({
-    where: { id },
-    include: { contracts: { where: { status: { in: ["SENT", "ACCEPTED"] } } } },
-  });
+  const parsed = schema.safeParse(await req.json().catch(() => null));
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: "O'chirish sababini yozing (kamida 3 belgi)" },
+      { status: 400 },
+    );
+  }
+
+  const order = await softDeleteOrder(id, "ADMIN", parsed.data.reason);
   if (!order) return NextResponse.json({ error: "Topilmadi" }, { status: 404 });
 
-  await db.$transaction(async (tx) => {
-    for (const c of order.contracts) {
-      await tx.user.update({
-        where: { id: c.ordererId },
-        data: { balance: { increment: c.amount } },
-      });
-      await tx.walletTransaction.create({
-        data: {
-          userId: c.ordererId,
-          type: "REFUND",
-          amount: c.amount,
-          method: "ESCROW",
-          note: "Buyurtma admin tomonidan o'chirildi — bloklangan mablag' qaytdi",
-        },
-      });
-    }
-    await tx.order.delete({ where: { id } });
-  });
-
   if (order.telegramMessageId) {
-    await markOrderRemovedInChannel(order.telegramMessageId, order.title);
+    await markOrderRemovedInChannel(
+      order.telegramMessageId,
+      order.title,
+      "Administrator",
+      parsed.data.reason,
+    );
   }
 
   return NextResponse.json({ ok: true });

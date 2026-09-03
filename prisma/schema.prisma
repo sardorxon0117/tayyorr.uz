@@ -449,6 +449,10 @@ model Order {
   telegramSentAt    DateTime? // kanalga muvaffaqiyatli joylangan vaqt
   telegramError     String? // xato bo'lsa qisqa matn
 
+  deletedAt     DateTime? // o'chirilgan (buyurtmachida qoladi, boshqalarga ko'rinmaydi)
+  deletedByRole String? // "ORDERER" | "ADMIN"
+  deleteReason  String? // admin o'chirganda — sabab
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

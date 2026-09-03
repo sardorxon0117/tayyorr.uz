@@ -6,6 +6,7 @@ import { PRIVATE_BUCKET, presignGet } from "@/lib/r2";
 import { getRestriction } from "@/lib/restriction";
 import { RestrictionNotice } from "@/components/restriction-notice";
 import { OrderActions } from "@/components/order-actions";
+import { OrderDeleteButton } from "@/components/order-delete-button";
 import { BackLink } from "@/components/back-link";
 
 const TYPE_LABEL: Record<string, string> = {
@@ -73,9 +74,9 @@ export default async function OrderDetailPage({
   const isAssigned = order.preparerId === me.id;
   const isParty = isOrderer || isAssigned;
 
-  // OPEN bo'lmagan buyurtma faqat ishtirokchilarga ko'rinadi
-  // (band bo'lgan / bekor qilingan / tugallangan — boshqalarga yo'q)
-  if (!isParty && order.status !== "OPEN") notFound();
+  // OPEN bo'lmagan / o'chirilgan buyurtma faqat ishtirokchilarga ko'rinadi
+  if (!isParty && (order.status !== "OPEN" || order.deletedAt)) notFound();
+  const deleted = !!order.deletedAt;
 
   // takliflar: buyurtma egasiga hammasi, tayyorlovchiga faqat o'ziniki
   const visibleOffers = isOrderer
@@ -98,6 +99,33 @@ export default async function OrderDetailPage({
   return (
     <div className="flex flex-col gap-6">
       <BackLink fallback="/dashboard" />
+
+      {deleted && (
+        <div className="rounded-xl border border-red-400/30 bg-red-500/10 p-4 text-sm">
+          <div className="font-semibold text-red-300">
+            🗑 Bu buyurtma o'chirilgan
+          </div>
+          <div className="mt-1 text-zinc-400">
+            {order.deletedByRole === "ADMIN"
+              ? "Administrator tomonidan"
+              : "Buyurtmachi tomonidan"}
+            {order.deletedAt &&
+              ` · ${order.deletedAt.toLocaleString("uz", {
+                dateStyle: "short",
+                timeStyle: "short",
+              })}`}
+          </div>
+          {order.deleteReason && (
+            <div className="mt-1 text-zinc-300">
+              Sabab: {order.deleteReason}
+            </div>
+          )}
+          <div className="mt-1 text-xs text-zinc-500">
+            U faqat sizga ko'rinadi, boshqalarga emas.
+          </div>
+        </div>
+      )}
+
       <div>
         <div className="text-xs uppercase tracking-wide text-indigo-400">
           {TYPE_LABEL[order.type]} · {STATUS_LABEL[order.status]}
@@ -149,6 +177,7 @@ export default async function OrderDetailPage({
         </div>
       )}
 
+      {!deleted && (
       <OrderActions
         orderId={order.id}
         status={order.status}
@@ -196,6 +225,13 @@ export default async function OrderDetailPage({
           },
         }))}
       />
+      )}
+
+      {isOrderer && !deleted && (
+        <div className="border-t border-white/10 pt-4">
+          <OrderDeleteButton orderId={order.id} />
+        </div>
+      )}
     </div>
   );
 }

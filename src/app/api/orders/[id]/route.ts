@@ -5,7 +5,8 @@ import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { PRIVATE_BUCKET, presignGet } from "@/lib/r2";
 import { restrictionApiError } from "@/lib/restriction";
-import { updateOrderChannelPost } from "@/lib/telegram";
+import { updateOrderChannelPost, markOrderRemovedInChannel } from "@/lib/telegram";
+import { softDeleteOrder } from "@/lib/order-delete";
 
 export async function GET(
   _req: Request,
@@ -54,8 +55,8 @@ export async function GET(
   const isParty =
     order.ordererId === session.user.id || order.preparerId === session.user.id;
 
-  // OPEN bo'lmagan buyurtma faqat ishtirokchilarga
-  if (!isParty && order.status !== "OPEN") {
+  // OPEN bo'lmagan / o'chirilgan buyurtma faqat ishtirokchilarga
+  if (!isParty && (order.status !== "OPEN" || order.deletedAt)) {
     return NextResponse.json({ error: "Topilmadi" }, { status: 404 });
   }
 
@@ -132,4 +133,39 @@ export async function PATCH(
   await updateOrderChannelPost(id);
 
   return NextResponse.json({ order: updated });
+}
+
+/** Buyurtmachi o'z buyurtmasini o'chiradi (soft). O'zida qoladi, boshqalarga ko'rinmaydi. */
+export async function DELETE(
+  _req: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Avval kiring" }, { status: 401 });
+  }
+  const { id } = await params;
+
+  const order = await db.order.findUnique({
+    where: { id },
+    select: { ordererId: true, deletedAt: true },
+  });
+  if (!order || order.ordererId !== session.user.id) {
+    return NextResponse.json({ error: "Topilmadi" }, { status: 404 });
+  }
+  if (order.deletedAt) {
+    return NextResponse.json({ error: "Allaqachon o'chirilgan" }, { status: 400 });
+  }
+
+  const full = await softDeleteOrder(id, "ORDERER", null);
+  if (full?.telegramMessageId) {
+    await markOrderRemovedInChannel(
+      full.telegramMessageId,
+      full.title,
+      "Buyurtmachi",
+      null,
+    );
+  }
+
+  return NextResponse.json({ ok: true });
 }

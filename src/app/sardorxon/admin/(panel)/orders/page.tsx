@@ -93,7 +93,7 @@ export default async function AdminOrders() {
                     method="DELETE"
                     label="O'chirish"
                     className="rounded-lg bg-red-500/15 px-2.5 py-1 text-xs text-red-300 hover:bg-red-500/25"
-                    confirmText="Buyurtma butunlay o'chiriladi (takliflar, shartnomalar, fayllar). Faol shartnomadagi mablag' buyurtmachiga qaytariladi. Davom etilsinmi?"
+                    promptReason="O'chirish sababini yozing (buyurtmachiga ko'rinadi):"
                   />
                 </td>
               </tr>

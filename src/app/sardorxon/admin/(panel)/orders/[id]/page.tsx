@@ -100,6 +100,17 @@ export default async function AdminOrderDetail({
     ],
     ["Yaratilgan", order.createdAt.toLocaleString("uz")],
     ["Yangilangan", order.updatedAt.toLocaleString("uz")],
+    ...(order.deletedAt
+      ? ([
+          [
+            "O'chirilgan",
+            `${order.deletedByRole === "ADMIN" ? "Admin" : "Buyurtmachi"} · ${order.deletedAt.toLocaleString(
+              "uz",
+            )}`,
+          ],
+          ["O'chirish sababi", order.deleteReason ?? "—"],
+        ] as [string, React.ReactNode][])
+      : []),
     [
       "Kanalga",
       (() => {
@@ -138,14 +149,21 @@ export default async function AdminOrderDetail({
 
       <div className="flex flex-wrap items-start justify-between gap-3">
         <h1 className="text-xl font-semibold text-white">{order.title}</h1>
-        <AdminPostButton
-          url={`/api/admin/orders/${order.id}`}
-          method="DELETE"
-          label="O'chirish"
-          className="rounded-lg bg-red-500/15 px-3 py-1.5 text-xs text-red-300 hover:bg-red-500/25"
-          confirmText="Buyurtma butunlay o'chiriladi (takliflar, shartnomalar, fayllar). Faol shartnomadagi mablag' buyurtmachiga qaytariladi. Davom etilsinmi?"
-          redirectTo="/sardorxon/admin/orders"
-        />
+        {order.deletedAt ? (
+          <span className="rounded-lg bg-red-500/15 px-3 py-1.5 text-xs text-red-300">
+            🗑 O'chirilgan
+            {order.deletedByRole === "ADMIN" ? " (admin)" : " (buyurtmachi)"}
+          </span>
+        ) : (
+          <AdminPostButton
+            url={`/api/admin/orders/${order.id}`}
+            method="DELETE"
+            label="O'chirish"
+            className="rounded-lg bg-red-500/15 px-3 py-1.5 text-xs text-red-300 hover:bg-red-500/25"
+            promptReason="O'chirish sababini yozing (buyurtmachiga ko'rinadi):"
+            redirectTo="/sardorxon/admin/orders"
+          />
+        )}
       </div>
 
       <div className="rounded-xl border border-white/10">
