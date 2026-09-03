@@ -90,7 +90,6 @@ html.light .text-indigo-300,
 html.light .text-indigo-400 {
   color: #4338ca;
 }
-html.light .text-sky-200,
 html.light .text-sky-400 {
   color: #0369a1;
 }
@@ -128,6 +127,18 @@ html.light [class~="bg-red-500"] {
 }
 html.light [class~="bg-indigo-500"] {
   background-color: #4f46e5 !important;
+}
+/* chat: o'zim yuborgan indigo pufak — yorug'da ham ichi och rangda o'qiladi */
+html.light [class~="bg-indigo-600"] {
+  background-color: #4f46e5 !important;
+}
+html.light [class~="bg-indigo-600"] .text-white,
+html.light [class~="bg-indigo-600"] [class*="text-zinc-"],
+html.light [class~="bg-indigo-600"] [class*="text-indigo-"] {
+  color: #eef2ff !important;
+}
+html.light [class~="bg-indigo-600"] a {
+  color: #bae6fd !important;
 }
 /* dekorativ orqa fon — yorug'da ham yorug' */
 html.light .aurora-fade {
