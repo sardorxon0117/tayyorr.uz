@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 
 import { NavMenu } from "@/components/nav-menu";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { LanguageToggle } from "@/components/language-toggle";
 import { APP_NAV } from "@/lib/nav";
 
 export function AppHeader({ image }: { image: string | null }) {
@@ -30,15 +29,7 @@ export function AppHeader({ image }: { image: string | null }) {
               <img src={image} alt="" className="h-full w-full object-cover" />
             )}
           </Link>
-          <NavMenu
-            links={APP_NAV}
-            footer={
-              <div className="flex flex-col gap-2">
-                <LanguageToggle />
-                <ThemeToggle />
-              </div>
-            }
-          />
+          <NavMenu links={APP_NAV} footer={<ThemeToggle />} />
         </div>
       </div>
     </header>

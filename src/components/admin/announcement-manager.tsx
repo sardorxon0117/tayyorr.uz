@@ -5,9 +5,6 @@ import { useRouter } from "next/navigation";
 
 import { AnnouncementBanner } from "@/components/announcement-banner";
 
-type Lang = "uz" | "ru" | "en";
-const LANGS: Lang[] = ["uz", "ru", "en"];
-
 export interface Banner {
   id: string;
   title: string;
@@ -47,11 +44,6 @@ const ROLE_LABEL: Record<string, string> = {
   PREPARER: "Tayyorlovchilarga",
 };
 
-const F = {
-  uz: { t: "title", b: "body", btn: "buttonText" },
-  ru: { t: "titleRu", b: "bodyRu", btn: "buttonTextRu" },
-  en: { t: "titleEn", b: "bodyEn", btn: "buttonTextEn" },
-} as const;
 
 function Fields({
   v,
@@ -60,52 +52,31 @@ function Fields({
   v: Draft;
   set: (patch: Partial<Draft>) => void;
 }) {
-  const [lang, setLang] = useState<Lang>("uz");
-  const k = F[lang];
   return (
     <div className="grid gap-3">
-      <div className="flex gap-1">
-        {LANGS.map((l) => (
-          <button
-            key={l}
-            type="button"
-            onClick={() => setLang(l)}
-            className={`rounded-lg px-2.5 py-1 text-xs uppercase transition ${
-              lang === l
-                ? "bg-indigo-500/20 text-white"
-                : "text-zinc-500 hover:text-white"
-            }`}
-          >
-            {l}
-          </button>
-        ))}
-        <span className="ml-auto self-center text-[11px] text-zinc-600">
-          RU / EN bo'sh bo'lsa — o'zbekchasi ko'rsatiladi
-        </span>
-      </div>
       <input
         className="input"
-        placeholder={`Asosiy matn (${lang})`}
-        value={v[k.t] as string}
-        onChange={(e) => set({ [k.t]: e.target.value } as Partial<Draft>)}
+        placeholder="Asosiy matn"
+        value={v.title}
+        onChange={(e) => set({ title: e.target.value })}
       />
       <textarea
         className="input"
         rows={2}
-        placeholder={`Tavsif (${lang})`}
-        value={v[k.b] as string}
-        onChange={(e) => set({ [k.b]: e.target.value } as Partial<Draft>)}
+        placeholder="Tavsif"
+        value={v.body}
+        onChange={(e) => set({ body: e.target.value })}
       />
       <div className="grid gap-3 sm:grid-cols-2">
         <input
           className="input"
-          placeholder={`Tugma matni (${lang})`}
-          value={v[k.btn] as string}
-          onChange={(e) => set({ [k.btn]: e.target.value } as Partial<Draft>)}
+          placeholder="Tugma matni"
+          value={v.buttonText}
+          onChange={(e) => set({ buttonText: e.target.value })}
         />
         <input
           className="input"
-          placeholder="Tugma URL (barcha tillarga)"
+          placeholder="Tugma URL"
           value={v.buttonUrl}
           onChange={(e) => set({ buttonUrl: e.target.value })}
         />

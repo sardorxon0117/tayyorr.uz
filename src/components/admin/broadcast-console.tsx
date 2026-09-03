@@ -33,9 +33,6 @@ function fmt(iso: string) {
 export function BroadcastConsole({ initial }: { initial: Item[] }) {
   const [items, setItems] = useState<Item[]>(initial);
   const [text, setText] = useState("");
-  const [textRu, setTextRu] = useState("");
-  const [textEn, setTextEn] = useState("");
-  const [lang, setLang] = useState<"uz" | "ru" | "en">("uz");
   const [role, setRole] = useState("");
   const [balanceMin, setBalanceMin] = useState("");
   const [balanceMax, setBalanceMax] = useState("");
@@ -199,8 +196,6 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           body,
-          bodyRu: textRu.trim() || undefined,
-          bodyEn: textEn.trim() || undefined,
           file: file
             ? { key: file.key, name: file.name, type: file.type, size: file.size }
             : undefined,
@@ -214,8 +209,6 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
         { readCount: 0, likeCount: 0, dislikeCount: 0, ...data.broadcast },
       ]);
       setText("");
-      setTextRu("");
-      setTextEn("");
       setAttachment(null);
       setCount(null);
     } catch (e) {
@@ -397,30 +390,6 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
           </div>
         )}
 
-        <div className="mb-1.5 flex items-center gap-1">
-          {(["uz", "ru", "en"] as const).map((l) => (
-            <button
-              key={l}
-              type="button"
-              onClick={() => setLang(l)}
-              className={`rounded-lg px-2 py-0.5 text-[11px] uppercase transition ${
-                lang === l
-                  ? "bg-indigo-500/20 text-white"
-                  : "text-zinc-500 hover:text-white"
-              }`}
-            >
-              {l}
-              {((l === "ru" && textRu.trim()) ||
-                (l === "en" && textEn.trim()) ||
-                (l === "uz" && text.trim())) &&
-                " •"}
-            </button>
-          ))}
-          <span className="ml-auto text-[10px] text-zinc-600">
-            har foydalanuvchi o'z tilida oladi (bo'sh — o'zbekcha)
-          </span>
-        </div>
-
         <form onSubmit={send} className="flex items-end gap-2">
           <input
             ref={fileRef}
@@ -442,14 +411,9 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
           <AutoTextarea
             className="input min-h-[42px]"
             maxRows={5}
-            placeholder={`tayyorr.uz support (${lang})…`}
-            value={lang === "ru" ? textRu : lang === "en" ? textEn : text}
-            onChange={(e) => {
-              const v = e.target.value;
-              if (lang === "ru") setTextRu(v);
-              else if (lang === "en") setTextEn(v);
-              else setText(v);
-            }}
+            placeholder="tayyorr.uz support nomidan xabar…"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();

@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 
 import { APP_NAV } from "@/lib/nav";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { LanguageToggle } from "@/components/language-toggle";
 import { BalanceAmount } from "@/components/balance-amount";
 import { useLocale } from "@/components/locale-provider";
 
@@ -109,8 +108,7 @@ export function AppSidebar({ user }: { user: SidebarUser }) {
         </nav>
       </div>
 
-      <div className="flex flex-col gap-2 border-t border-white/10 p-3">
-        <LanguageToggle />
+      <div className="border-t border-white/10 p-3">
         <ThemeToggle />
       </div>
     </aside>
