@@ -6,6 +6,7 @@ import { WalletTopUp } from "@/components/wallet-topup";
 import { WalletPayout } from "@/components/wallet-payout";
 import { PayoutCancelButton } from "@/components/payout-cancel-button";
 import { BalanceAmount } from "@/components/balance-amount";
+import { WalletCode } from "@/components/wallet-code";
 
 const PAYOUT_STATUS: Record<string, string> = {
   PENDING: "Kartaga o'tkazilmoqda",
@@ -79,9 +80,8 @@ export default async function WalletPage() {
             value={balance}
             className="mt-1 text-4xl font-semibold tracking-tight text-white"
           />
-          <div className="mt-4 inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-sm">
-            <span className="text-zinc-400">Hisob kodi:</span>
-            <span className="font-mono font-medium text-white">{walletCode}</span>
+          <div>
+            <WalletCode code={walletCode} />
           </div>
         </div>
       </div>
