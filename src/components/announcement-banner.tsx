@@ -30,17 +30,17 @@ export function AnnouncementBanner({
 }) {
   const external = !!a.buttonUrl && /^https?:\/\//i.test(a.buttonUrl);
   return (
-    <div className="overflow-hidden rounded-2xl border border-indigo-400/25 bg-gradient-to-br from-indigo-500/15 to-fuchsia-500/10 p-4">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="min-w-0">
+    <div className="flex h-[9.5rem] flex-col overflow-hidden rounded-2xl border border-indigo-400/25 bg-gradient-to-br from-indigo-500/15 to-fuchsia-500/10 p-4">
+      <div className="flex flex-1 flex-wrap items-center justify-between gap-4">
+        <div className="min-w-0 flex-1">
           <BlurText
             text={a.title}
-            className="block text-base font-semibold text-white"
+            className="line-clamp-1 block text-base font-semibold text-white"
           />
           {a.body && (
             <BlurText
               text={a.body}
-              className="mt-1 block max-w-2xl text-sm text-zinc-300"
+              className="mt-1 line-clamp-3 block max-w-2xl text-sm leading-snug text-zinc-300"
             />
           )}
         </div>
@@ -56,7 +56,7 @@ export function AnnouncementBanner({
           </Link>
         )}
       </div>
-      {indicator && <div className="mt-3">{indicator}</div>}
+      {indicator && <div className="mt-3 shrink-0">{indicator}</div>}
     </div>
   );
 }
