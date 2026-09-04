@@ -60,6 +60,9 @@ export default async function Home() {
         <nav className="mx-auto mt-4 flex max-w-6xl items-center justify-between rounded-2xl glass px-5 py-3">
           <Logo className="h-6" />
           <div className="hidden items-center gap-7 text-sm text-zinc-400 sm:flex">
+            <Link href="/xizmatlar" className="transition hover:text-white">
+              Xizmatlar
+            </Link>
             <a href="#qanday" className="transition hover:text-white">
               Qanday ishlaydi
             </a>
@@ -328,7 +331,13 @@ export default async function Home() {
             tayyorr<span className="text-indigo-400">.uz</span> ·{" "}
             {new Date().getFullYear()}
           </span>
-          <div className="flex gap-6">
+          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
+            <Link href="/xizmatlar" className="transition hover:text-zinc-300">
+              Xizmatlar
+            </Link>
+            <Link href="/terms" className="transition hover:text-zinc-300">
+              Ommaviy oferta
+            </Link>
             <Link href="/login" className="transition hover:text-zinc-300">
               Kirish
             </Link>

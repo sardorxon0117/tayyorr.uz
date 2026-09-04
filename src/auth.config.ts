@@ -37,7 +37,8 @@ export const authConfig = {
         path === "/" ||
         path.startsWith("/login") ||
         path.startsWith("/register") ||
-        path === "/terms";
+        path === "/terms" ||
+        path.startsWith("/xizmatlar");
 
       if (isPublic) return true;
       if (isLoggedIn) return true;

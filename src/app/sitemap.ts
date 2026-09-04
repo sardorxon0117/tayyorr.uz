@@ -1,5 +1,7 @@
 import type { MetadataRoute } from "next";
 
+import { SERVICES } from "@/lib/services";
+
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://tayyorr.uz";
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -11,6 +13,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "weekly",
       priority: 1,
     },
+    {
+      url: `${SITE_URL}/xizmatlar`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.9,
+    },
+    ...SERVICES.map((s) => ({
+      url: `${SITE_URL}/xizmatlar/${s.slug}`,
+      lastModified: now,
+      changeFrequency: "monthly" as const,
+      priority: 0.8,
+    })),
     {
       url: `${SITE_URL}/register`,
       lastModified: now,
