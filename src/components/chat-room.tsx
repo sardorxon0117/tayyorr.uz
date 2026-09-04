@@ -30,6 +30,8 @@ interface Reactions {
 
 interface Msg {
   id: string;
+  /** React uchun barqaror kalit — optimistik xabar real bilan almashganda o'zgarmaydi */
+  key?: string;
   senderId: string;
   body: string;
   system?: boolean;
@@ -209,9 +211,16 @@ export function ChatRoom({
     if (updatedAt > sinceRef.current) sinceRef.current = updatedAt;
   }, []);
 
+  const refreshTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const markRead = useCallback(() => {
-    fetch(`/api/chat/${conversationId}/read`, { method: "POST" }).catch(() => {});
-  }, [conversationId]);
+    fetch(`/api/chat/${conversationId}/read`, { method: "POST" })
+      .then(() => {
+        // sidebar/kontaktlar ustuni/nav badge — o'qilgan zahoti yangilanadi
+        if (refreshTimer.current) clearTimeout(refreshTimer.current);
+        refreshTimer.current = setTimeout(() => router.refresh(), 350);
+      })
+      .catch(() => {});
+  }, [conversationId, router]);
 
   // SSE
   useEffect(() => {
@@ -480,6 +489,7 @@ export function ChatRoom({
     merge([
       {
         id: tmpId,
+        key: tmpId,
         senderId: meId,
         body,
         createdAt: Date.now(),
@@ -512,8 +522,26 @@ export function ChatRoom({
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Yuborilmadi");
-      setMessages((prev) => prev.filter((m) => m.id !== tmpId));
-      merge([data.message]);
+      // optimistik xabarni real bilan JOYIDA almashtiramiz — DOM elementi
+      // o'zgarmaydi, shuning uchun blur animatsiyasi qayta ishlamaydi
+      const real = data.message as Msg;
+      const t = real.updatedAt || real.createdAt;
+      if (t > sinceRef.current) sinceRef.current = t;
+      setMessages((prev) => {
+        let replaced = false;
+        const next = prev
+          // SSE allaqachon real xabarni qo'shgan bo'lsa — dublikatni olib tashlaymiz
+          .filter((m) => m.id !== real.id)
+          .map((m) => {
+            if (m.id === tmpId) {
+              replaced = true;
+              return { ...real, key: tmpId };
+            }
+            return m;
+          });
+        if (!replaced) next.push({ ...real, key: tmpId });
+        return next.sort((a, b) => a.createdAt - b.createdAt);
+      });
     } catch (e2) {
       setMessages((prev) =>
         prev.map((m) =>
@@ -670,7 +698,7 @@ export function ChatRoom({
             {messages.map((m) => {
               if (m.system) {
                 return (
-                  <div key={m.id} className="blur-in flex justify-center">
+                  <div key={m.key ?? m.id} className="blur-in flex justify-center">
                     <div className="max-w-[85%] rounded-lg bg-white/5 px-3 py-1.5 text-center text-xs text-zinc-400">
                       {m.body}
                     </div>
@@ -693,7 +721,7 @@ export function ChatRoom({
 
               return (
                 <div
-                  key={m.id}
+                  key={m.key ?? m.id}
                   id={`msg-${m.id}`}
                   className={`blur-in group flex rounded-2xl transition ${
                     m.mine ? "justify-end" : "justify-start"
