@@ -7,6 +7,7 @@ import { NavMenu } from "@/components/nav-menu";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Logo } from "@/components/logo";
 import { APP_NAV } from "@/lib/nav";
+import { useUnread } from "@/components/unread-provider";
 
 export function AppHeader({
   image,
@@ -16,11 +17,13 @@ export function AppHeader({
   unread?: number;
 }) {
   const pathname = usePathname();
+  const live = useUnread();
   // chat ichida header ChatRoom bilan birlashadi — bu yerda ko'rsatmaymiz
   if (/^\/messages\/[^/]+$/.test(pathname)) return null;
 
+  const unreadCount = live ? live.total : unread;
   const nav = APP_NAV.map((l) =>
-    l.href === "/messages" ? { ...l, badge: unread } : l,
+    l.href === "/messages" ? { ...l, badge: unreadCount } : l,
   );
 
   return (

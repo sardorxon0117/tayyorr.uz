@@ -13,6 +13,7 @@ import { NavHistoryTracker } from "@/components/nav-history";
 import { ThemeSync } from "@/components/theme-sync";
 import { RevealOnScroll } from "@/components/reveal-on-scroll";
 import { RestrictionBanner } from "@/components/restriction-banner";
+import { UnreadProvider } from "@/components/unread-provider";
 import { getRestriction, restrictionText } from "@/lib/restriction";
 
 export const metadata: Metadata = {
@@ -59,35 +60,37 @@ export default async function AppLayout({
   const walletCode = u?.walletCode ?? (await ensureWalletCode(session.user.id));
 
   return (
-    <div className="relative min-h-screen">
-      <AuroraBackground compact />
+    <UnreadProvider initialTotal={unreadMsgs}>
+      <div className="relative min-h-screen">
+        <AuroraBackground compact />
 
-      <AppSidebar
-        unread={unreadMsgs}
-        user={{
-          name: u?.firstName || u?.name || null,
-          login: u?.login ?? null,
-          role: u?.role ?? null,
-          image: u?.avatarUrl ?? u?.image ?? session.user.image ?? null,
-          balance: u?.balance ?? 0,
-          walletCode,
-        }}
-      />
-      <AppHeader image={session.user.image ?? null} unread={unreadMsgs} />
-      <PresencePing />
-      <NavHistoryTracker />
-      <RevealOnScroll />
-      <ThemeSync serverTheme={u?.theme ?? null} />
+        <AppSidebar
+          unread={unreadMsgs}
+          user={{
+            name: u?.firstName || u?.name || null,
+            login: u?.login ?? null,
+            role: u?.role ?? null,
+            image: u?.avatarUrl ?? u?.image ?? session.user.image ?? null,
+            balance: u?.balance ?? 0,
+            walletCode,
+          }}
+        />
+        <AppHeader image={session.user.image ?? null} unread={unreadMsgs} />
+        <PresencePing />
+        <NavHistoryTracker />
+        <RevealOnScroll />
+        <ThemeSync serverTheme={u?.theme ?? null} />
 
-      <main className="relative z-10 px-3 py-6 sm:px-5 sm:py-8 lg:pl-[17rem] lg:pr-6">
-        <div className="mx-auto w-full max-w-5xl">
-          <PushSetup />
-          {restriction && (
-            <RestrictionBanner text={restrictionText(restriction)} />
-          )}
-          {children}
-        </div>
-      </main>
-    </div>
+        <main className="relative z-10 px-3 py-6 sm:px-5 sm:py-8 lg:pl-[17rem] lg:pr-6">
+          <div className="mx-auto w-full max-w-5xl">
+            <PushSetup />
+            {restriction && (
+              <RestrictionBanner text={restrictionText(restriction)} />
+            )}
+            {children}
+          </div>
+        </main>
+      </div>
+    </UnreadProvider>
   );
 }

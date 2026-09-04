@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { BlockedIcon } from "@/components/icons";
 import type { ConvRow } from "@/lib/conversations";
 import { shortDate } from "@/lib/date";
+import { useUnread } from "@/components/unread-provider";
 
 function fmt(iso: string | null) {
   if (!iso) return "";
@@ -20,6 +21,7 @@ function fmt(iso: string | null) {
 export function ChatContactsRail({ rows }: { rows: ConvRow[] }) {
   const pathname = usePathname();
   const activeId = pathname.split("/")[2] ?? "";
+  const live = useUnread();
 
   return (
     <aside className="fixed left-0 top-0 z-40 hidden h-screen w-72 flex-col border-r border-white/10 bg-[#0b0b12]/95 backdrop-blur-xl lg:left-64 lg:flex">
@@ -38,6 +40,11 @@ export function ChatContactsRail({ rows }: { rows: ConvRow[] }) {
         )}
         {rows.map((c) => {
           const active = c.id === activeId;
+          const unread = active
+            ? 0
+            : live
+              ? live.conv(c.id, c.unread)
+              : c.unread;
           return (
             <Link
               key={c.id}
@@ -75,9 +82,9 @@ export function ChatContactsRail({ rows }: { rows: ConvRow[] }) {
                     {c.lastMine ? "Siz: " : ""}
                     {c.lastText}
                   </span>
-                  {c.unread > 0 && (
+                  {unread > 0 && (
                     <span className="shrink-0 rounded-full bg-indigo-500 px-1.5 text-[10px] font-semibold text-white">
-                      {c.unread}
+                      {unread}
                     </span>
                   )}
                 </span>

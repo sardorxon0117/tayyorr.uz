@@ -11,6 +11,7 @@ import { Linkify } from "@/components/linkify";
 import { RocketIcon, BlockedIcon } from "@/components/icons";
 import { canGoBack } from "@/components/nav-history";
 import { useDismiss } from "@/components/use-dismiss";
+import { useUnread } from "@/components/unread-provider";
 import { prepareChatFile, type PreparedChatFile } from "@/lib/upload-client";
 import { presenceText } from "@/lib/presence";
 import { smartTime } from "@/lib/date";
@@ -79,6 +80,9 @@ export function ChatRoom({
   initialMessages,
 }: Props) {
   const router = useRouter();
+  const unread = useUnread();
+  const unreadRef = useRef(unread);
+  unreadRef.current = unread;
   const [messages, setMessages] = useState<Msg[]>(
     initialMessages.filter((m) => !m.deleted),
   );
@@ -211,16 +215,13 @@ export function ChatRoom({
     if (updatedAt > sinceRef.current) sinceRef.current = updatedAt;
   }, []);
 
-  const refreshTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const markRead = useCallback(() => {
+    // indikatorlarni darhol nolga tushiramiz (server so'rovini kutmasdan)
+    unreadRef.current?.clearConv(conversationId);
     fetch(`/api/chat/${conversationId}/read`, { method: "POST" })
-      .then(() => {
-        // sidebar/kontaktlar ustuni/nav badge — o'qilgan zahoti yangilanadi
-        if (refreshTimer.current) clearTimeout(refreshTimer.current);
-        refreshTimer.current = setTimeout(() => router.refresh(), 350);
-      })
+      .then(() => unreadRef.current?.clearConv(conversationId))
       .catch(() => {});
-  }, [conversationId, router]);
+  }, [conversationId]);
 
   // SSE
   useEffect(() => {

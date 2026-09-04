@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { getSupportUserId } from "@/lib/support";
 import { getT } from "@/lib/i18n-server";
 import { BlockedIcon } from "@/components/icons";
+import { LiveConvBadge } from "@/components/live-conv-badge";
 import { shortDate } from "@/lib/date";
 
 function timeAgo(d: Date) {
@@ -115,11 +116,7 @@ export default async function MessagesPage() {
                           }`
                         : t("msgs.started")}
                     </span>
-                    {unread > 0 && (
-                      <span className="shrink-0 rounded-full bg-indigo-500 px-2 py-0.5 text-xs font-semibold text-white">
-                        {unread}
-                      </span>
-                    )}
+                    <LiveConvBadge convId={c.id} initial={unread} />
                   </div>
                 </div>
               </Link>

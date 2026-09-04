@@ -8,6 +8,7 @@ import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { BalanceAmount } from "@/components/balance-amount";
 import { useLocale } from "@/components/locale-provider";
+import { useUnread } from "@/components/unread-provider";
 
 export interface SidebarUser {
   name: string | null;
@@ -28,8 +29,10 @@ export function AppSidebar({
 }) {
   const pathname = usePathname();
   const { t } = useLocale();
+  const live = useUnread();
+  const unreadCount = live ? live.total : unread;
   const nav = APP_NAV.map((l) =>
-    l.href === "/messages" ? { ...l, badge: unread } : l,
+    l.href === "/messages" ? { ...l, badge: unreadCount } : l,
   );
   const displayName =
     user.name || (user.login ? `@${user.login}` : "Foydalanuvchi");
