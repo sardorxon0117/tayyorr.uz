@@ -55,9 +55,9 @@ export default async function Home() {
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#07070c]" />
       </div>
 
-      {/* ---------- nav ---------- */}
-      <header className="relative z-20">
-        <nav className="mx-auto mt-4 flex max-w-6xl items-center justify-between rounded-2xl glass px-5 py-3">
+      {/* ---------- nav (fixed) ---------- */}
+      <header className="fixed inset-x-0 top-0 z-50 px-4 sm:px-6">
+        <nav className="mx-auto mt-3 flex max-w-6xl items-center justify-between rounded-2xl glass px-5 py-3 shadow-lg shadow-black/20">
           <Logo className="h-6" />
           <div className="hidden items-center gap-7 text-sm text-zinc-400 sm:flex">
             <Link href="/xizmatlar" className="transition hover:text-white">
@@ -102,7 +102,7 @@ export default async function Home() {
       </header>
 
       {/* ---------- hero ---------- */}
-      <section className="relative z-10 mx-auto max-w-4xl px-6 pt-24 pb-20 text-center sm:pt-32">
+      <section className="relative z-10 mx-auto max-w-4xl px-6 pt-32 pb-20 text-center sm:pt-40">
         <div className="animate-rise">
           <span className="inline-flex items-center gap-2 rounded-full glass px-3 py-1 text-xs text-zinc-300">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
