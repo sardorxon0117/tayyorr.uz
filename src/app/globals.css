@@ -381,6 +381,17 @@ select.input option {
   backdrop-filter: blur(22px);
   -webkit-backdrop-filter: blur(22px);
 }
+/* Landing header — scroll qilinganda: ortidagi matn ko'rinmasin */
+.nav-solid {
+  background: rgba(8, 8, 13, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(24px) saturate(1.4);
+  -webkit-backdrop-filter: blur(24px) saturate(1.4);
+}
+html.light .nav-solid {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(0, 0, 0, 0.08);
+}
 
 /* ---- nav menu ---- */
 @keyframes menu-in {

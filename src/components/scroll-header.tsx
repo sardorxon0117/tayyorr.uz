@@ -21,7 +21,7 @@ export function ScrollHeader({ children }: { children: React.ReactNode }) {
       <nav
         className={`mx-auto mt-3 flex max-w-6xl items-center justify-between rounded-2xl px-5 py-3 transition-all duration-300 ${
           scrolled
-            ? "glass shadow-lg shadow-black/25"
+            ? "nav-solid shadow-lg shadow-black/30"
             : "border border-transparent bg-transparent shadow-none"
         }`}
       >
