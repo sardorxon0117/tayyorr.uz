@@ -400,7 +400,17 @@ export default async function Home() {
               <span className="text-indigo-400">.uz</span> — Barcha huquqlar
               himoyalangan.
             </span>
-            <span>O&apos;zbekistonda ishlab chiqilgan</span>
+            <span>
+              <a
+                href="https://sardorkhon.me"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="transition hover:text-zinc-300"
+              >
+                sardorkhon.me
+              </a>{" "}
+              tomonidan ishlab chiqilgan
+            </span>
           </div>
         </div>
       </footer>
