@@ -4,6 +4,11 @@ import { auth } from "@/auth";
 import { ForceDark } from "@/components/force-dark";
 import { Logo } from "@/components/logo";
 import { ScrollHeader } from "@/components/scroll-header";
+import { TelegramIcon, InstagramIcon } from "@/components/icons";
+import { SERVICES } from "@/lib/services";
+
+const TELEGRAM_URL = "https://t.me/tayyorruz_works";
+const INSTAGRAM_URL = "https://instagram.com/tayyorr.uz";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/" },
@@ -324,29 +329,129 @@ export default async function Home() {
       </section>
 
       {/* ---------- footer ---------- */}
-      <footer className="relative z-10 border-t border-white/5">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 py-8 text-sm text-zinc-500 sm:flex-row">
-          <span>
-            tayyorr<span className="text-indigo-400">.uz</span> ·{" "}
-            {new Date().getFullYear()}
-          </span>
-          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
-            <Link href="/xizmatlar" className="transition hover:text-zinc-300">
-              Xizmatlar
-            </Link>
-            <Link href="/terms" className="transition hover:text-zinc-300">
-              Ommaviy oferta
-            </Link>
-            <Link href="/login" className="transition hover:text-zinc-300">
-              Kirish
-            </Link>
-            <Link href="/register" className="transition hover:text-zinc-300">
-              Ro'yxatdan o'tish
-            </Link>
+      <footer className="relative z-10 border-t border-white/10 bg-[#05050a]">
+        <div className="mx-auto max-w-6xl px-6 py-14">
+          <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
+            {/* brend + ijtimoiy tarmoqlar */}
+            <div>
+              <Logo className="h-6" />
+              <p className="mt-4 max-w-xs text-sm leading-relaxed text-zinc-500">
+                Prezentatsiya, kurs ishi, referat va diplom ishini ishonchli
+                tayyorlovchilarga buyurtma qiling yoki o&apos;zingiz tayyorlab
+                daromad qiling.
+              </p>
+              <div className="mt-5 flex items-center gap-3">
+                <a
+                  href={TELEGRAM_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Telegram"
+                  className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-zinc-300 transition hover:border-white/20 hover:bg-white/10 hover:text-white"
+                >
+                  <TelegramIcon className="h-5 w-5" />
+                </a>
+                <a
+                  href={INSTAGRAM_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Instagram"
+                  className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-zinc-300 transition hover:border-white/20 hover:bg-white/10 hover:text-white"
+                >
+                  <InstagramIcon className="h-5 w-5" />
+                </a>
+              </div>
+            </div>
+
+            {/* xizmatlar */}
+            <FooterCol title="Xizmatlar">
+              {SERVICES.map((s) => (
+                <FooterLink key={s.slug} href={`/xizmatlar/${s.slug}`}>
+                  {s.title.replace(
+                    " (bitiruv malakaviy) ishi tayyorlashda yordam",
+                    " ishi",
+                  )}
+                </FooterLink>
+              ))}
+              <FooterLink href="/xizmatlar">Barcha xizmatlar</FooterLink>
+            </FooterCol>
+
+            {/* platforma */}
+            <FooterCol title="Platforma">
+              <FooterLink href="/#qanday">Qanday ishlaydi</FooterLink>
+              <FooterLink href="/#turlar">Ish turlari</FooterLink>
+              <FooterLink href="/#imkoniyat">Imkoniyatlar</FooterLink>
+              <FooterLink href="/register">Ro&apos;yxatdan o&apos;tish</FooterLink>
+              <FooterLink href="/login">Kirish</FooterLink>
+            </FooterCol>
+
+            {/* huquqiy */}
+            <FooterCol title="Huquqiy">
+              <FooterLink href="/terms">Ommaviy oferta</FooterLink>
+              <FooterLink href="/terms">Foydalanish shartlari</FooterLink>
+              <FooterLink href={TELEGRAM_URL} external>
+                Qo&apos;llab-quvvatlash
+              </FooterLink>
+            </FooterCol>
+          </div>
+
+          <div className="mt-12 flex flex-col items-center justify-between gap-2 border-t border-white/10 pt-6 text-xs text-zinc-600 sm:flex-row">
+            <span>
+              © {new Date().getFullYear()} tayyorr
+              <span className="text-indigo-400">.uz</span> — Barcha huquqlar
+              himoyalangan.
+            </span>
+            <span>O&apos;zbekistonda ishlab chiqilgan</span>
           </div>
         </div>
       </footer>
     </main>
+  );
+}
+
+function FooterCol({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <h3 className="text-sm font-semibold text-white">{title}</h3>
+      <ul className="mt-4 space-y-2.5 text-sm text-zinc-500">{children}</ul>
+    </div>
+  );
+}
+
+function FooterLink({
+  href,
+  children,
+  external,
+}: {
+  href: string;
+  children: React.ReactNode;
+  external?: boolean;
+}) {
+  if (external) {
+    return (
+      <li>
+        <a
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="transition hover:text-zinc-200"
+        >
+          {children}
+        </a>
+      </li>
+    );
+  }
+  return (
+    <li>
+      <Link href={href} className="transition hover:text-zinc-200">
+        {children}
+      </Link>
+    </li>
   );
 }
 
