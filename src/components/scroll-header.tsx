@@ -19,10 +19,10 @@ export function ScrollHeader({ children }: { children: React.ReactNode }) {
   return (
     <header className="fixed inset-x-0 top-0 z-50 px-4 sm:px-6">
       <nav
-        className={`mx-auto mt-3 flex max-w-6xl items-center justify-between rounded-2xl px-5 py-3 transition-all duration-300 ${
+        className={`mx-auto mt-3 flex max-w-6xl items-center justify-between rounded-2xl border px-5 py-3 transition-all duration-300 ${
           scrolled
-            ? "nav-solid shadow-lg shadow-black/30"
-            : "border border-transparent bg-transparent shadow-none"
+            ? "border-white/12 bg-[#0b0b14]/50 shadow-xl shadow-black/40 backdrop-blur-2xl backdrop-saturate-150"
+            : "border-transparent bg-transparent shadow-none"
         }`}
       >
         {children}
