@@ -329,7 +329,7 @@ export default async function Home() {
       </section>
 
       {/* ---------- footer ---------- */}
-      <footer className="relative z-10 border-t border-white/10 bg-[#05050a]">
+      <footer className="relative z-10 border-t border-white/10 bg-[#08080d]/70 backdrop-blur-2xl">
         <div className="mx-auto max-w-6xl px-6 py-14">
           <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
             {/* brend + ijtimoiy tarmoqlar */}
