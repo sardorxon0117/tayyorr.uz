@@ -498,25 +498,26 @@ html.js-reveal .blur-in.reveal-in {
   animation-delay: var(--rd, 0ms);
 }
 
-/* harfma-harf blur bilan paydo bo'lish / yo'qolish */
+/* harfma-harf blur bilan paydo bo'lish / yo'qolish
+   (transform/translate ishlatilmaydi — matn hech qachon qiyshaymaydi) */
 @keyframes blur-char-in {
-  from { opacity: 0; filter: blur(9px); transform: translateY(6px); }
-  to { opacity: 1; filter: blur(0); transform: translateY(0); }
+  from { opacity: 0; filter: blur(8px); }
+  to { opacity: 1; filter: blur(0); }
 }
 @keyframes blur-char-out {
-  from { opacity: 1; filter: blur(0); transform: translateY(0); }
-  to { opacity: 0; filter: blur(9px); transform: translateY(-6px); }
+  from { opacity: 1; filter: blur(0); }
+  to { opacity: 0; filter: blur(8px); }
 }
 .blur-char {
   display: inline-block;
   white-space: pre;
-  will-change: filter, opacity, transform;
+  vertical-align: baseline;
 }
 .blur-char.in {
-  animation: blur-char-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: blur-char-in 0.38s ease-out both;
 }
 .blur-char.out {
-  animation: blur-char-out 0.32s ease-in both;
+  animation: blur-char-out 0.3s ease-in both;
 }
 
 @media (prefers-reduced-motion: reduce) {
