@@ -7,7 +7,7 @@ import { ScrollHeader } from "@/components/scroll-header";
 import { TelegramIcon, InstagramIcon } from "@/components/icons";
 import { SERVICES } from "@/lib/services";
 
-const TELEGRAM_URL = "https://t.me/tayyorr_uz";
+const TELEGRAM_URL = "https://t.me/tayyorruz";
 const INSTAGRAM_URL = "https://instagram.com/tayyorr.uz";
 
 export const metadata: Metadata = {
