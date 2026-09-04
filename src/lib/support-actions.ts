@@ -56,8 +56,8 @@ export async function sendWelcome(userId: string, firstName?: string | null) {
 
   // 2-xabar — Telegram kanal
   const channelBody = isPreparer
-    ? `📢 Yangi ishlarni hammadan oldin ilib olish uchun Telegram kanalimizga qo'shiling:\n${TELEGRAM_WORKS_URL}\n\n` +
-      `Saytda e'lon qilingan har bir yangi buyurtma o'sha zahoti kanalga chiqadi — kanalda bo'lsangiz, birinchi bo'lib taklif yuborasiz.`
+    ? `📢 Yangi buyurtmalarni birinchilardan bo'lib ko'rish uchun Telegram kanalimizga qo'shiling:\n${TELEGRAM_WORKS_URL}\n\n` +
+      `Saytda e'lon qilingan har bir yangi buyurtma o'sha zahoti kanalga chiqadi — kanalda bo'lsangiz, ishni boshqalardan oldin ko'rib, birinchi bo'lib taklif yuborasiz.`
     : `📢 Platforma yangiliklari, aksiyalar va yangi imkoniyatlardan boxabar bo'lib turish uchun Telegram kanalimizga obuna bo'ling:\n${TELEGRAM_NEWS_URL}`;
 
   const m2 = await createMessage({

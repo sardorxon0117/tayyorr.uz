@@ -30,6 +30,7 @@ export function NavMenu({
   const [closing, setClosing] = useState(false);
   const pathname = usePathname();
   const { t } = useLocale();
+  const hasBadge = links.some((l) => !!l.badge && l.badge > 0);
 
   function close() {
     setClosing(true);
@@ -53,8 +54,11 @@ export function NavMenu({
         onClick={() => (open ? close() : setOpen(true))}
         aria-label="Menyu"
         aria-expanded={open}
-        className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-zinc-200 transition hover:bg-white/10"
+        className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-zinc-200 transition hover:bg-white/10"
       >
+        {hasBadge && !open && (
+          <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-indigo-500 ring-2 ring-[#0b0b12]" />
+        )}
         <span className="relative flex h-3.5 w-4 flex-col justify-between">
           <span
             className={`h-0.5 w-full rounded bg-current transition-all duration-200 ${

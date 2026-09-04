@@ -8,10 +8,20 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { Logo } from "@/components/logo";
 import { APP_NAV } from "@/lib/nav";
 
-export function AppHeader({ image }: { image: string | null }) {
+export function AppHeader({
+  image,
+  unread = 0,
+}: {
+  image: string | null;
+  unread?: number;
+}) {
   const pathname = usePathname();
   // chat ichida header ChatRoom bilan birlashadi — bu yerda ko'rsatmaymiz
   if (/^\/messages\/[^/]+$/.test(pathname)) return null;
+
+  const nav = APP_NAV.map((l) =>
+    l.href === "/messages" ? { ...l, badge: unread } : l,
+  );
 
   return (
     <header className="sticky top-0 z-30 px-3 pt-3 sm:px-4 sm:pt-4 lg:hidden">
@@ -30,7 +40,7 @@ export function AppHeader({ image }: { image: string | null }) {
               <img src={image} alt="" className="h-full w-full object-cover" />
             )}
           </Link>
-          <NavMenu links={APP_NAV} footer={<ThemeToggle bare />} />
+          <NavMenu links={nav} footer={<ThemeToggle bare />} />
         </div>
       </div>
     </header>

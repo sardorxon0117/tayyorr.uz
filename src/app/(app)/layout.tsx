@@ -28,7 +28,7 @@ export default async function AppLayout({
   if (!session?.user) redirect("/login");
   if (!session.user.profileComplete) redirect("/onboarding");
 
-  const [restriction, u] = await Promise.all([
+  const [restriction, u, unreadMsgs] = await Promise.all([
     getRestriction(session.user.id),
     db.user.findUnique({
       where: { id: session.user.id },
@@ -44,6 +44,17 @@ export default async function AppLayout({
         theme: true,
       },
     }),
+    db.message.count({
+      where: {
+        senderId: { not: session.user.id },
+        readAt: null,
+        conversation: {
+          OR: [{ userAId: session.user.id }, { userBId: session.user.id }],
+          deletedByUsersAt: null,
+          hiddenFromUsersAt: null,
+        },
+      },
+    }),
   ]);
   const walletCode = u?.walletCode ?? (await ensureWalletCode(session.user.id));
 
@@ -52,6 +63,7 @@ export default async function AppLayout({
       <AuroraBackground compact />
 
       <AppSidebar
+        unread={unreadMsgs}
         user={{
           name: u?.firstName || u?.name || null,
           login: u?.login ?? null,
@@ -61,7 +73,7 @@ export default async function AppLayout({
           walletCode,
         }}
       />
-      <AppHeader image={session.user.image ?? null} />
+      <AppHeader image={session.user.image ?? null} unread={unreadMsgs} />
       <PresencePing />
       <NavHistoryTracker />
       <RevealOnScroll />

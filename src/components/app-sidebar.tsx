@@ -19,9 +19,18 @@ export interface SidebarUser {
 }
 
 /** Kompyuterda chap tomonda turadigan doimiy panel (headerni almashtiradi). */
-export function AppSidebar({ user }: { user: SidebarUser }) {
+export function AppSidebar({
+  user,
+  unread = 0,
+}: {
+  user: SidebarUser;
+  unread?: number;
+}) {
   const pathname = usePathname();
   const { t } = useLocale();
+  const nav = APP_NAV.map((l) =>
+    l.href === "/messages" ? { ...l, badge: unread } : l,
+  );
   const displayName =
     user.name || (user.login ? `@${user.login}` : "Foydalanuvchi");
   const roleLabel =
@@ -85,7 +94,7 @@ export function AppSidebar({ user }: { user: SidebarUser }) {
         </div>
 
         <nav className="flex flex-col gap-0.5">
-          {APP_NAV.map((l) => {
+          {nav.map((l) => {
             const active =
               pathname === l.href || pathname.startsWith(l.href + "/");
             return (
@@ -99,7 +108,12 @@ export function AppSidebar({ user }: { user: SidebarUser }) {
                 }`}
               >
                 <span className="text-base">{l.icon}</span>
-                {l.tkey ? t(l.tkey) : l.label}
+                <span className="flex-1">{l.tkey ? t(l.tkey) : l.label}</span>
+                {!!l.badge && l.badge > 0 && (
+                  <span className="rounded-full bg-indigo-500 px-1.5 text-xs font-semibold text-white">
+                    {l.badge > 99 ? "99+" : l.badge}
+                  </span>
+                )}
               </Link>
             );
           })}
