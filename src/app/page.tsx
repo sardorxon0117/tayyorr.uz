@@ -3,6 +3,7 @@ import Link from "next/link";
 import { auth } from "@/auth";
 import { ForceDark } from "@/components/force-dark";
 import { Logo } from "@/components/logo";
+import { ScrollHeader } from "@/components/scroll-header";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/" },
@@ -56,8 +57,7 @@ export default async function Home() {
       </div>
 
       {/* ---------- nav (fixed) ---------- */}
-      <header className="fixed inset-x-0 top-0 z-50 px-4 sm:px-6">
-        <nav className="mx-auto mt-3 flex max-w-6xl items-center justify-between rounded-2xl glass px-5 py-3 shadow-lg shadow-black/20">
+      <ScrollHeader>
           <Logo className="h-6" />
           <div className="hidden items-center gap-7 text-sm text-zinc-400 sm:flex">
             <Link href="/xizmatlar" className="transition hover:text-white">
@@ -98,8 +98,7 @@ export default async function Home() {
               </>
             )}
           </div>
-        </nav>
-      </header>
+      </ScrollHeader>
 
       {/* ---------- hero ---------- */}
       <section className="relative z-10 mx-auto max-w-4xl px-6 pt-32 pb-20 text-center sm:pt-40">
