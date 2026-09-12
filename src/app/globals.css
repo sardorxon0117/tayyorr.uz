@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
-/* sarlavhalar uchun asosiy (display) shrift — Baloo 2 (next/font orqali yuklanadi) */
+/* sarlavhalar uchun asosiy (display) shrift — logotipdagi uchli/texnik uslub (next/font orqali) */
 @theme inline {
-  --font-display: var(--font-baloo), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-heading), ui-sans-serif, system-ui, sans-serif;
 }
 
 :root {

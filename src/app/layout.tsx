@@ -1,15 +1,15 @@
 import type { Metadata, Viewport } from "next";
 import { cookies } from "next/headers";
-import { Baloo_2 } from "next/font/google";
+import { Orbitron } from "next/font/google";
 
 import "./globals.css";
 import { Providers } from "@/components/providers";
 
-// sarlavhalar uchun asosiy (display) shrift — Baloo 2, dumaloq va qalin
-const baloo = Baloo_2({
+// sarlavhalar uchun asosiy (display) shrift — logotipdagi kabi uchli/texnik uslub
+const headingFont = Orbitron({
   subsets: ["latin"],
-  weight: ["600", "700", "800"],
-  variable: "--font-baloo",
+  weight: ["600", "700", "800", "900"],
+  variable: "--font-heading",
   display: "swap",
 });
 
@@ -106,7 +106,7 @@ export default async function RootLayout({
   return (
     <html
       lang="uz"
-      className={[light ? "light" : "", baloo.variable].filter(Boolean).join(" ")}
+      className={[light ? "light" : "", headingFont.variable].filter(Boolean).join(" ")}
     >
       <head>
         <script
