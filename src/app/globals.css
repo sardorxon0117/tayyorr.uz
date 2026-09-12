@@ -412,6 +412,31 @@ html.light .lq-glass-strong {
   }
 }
 
+/* hero maketidagi doimiy sirpanuvchi yorug'lik (HeroMockup) */
+@keyframes hero-shimmer-sweep {
+  0% { transform: translateX(-130%) rotate(20deg); }
+  100% { transform: translateX(230%) rotate(20deg); }
+}
+.hero-shimmer {
+  position: absolute;
+  inset: -20% -50%;
+  width: 40%;
+  background: linear-gradient(
+    100deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.14) 50%,
+    transparent 70%
+  );
+  animation: hero-shimmer-sweep 3.2s ease-in-out infinite;
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-shimmer {
+    animation: none;
+    display: none;
+  }
+}
+
 /* ---- nav menu ---- */
 @keyframes menu-in {
   from { opacity: 0; filter: blur(6px); transform: translateY(-10px) scale(0.94); }

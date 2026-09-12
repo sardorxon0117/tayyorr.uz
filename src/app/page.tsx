@@ -5,6 +5,7 @@ import { ForceDark } from "@/components/force-dark";
 import { Logo } from "@/components/logo";
 import { ScrollHeader } from "@/components/scroll-header";
 import { RevealOnScroll } from "@/components/reveal-on-scroll";
+import { HeroMockup } from "@/components/hero-mockup";
 import { TelegramIcon, InstagramIcon } from "@/components/icons";
 import { SERVICES } from "@/lib/services";
 
@@ -155,44 +156,8 @@ export default async function Home() {
           </div>
 
           {/* vizual: prezentatsiya + hujjat maketi — birinchi qarashda "bu nima uchun sayt" ayon bo'lsin */}
-          <div
-            className="animate-rise relative mx-auto h-72 w-full max-w-sm sm:h-80 lg:mx-0 lg:max-w-none"
-            style={{ animationDelay: "100ms" }}
-          >
-            {/* orqada: referat / kurs ishi hujjati */}
-            <div className="lq-glass absolute left-0 top-10 w-60 -rotate-6 rounded-2xl p-5 sm:w-64">
-              <div className="h-2 w-14 rounded-full bg-white/25" />
-              <div className="mt-4 space-y-2">
-                <div className="h-1.5 w-full rounded-full bg-white/10" />
-                <div className="h-1.5 w-5/6 rounded-full bg-white/10" />
-                <div className="h-1.5 w-full rounded-full bg-white/10" />
-                <div className="h-1.5 w-2/3 rounded-full bg-white/10" />
-              </div>
-              <span className="mt-5 inline-block rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-medium text-zinc-300">
-                Referat / Kurs ishi
-              </span>
-            </div>
-
-            {/* oldda: prezentatsiya slaydi */}
-            <div className="lq-glass-strong absolute right-0 top-0 w-60 rotate-3 rounded-2xl p-5 shadow-2xl shadow-black/40 sm:w-64">
-              <div className="flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-red-400/70" />
-                <span className="h-2 w-2 rounded-full bg-amber-400/70" />
-                <span className="h-2 w-2 rounded-full bg-emerald-400/70" />
-              </div>
-              <div className="mt-4 h-2.5 w-2/3 rounded-full bg-white/30" />
-              <div className="mt-2 h-1.5 w-1/2 rounded-full bg-white/10" />
-              <div className="mt-5 flex items-end gap-2">
-                <div className="h-8 w-5 rounded-t bg-indigo-400/50" />
-                <div className="h-12 w-5 rounded-t bg-indigo-400/70" />
-                <div className="h-6 w-5 rounded-t bg-indigo-400/40" />
-                <div className="h-16 w-5 rounded-t bg-indigo-400" />
-                <div className="h-10 w-5 rounded-t bg-indigo-400/60" />
-              </div>
-              <span className="mt-5 inline-block rounded-full bg-indigo-500/20 px-2.5 py-1 text-[11px] font-medium text-indigo-200">
-                Prezentatsiya
-              </span>
-            </div>
+          <div className="animate-rise" style={{ animationDelay: "100ms" }}>
+            <HeroMockup />
           </div>
         </div>
       </section>
