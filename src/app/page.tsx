@@ -19,12 +19,6 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
 };
 
-const STATS: [string, string][] = [
-  ["2", "rol: buyurtmachi va tayyorlovchi"],
-  ["10 daq", "ichida birinchi taklif"],
-  ["100%", "xavfsiz fayl almashinuvi"],
-];
-
 export default async function Home() {
   const session = await auth();
   const loggedIn = !!session?.user;
@@ -157,17 +151,6 @@ export default async function Home() {
               </a>
             </div>
 
-            <div
-              className="lq-glass animate-rise mx-auto mt-14 flex max-w-md flex-wrap items-stretch justify-center divide-x divide-white/10 rounded-2xl px-2 py-5 lg:mx-0 lg:justify-start"
-              style={{ animationDelay: "200ms" }}
-            >
-              {STATS.map(([n, l]) => (
-                <div key={l} className="min-w-[7rem] flex-1 px-4 text-center lg:text-left">
-                  <div className="text-2xl font-semibold text-white">{n}</div>
-                  <div className="mt-1 text-xs leading-relaxed text-zinc-500">{l}</div>
-                </div>
-              ))}
-            </div>
           </div>
 
           {/* vizual: prezentatsiya + hujjat maketi — birinchi qarashda "bu nima uchun sayt" ayon bo'lsin */}

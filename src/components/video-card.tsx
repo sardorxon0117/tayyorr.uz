@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 type VideoItem = { id: string; title: string; videoUrl: string };
 type Rect = { top: number; left: number; width: number; height: number };
@@ -44,15 +45,17 @@ export function VideoCard({
   function targetRect(r: number): Rect {
     const vw = window.innerWidth;
     const vh = window.innerHeight;
+    const safeTop = 96; // suzuvchi header bilan ustma-ust tushmasin
     const maxW = Math.min(vw * 0.92, 900);
-    const maxH = vh * 0.85;
+    const maxH = Math.min(vh * 0.85, vh - safeTop - 24);
     let width = maxW;
     let height = width / r;
     if (height > maxH) {
       height = maxH;
       width = height * r;
     }
-    return { width, height, left: (vw - width) / 2, top: (vh - height) / 2 };
+    const top = Math.max(safeTop, (vh - height) / 2);
+    return { width, height, left: (vw - width) / 2, top };
   }
 
   function play() {
@@ -125,12 +128,13 @@ export function VideoCard({
         </button>
       </div>
 
-      {open && (
-        <div
-          className="fixed inset-0 z-[60] bg-black/85 backdrop-blur-sm transition-opacity duration-500"
-          style={{ opacity: grown ? 1 : 0 }}
-          onClick={close}
-        >
+      {open &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[60] bg-black/85 backdrop-blur-sm transition-opacity duration-500"
+            style={{ opacity: grown ? 1 : 0 }}
+            onClick={close}
+          >
           {rect && (
             <div
               className="fixed overflow-hidden rounded-2xl bg-black shadow-2xl shadow-black/60 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
@@ -174,8 +178,9 @@ export function VideoCard({
               </button>
             </div>
           )}
-        </div>
-      )}
+          </div>,
+          document.body,
+        )}
     </>
   );
 }
