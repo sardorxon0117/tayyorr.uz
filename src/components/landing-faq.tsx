@@ -1,3 +1,5 @@
+import { FaqRow } from "@/components/faq-row";
+
 type FaqItem = { id: string; question: string; answer: string };
 
 export function LandingFaq({ faqs }: { faqs: FaqItem[] }) {
@@ -16,15 +18,7 @@ export function LandingFaq({ faqs }: { faqs: FaqItem[] }) {
 
       <div className="lq-glass blur-in mt-12 divide-y divide-white/10 rounded-2xl px-6">
         {faqs.map((f) => (
-          <details key={f.id} className="group py-4">
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-white marker:content-none">
-              {f.question}
-              <span className="shrink-0 text-lg leading-none text-indigo-400 transition-transform group-open:rotate-45">
-                +
-              </span>
-            </summary>
-            <p className="mt-2 text-sm leading-relaxed text-zinc-400">{f.answer}</p>
-          </details>
+          <FaqRow key={f.id} question={f.question} answer={f.answer} />
         ))}
       </div>
 

@@ -1,3 +1,5 @@
+import { VideoCard } from "@/components/video-card";
+
 type VideoItem = { id: string; title: string; videoUrl: string };
 
 /**
@@ -31,23 +33,7 @@ export function LandingVideos({ videos }: { videos: VideoItem[] }) {
 
       <div className="mt-14 grid grid-cols-1 gap-4 sm:grid-cols-4 sm:auto-rows-[10rem] lg:auto-rows-[11rem]">
         {videos.slice(0, 4).map((v, i) => (
-          <div
-            key={v.id}
-            className={`lq-glass blur-in group relative aspect-video overflow-hidden rounded-2xl sm:aspect-auto ${BENTO_SPAN[i] ?? ""}`}
-          >
-            <video
-              src={v.videoUrl}
-              className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
-              autoPlay
-              muted
-              loop
-              playsInline
-              preload="metadata"
-            />
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent p-4 pt-12">
-              <p className="text-sm font-medium text-white">{v.title}</p>
-            </div>
-          </div>
+          <VideoCard key={v.id} video={v} spanClassName={BENTO_SPAN[i] ?? ""} />
         ))}
       </div>
     </section>
