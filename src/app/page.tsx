@@ -32,7 +32,6 @@ export default async function Home() {
 
       {/* ---------- background ---------- */}
       <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute inset-0 bg-grid" />
         <div
           className="blob animate-float-a"
           style={{
@@ -103,60 +102,98 @@ export default async function Home() {
       </ScrollHeader>
 
       {/* ---------- hero ---------- */}
-      <section className="relative z-10 mx-auto max-w-3xl px-6 pt-32 pb-20 text-center sm:pt-40">
-        <div className="animate-rise">
-          <span className="lq-glass inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs text-zinc-300">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-            O'zbekcha ta'lim platformasi
-          </span>
-        </div>
+      <section className="relative z-10 mx-auto max-w-6xl px-6 pt-32 pb-20 sm:pt-40">
+        <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-8">
+          {/* matn */}
+          <div className="text-center lg:text-left">
+            <h1
+              className="animate-rise text-5xl font-semibold leading-[1.1] tracking-tight sm:text-6xl"
+            >
+              Ilmiy ishlaringiz uchun{" "}
+              <span className="text-indigo-300">doim odam</span> topiladi
+            </h1>
 
-        <h1
-          className="animate-rise mt-7 text-5xl font-semibold leading-[1.1] tracking-tight sm:text-6xl"
-          style={{ animationDelay: "60ms" }}
-        >
-          Ilmiy ishlaringiz uchun{" "}
-          <span className="text-indigo-300">to'g'ri odam</span> topiladi
-        </h1>
+            <p
+              className="animate-rise mx-auto mt-6 max-w-lg text-lg text-zinc-400 lg:mx-0"
+              style={{ animationDelay: "80ms" }}
+            >
+              Prezentatsiya, kurs ishi, referat yoki diplom ishi — buyurtma
+              qoldiring, u barcha tayyorlovchilarga ko'rinadi. Yoki o'zingiz
+              tayyorlab, daromad qiling.
+            </p>
 
-        <p
-          className="animate-rise mx-auto mt-6 max-w-lg text-lg text-zinc-400"
-          style={{ animationDelay: "120ms" }}
-        >
-          Prezentatsiya, kurs ishi, referat yoki diplom ishi — buyurtma qoldiring,
-          u barcha tayyorlovchilarga ko'rinadi. Yoki o'zingiz tayyorlab, daromad
-          qiling.
-        </p>
-
-        <div
-          className="animate-rise mt-9 flex flex-wrap items-center justify-center gap-3"
-          style={{ animationDelay: "180ms" }}
-        >
-          <Link
-            href={loggedIn ? "/dashboard" : "/register"}
-            className="group inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-semibold text-black transition hover:bg-zinc-200"
-          >
-            {loggedIn ? "Asosiy menyuga o'tish" : "Bepul boshlash"}
-            <span className="transition-transform group-hover:translate-x-0.5">→</span>
-          </Link>
-          <a
-            href="#qanday"
-            className="lq-glass rounded-xl px-6 py-3 text-sm font-medium text-zinc-200"
-          >
-            Qanday ishlaydi?
-          </a>
-        </div>
-
-        <div
-          className="lq-glass animate-rise mx-auto mt-16 flex max-w-md flex-wrap items-stretch justify-center divide-x divide-white/10 rounded-2xl px-2 py-5"
-          style={{ animationDelay: "240ms" }}
-        >
-          {STATS.map(([n, l]) => (
-            <div key={l} className="min-w-[7rem] flex-1 px-4 text-center">
-              <div className="text-2xl font-semibold text-white">{n}</div>
-              <div className="mt-1 text-xs leading-relaxed text-zinc-500">{l}</div>
+            <div
+              className="animate-rise mt-9 flex flex-wrap items-center justify-center gap-3 lg:justify-start"
+              style={{ animationDelay: "140ms" }}
+            >
+              <Link
+                href={loggedIn ? "/dashboard" : "/register"}
+                className="group inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-semibold text-black transition hover:bg-zinc-200"
+              >
+                {loggedIn ? "Asosiy menyuga o'tish" : "Bepul boshlash"}
+                <span className="transition-transform group-hover:translate-x-0.5">→</span>
+              </Link>
+              <a
+                href="#qanday"
+                className="lq-glass rounded-xl px-6 py-3 text-sm font-medium text-zinc-200"
+              >
+                Qanday ishlaydi?
+              </a>
             </div>
-          ))}
+
+            <div
+              className="lq-glass animate-rise mx-auto mt-14 flex max-w-md flex-wrap items-stretch justify-center divide-x divide-white/10 rounded-2xl px-2 py-5 lg:mx-0 lg:justify-start"
+              style={{ animationDelay: "200ms" }}
+            >
+              {STATS.map(([n, l]) => (
+                <div key={l} className="min-w-[7rem] flex-1 px-4 text-center lg:text-left">
+                  <div className="text-2xl font-semibold text-white">{n}</div>
+                  <div className="mt-1 text-xs leading-relaxed text-zinc-500">{l}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* vizual: prezentatsiya + hujjat maketi — birinchi qarashda "bu nima uchun sayt" ayon bo'lsin */}
+          <div
+            className="animate-rise relative mx-auto h-72 w-full max-w-sm sm:h-80 lg:mx-0 lg:max-w-none"
+            style={{ animationDelay: "100ms" }}
+          >
+            {/* orqada: referat / kurs ishi hujjati */}
+            <div className="lq-glass absolute left-0 top-10 w-60 -rotate-6 rounded-2xl p-5 sm:w-64">
+              <div className="h-2 w-14 rounded-full bg-white/25" />
+              <div className="mt-4 space-y-2">
+                <div className="h-1.5 w-full rounded-full bg-white/10" />
+                <div className="h-1.5 w-5/6 rounded-full bg-white/10" />
+                <div className="h-1.5 w-full rounded-full bg-white/10" />
+                <div className="h-1.5 w-2/3 rounded-full bg-white/10" />
+              </div>
+              <span className="mt-5 inline-block rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-medium text-zinc-300">
+                Referat / Kurs ishi
+              </span>
+            </div>
+
+            {/* oldda: prezentatsiya slaydi */}
+            <div className="lq-glass-strong absolute right-0 top-0 w-60 rotate-3 rounded-2xl p-5 shadow-2xl shadow-black/40 sm:w-64">
+              <div className="flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-red-400/70" />
+                <span className="h-2 w-2 rounded-full bg-amber-400/70" />
+                <span className="h-2 w-2 rounded-full bg-emerald-400/70" />
+              </div>
+              <div className="mt-4 h-2.5 w-2/3 rounded-full bg-white/30" />
+              <div className="mt-2 h-1.5 w-1/2 rounded-full bg-white/10" />
+              <div className="mt-5 flex items-end gap-2">
+                <div className="h-8 w-5 rounded-t bg-indigo-400/50" />
+                <div className="h-12 w-5 rounded-t bg-indigo-400/70" />
+                <div className="h-6 w-5 rounded-t bg-indigo-400/40" />
+                <div className="h-16 w-5 rounded-t bg-indigo-400" />
+                <div className="h-10 w-5 rounded-t bg-indigo-400/60" />
+              </div>
+              <span className="mt-5 inline-block rounded-full bg-indigo-500/20 px-2.5 py-1 text-[11px] font-medium text-indigo-200">
+                Prezentatsiya
+              </span>
+            </div>
+          </div>
         </div>
       </section>
 
