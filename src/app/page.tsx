@@ -5,6 +5,8 @@ import { ForceDark } from "@/components/force-dark";
 import { Logo } from "@/components/logo";
 import { ScrollHeader } from "@/components/scroll-header";
 import { RevealOnScroll } from "@/components/reveal-on-scroll";
+import { SpatialCard } from "@/components/spatial-card";
+import { ParallaxLayer } from "@/components/parallax-layer";
 import { TelegramIcon, InstagramIcon } from "@/components/icons";
 import { SERVICES } from "@/lib/services";
 
@@ -40,48 +42,52 @@ export default async function Home() {
     <main className="relative min-h-screen overflow-hidden bg-[#07070c] text-zinc-100 antialiased">
       <ForceDark />
       <RevealOnScroll />
-      {/* ---------- background ---------- */}
+      {/* ---------- background (parallax chuqurlik) ---------- */}
       <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute inset-0 bg-grid" />
-        <div
-          className="blob animate-float-a"
-          style={{
-            top: "-8rem",
-            left: "-6rem",
-            width: "34rem",
-            height: "34rem",
-            background:
-              "radial-gradient(circle at 30% 30%, #6366f1, transparent 70%)",
-          }}
-        />
-        <div
-          className="blob animate-float-b"
-          style={{
-            top: "4rem",
-            right: "-10rem",
-            width: "38rem",
-            height: "38rem",
-            background:
-              "radial-gradient(circle at 60% 40%, #d946ef, transparent 70%)",
-          }}
-        />
-        <div
-          className="blob animate-float-c"
-          style={{
-            bottom: "-14rem",
-            left: "20%",
-            width: "40rem",
-            height: "40rem",
-            background:
-              "radial-gradient(circle at 50% 50%, #06b6d4, transparent 70%)",
-            opacity: 0.4,
-          }}
-        />
+        <ParallaxLayer speed={0.04} className="absolute inset-0">
+          <div className="absolute inset-0 bg-grid" />
+        </ParallaxLayer>
+        <ParallaxLayer speed={0.1} className="absolute inset-0">
+          <div
+            className="blob animate-float-a"
+            style={{
+              top: "-8rem",
+              left: "-6rem",
+              width: "34rem",
+              height: "34rem",
+              background:
+                "radial-gradient(circle at 30% 30%, #6366f1, transparent 70%)",
+            }}
+          />
+        </ParallaxLayer>
+        <ParallaxLayer speed={-0.07} className="absolute inset-0">
+          <div
+            className="blob animate-float-b"
+            style={{
+              top: "4rem",
+              right: "-10rem",
+              width: "38rem",
+              height: "38rem",
+              background:
+                "radial-gradient(circle at 60% 40%, #d946ef, transparent 70%)",
+            }}
+          />
+        </ParallaxLayer>
+        <ParallaxLayer speed={0.15} className="absolute inset-0">
+          <div
+            className="blob animate-float-c"
+            style={{
+              bottom: "-14rem",
+              left: "20%",
+              width: "40rem",
+              height: "40rem",
+              background:
+                "radial-gradient(circle at 50% 50%, #06b6d4, transparent 70%)",
+              opacity: 0.4,
+            }}
+          />
+        </ParallaxLayer>
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#07070c]" />
-        <div
-          className="chrome-orb animate-float-b"
-          style={{ top: "5.5rem", right: "8%", width: "9rem", height: "9rem" }}
-        />
       </div>
 
       {/* ---------- nav (fixed) ---------- */}
@@ -130,12 +136,11 @@ export default async function Home() {
 
       {/* ---------- hero ---------- */}
       <section className="relative z-10 mx-auto max-w-4xl px-6 pt-32 pb-20 text-center sm:pt-40">
-        <div className="relative inline-block animate-rise">
+        <div className="animate-rise">
           <span className="lq-glass inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs text-zinc-300">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
             O'zbekcha ta'lim platformasi
           </span>
-          <SparkleIcon className="sparkle absolute -right-4 -top-3.5 h-4 w-4 text-fuchsia-300" />
         </div>
 
         <h1
@@ -144,11 +149,7 @@ export default async function Home() {
         >
           Ilmiy ishlaringiz uchun
           <br />
-          <span className="relative inline-block">
-            <span className="chrome-text">to'g'ri odam</span>
-            <SparkleIcon className="sparkle absolute -right-6 -top-2 h-5 w-5 text-cyan-300 sm:-right-8 sm:h-6 sm:w-6" />
-          </span>{" "}
-          topiladi
+          <span className="text-sheen">to'g'ri odam</span> topiladi
         </h1>
 
         <p
@@ -166,7 +167,7 @@ export default async function Home() {
         >
           <Link
             href={loggedIn ? "/dashboard" : "/register"}
-            className="y2k-btn group inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-semibold text-black transition hover:bg-zinc-100"
+            className="group inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-semibold text-black shadow-lg shadow-black/20 transition hover:-translate-y-0.5 hover:bg-zinc-200 hover:shadow-xl hover:shadow-black/30"
           >
             {loggedIn ? "Asosiy menyuga o'tish" : "Bepul boshlash"}
             <span className="transition-transform group-hover:translate-x-0.5">
@@ -247,11 +248,13 @@ export default async function Home() {
               d: "Buyurtmachi bitta taklifni tanlaydi, fayllar xavfsiz almashiladi, ish yakunlanadi.",
             },
           ].map((s) => (
-            <div key={s.n} className="lq-glass blur-in relative rounded-2xl p-6">
-              <div className="relative text-sm font-mono text-indigo-400">{s.n}</div>
-              <h3 className="relative mt-3 text-lg font-semibold text-white">{s.t}</h3>
-              <p className="relative mt-2 text-sm leading-relaxed text-zinc-400">{s.d}</p>
-            </div>
+            <SpatialCard key={s.n} className="blur-in">
+              <div className="lq-glass relative rounded-2xl p-6">
+                <div className="relative text-sm font-mono text-indigo-400">{s.n}</div>
+                <h3 className="relative mt-3 text-lg font-semibold text-white">{s.t}</h3>
+                <p className="relative mt-2 text-sm leading-relaxed text-zinc-400">{s.d}</p>
+              </div>
+            </SpatialCard>
           ))}
         </div>
       </section>
@@ -264,33 +267,35 @@ export default async function Home() {
           subtitle="Eng ko'p so'raladigan yo'nalishlar — ro'yxat kengayib boradi."
         />
         <div className="mt-12 grid grid-cols-2 gap-4 lg:grid-cols-4">
-          <div className="lq-glass blur-in relative col-span-2 flex flex-col justify-between rounded-3xl p-7 lg:row-span-2">
-            <div className="relative">
-              <h3 className="text-xl font-semibold text-white">
-                Xizmatlar ro'yxati
-              </h3>
-              <p className="mt-2 max-w-sm text-sm leading-relaxed text-zinc-400">
-                Har bir yo'nalish uchun narx qanday belgilanishi, muddat va
-                ko'p so'raladigan savollar bilan alohida sahifa bor.
-              </p>
-              <div className="mt-6 flex flex-wrap gap-2">
-                {WORK_TYPES.map((t) => (
-                  <span
-                    key={t}
-                    className="rounded-full border border-white/10 bg-white/5 px-3.5 py-1.5 text-xs text-zinc-300 transition hover:border-white/20 hover:bg-white/10 hover:text-white"
-                  >
-                    {t}
-                  </span>
-                ))}
+          <SpatialCard className="blur-in col-span-2 lg:row-span-2">
+            <div className="lq-glass relative flex h-full flex-col justify-between rounded-3xl p-7">
+              <div className="relative">
+                <h3 className="text-xl font-semibold text-white">
+                  Xizmatlar ro'yxati
+                </h3>
+                <p className="mt-2 max-w-sm text-sm leading-relaxed text-zinc-400">
+                  Har bir yo'nalish uchun narx qanday belgilanishi, muddat va
+                  ko'p so'raladigan savollar bilan alohida sahifa bor.
+                </p>
+                <div className="mt-6 flex flex-wrap gap-2">
+                  {WORK_TYPES.map((t) => (
+                    <span
+                      key={t}
+                      className="rounded-full border border-white/10 bg-white/5 px-3.5 py-1.5 text-xs text-zinc-300 transition hover:border-white/20 hover:bg-white/10 hover:text-white"
+                    >
+                      {t}
+                    </span>
+                  ))}
+                </div>
               </div>
+              <Link
+                href="/xizmatlar"
+                className="relative mt-8 inline-flex w-fit items-center gap-1.5 text-sm font-medium text-indigo-300 transition hover:text-indigo-200"
+              >
+                Barcha xizmatlarni ko'rish →
+              </Link>
             </div>
-            <Link
-              href="/xizmatlar"
-              className="relative mt-8 inline-flex w-fit items-center gap-1.5 text-sm font-medium text-indigo-300 transition hover:text-indigo-200"
-            >
-              Barcha xizmatlarni ko'rish →
-            </Link>
-          </div>
+          </SpatialCard>
 
           <BentoStat n="2" label="rol: buyurtmachi va tayyorlovchi" />
           <BentoStat n="10 daq" label="ichida birinchi taklif" />
@@ -353,41 +358,36 @@ export default async function Home() {
 
       {/* ---------- final CTA ---------- */}
       <section className="relative z-10 mx-auto max-w-5xl px-6 py-24">
-        <div className="lq-glass-strong blur-in relative overflow-hidden rounded-3xl p-10 text-center sm:p-16">
-          <div
-            aria-hidden
-            className="blob"
-            style={{
-              top: "-6rem",
-              left: "50%",
-              width: "28rem",
-              height: "28rem",
-              transform: "translateX(-50%)",
-              background:
-                "radial-gradient(circle, #8b5cf6, transparent 70%)",
-              opacity: 0.4,
-            }}
-          />
-          <div
-            aria-hidden
-            className="chrome-orb"
-            style={{ top: "-2.5rem", right: "6%", width: "6rem", height: "6rem" }}
-          />
-          <SparkleIcon className="sparkle absolute left-[18%] top-8 h-4 w-4 text-cyan-300" />
-          <SparkleIcon className="sparkle absolute right-[20%] bottom-10 h-5 w-5 text-fuchsia-300" style={{ animationDelay: "1.1s" }} />
-          <h2 className="relative text-3xl font-semibold tracking-tight sm:text-4xl">
-            Bugun birinchi buyurtmangizni qoldiring
-          </h2>
-          <p className="relative mx-auto mt-4 max-w-md text-zinc-400">
-            Ro'yxatdan o'tish bir daqiqa. To'lov faqat kelishilgan ish uchun.
-          </p>
-          <Link
-            href={loggedIn ? "/dashboard" : "/register"}
-            className="y2k-btn relative mt-8 inline-flex items-center gap-2 rounded-xl bg-white px-7 py-3 text-sm font-semibold text-black transition hover:bg-zinc-100"
-          >
-            {loggedIn ? "Asosiy menyuga o'tish" : "Hoziroq boshlash"} →
-          </Link>
-        </div>
+        <SpatialCard className="blur-in block" max={4}>
+          <div className="lq-glass-strong relative overflow-hidden rounded-3xl p-10 text-center sm:p-16">
+            <div
+              aria-hidden
+              className="blob"
+              style={{
+                top: "-6rem",
+                left: "50%",
+                width: "28rem",
+                height: "28rem",
+                transform: "translateX(-50%)",
+                background:
+                  "radial-gradient(circle, #8b5cf6, transparent 70%)",
+                opacity: 0.4,
+              }}
+            />
+            <h2 className="relative text-3xl font-semibold tracking-tight sm:text-4xl">
+              Bugun birinchi buyurtmangizni qoldiring
+            </h2>
+            <p className="relative mx-auto mt-4 max-w-md text-zinc-400">
+              Ro'yxatdan o'tish bir daqiqa. To'lov faqat kelishilgan ish uchun.
+            </p>
+            <Link
+              href={loggedIn ? "/dashboard" : "/register"}
+              className="relative mt-8 inline-flex items-center gap-2 rounded-xl bg-white px-7 py-3 text-sm font-semibold text-black shadow-lg shadow-black/20 transition hover:-translate-y-0.5 hover:bg-zinc-200 hover:shadow-xl hover:shadow-black/30"
+            >
+              {loggedIn ? "Asosiy menyuga o'tish" : "Hoziroq boshlash"} →
+            </Link>
+          </div>
+        </SpatialCard>
       </section>
 
       {/* ---------- footer ---------- */}
@@ -580,33 +580,35 @@ function RolePanel({
       ? "from-indigo-500/25"
       : "from-fuchsia-500/25";
   return (
-    <div className="lq-glass blur-in group relative rounded-3xl p-8">
-      <div
-        className={`pointer-events-none absolute -right-16 -top-16 h-52 w-52 rounded-full bg-gradient-to-br ${ring} to-transparent blur-2xl`}
-      />
-      <h3 className="relative text-xl font-semibold text-white">{title}</h3>
-      <p className="relative mt-1 text-sm text-zinc-400">{lead}</p>
-      <ul className="relative mt-6 space-y-3">
-        {points.map((p) => (
-          <li key={p} className="flex gap-3 text-sm text-zinc-300">
-            <span
-              className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${
-                tone === "indigo" ? "bg-indigo-500/20 text-indigo-300" : "bg-fuchsia-500/20 text-fuchsia-300"
-              }`}
-            >
-              ✓
-            </span>
-            {p}
-          </li>
-        ))}
-      </ul>
-      <Link
-        href={cta.href}
-        className="relative mt-8 inline-flex rounded-xl bg-white/10 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-white/20"
-      >
-        {cta.label}
-      </Link>
-    </div>
+    <SpatialCard className="blur-in">
+      <div className="lq-glass group relative rounded-3xl p-8">
+        <div
+          className={`pointer-events-none absolute -right-16 -top-16 h-52 w-52 rounded-full bg-gradient-to-br ${ring} to-transparent blur-2xl`}
+        />
+        <h3 className="relative text-xl font-semibold text-white">{title}</h3>
+        <p className="relative mt-1 text-sm text-zinc-400">{lead}</p>
+        <ul className="relative mt-6 space-y-3">
+          {points.map((p) => (
+            <li key={p} className="flex gap-3 text-sm text-zinc-300">
+              <span
+                className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${
+                  tone === "indigo" ? "bg-indigo-500/20 text-indigo-300" : "bg-fuchsia-500/20 text-fuchsia-300"
+                }`}
+              >
+                ✓
+              </span>
+              {p}
+            </li>
+          ))}
+        </ul>
+        <Link
+          href={cta.href}
+          className="relative mt-8 inline-flex rounded-xl bg-white/10 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-white/20"
+        >
+          {cta.label}
+        </Link>
+      </div>
+    </SpatialCard>
   );
 }
 
@@ -622,13 +624,15 @@ function Feature({
   span?: string;
 }) {
   return (
-    <div className={`lq-glass blur-in relative col-span-1 rounded-2xl p-6 ${span ?? ""}`}>
-      <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 text-indigo-300">
-        {icon}
+    <SpatialCard className={`blur-in col-span-1 ${span ?? ""}`}>
+      <div className="lq-glass relative rounded-2xl p-6">
+        <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 text-indigo-300">
+          {icon}
+        </div>
+        <h3 className="relative mt-4 font-semibold text-white">{title}</h3>
+        <p className="relative mt-2 text-sm leading-relaxed text-zinc-400">{text}</p>
       </div>
-      <h3 className="relative mt-4 font-semibold text-white">{title}</h3>
-      <p className="relative mt-2 text-sm leading-relaxed text-zinc-400">{text}</p>
-    </div>
+    </SpatialCard>
   );
 }
 
@@ -669,25 +673,6 @@ function IconLock() {
     <svg viewBox="0 0 24 24" className="h-5 w-5" {...sw}>
       <rect x="5" y="11" width="14" height="9" rx="2" />
       <path d="M8 11V7a4 4 0 0 1 8 0v4" />
-    </svg>
-  );
-}
-function SparkleIcon({
-  className,
-  style,
-}: {
-  className?: string;
-  style?: React.CSSProperties;
-}) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      className={className}
-      style={style}
-      aria-hidden
-    >
-      <path d="M12 2c.6 3.6 2.4 5.4 6 6-3.6.6-5.4 2.4-6 6-.6-3.6-2.4-5.4-6-6 3.6-.6 5.4-2.4 6-6z" />
     </svg>
   );
 }

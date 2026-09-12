@@ -369,109 +369,24 @@ select.input option {
   animation: sheen 6s linear infinite;
 }
 
-/* ================= Y2K / xolografik aksentlar (landing) ================= */
-.chrome-text {
-  background: linear-gradient(
-    100deg,
-    #bae6fd 0%,
-    #f0abfc 20%,
-    #fbcfe8 35%,
-    #fef08a 50%,
-    #86efac 65%,
-    #7dd3fc 80%,
-    #bae6fd 100%
-  );
-  background-size: 220% auto;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  animation: sheen 5s linear infinite;
+/* ================= Spatial UI (landing) ================= */
+/* SpatialCard komponenti bilan: panel sichqoncha asosida yengil 3D
+   burchak oladi — xuddi fazoda muallaq turgan shisha taxtachadek. */
+.spatial-tilt {
+  --rx: 0deg;
+  --ry: 0deg;
+  transform: perspective(1000px) rotateX(var(--rx)) rotateY(var(--ry));
+  transform-style: preserve-3d;
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
 }
-
-/* yaltiroq "pufakcha" tugma — ustida yorug'lik chizig'i suzib yuradi */
-.y2k-btn {
-  position: relative;
-  overflow: hidden;
-  isolation: isolate;
-  box-shadow:
-    inset 0 2px 0 rgba(255, 255, 255, 0.95),
-    inset 0 -8px 14px -6px rgba(99, 102, 241, 0.4),
-    0 14px 30px -12px rgba(99, 102, 241, 0.55);
-  transition:
-    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 0.35s ease;
-}
-.y2k-btn::after {
-  content: "";
-  position: absolute;
-  top: -70%;
-  left: -25%;
-  width: 55%;
-  height: 240%;
-  background: rgba(255, 255, 255, 0.65);
-  transform: rotate(18deg);
-  filter: blur(3px);
-  pointer-events: none;
-  transition: left 0.6s ease;
-}
-.y2k-btn:hover::after {
-  left: 110%;
-}
-.y2k-btn:hover {
-  transform: translateY(-2px) scale(1.015);
-  box-shadow:
-    inset 0 2px 0 rgba(255, 255, 255, 1),
-    inset 0 -8px 14px -6px rgba(99, 102, 241, 0.55),
-    0 18px 40px -14px rgba(99, 102, 241, 0.65);
-}
-
-/* xrom shar — 2000-yillar 3D-render dekoratsiyasi */
-.chrome-orb {
-  position: absolute;
-  border-radius: 9999px;
-  pointer-events: none;
-  background:
-    radial-gradient(
-      circle at 30% 24%,
-      rgba(255, 255, 255, 0.95),
-      rgba(255, 255, 255, 0.08) 32%,
-      transparent 46%
-    ),
-    radial-gradient(circle at 72% 78%, rgba(99, 102, 241, 0.55), transparent 60%),
-    conic-gradient(
-      from 200deg,
-      #a5b4fc,
-      #f0abfc,
-      #7dd3fc,
-      #fef08a,
-      #a5b4fc
-    );
-  box-shadow:
-    inset 0 0 40px rgba(0, 0, 0, 0.45),
-    0 30px 80px -20px rgba(99, 102, 241, 0.55);
-  opacity: 0.85;
-}
-
-@keyframes twinkle {
-  0%,
-  100% {
-    opacity: 0.25;
-    transform: scale(0.75) rotate(0deg);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.15) rotate(20deg);
+@media (hover: none) {
+  .spatial-tilt {
+    transform: none !important;
   }
 }
-.sparkle {
-  animation: twinkle 2.6s ease-in-out infinite;
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .y2k-btn,
-  .y2k-btn::after,
-  .sparkle {
-    animation: none;
+  .spatial-tilt {
     transition: none;
   }
 }
