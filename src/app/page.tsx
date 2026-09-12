@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { ForceDark } from "@/components/force-dark";
 import { Logo } from "@/components/logo";
 import { ScrollHeader } from "@/components/scroll-header";
+import { RevealOnScroll } from "@/components/reveal-on-scroll";
 import { TelegramIcon, InstagramIcon } from "@/components/icons";
 import { SERVICES } from "@/lib/services";
 
@@ -14,6 +15,23 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
 };
 
+const STATS: [string, string][] = [
+  ["2", "rol: buyurtmachi va tayyorlovchi"],
+  ["10 daq", "ichida birinchi taklif"],
+  ["100%", "xavfsiz fayl almashinuvi"],
+];
+
+const WORK_TYPES = [
+  "Prezentatsiya",
+  "Kurs ishi",
+  "Referat",
+  "Diplom ishi",
+  "Esse",
+  "Mustaqil ish",
+  "Taqdimot dizayni",
+  "Amaliyot hisoboti",
+];
+
 export default async function Home() {
   const session = await auth();
   const loggedIn = !!session?.user;
@@ -21,6 +39,7 @@ export default async function Home() {
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#07070c] text-zinc-100 antialiased">
       <ForceDark />
+      <RevealOnScroll />
       {/* ---------- background ---------- */}
       <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute inset-0 bg-grid" />
@@ -108,7 +127,7 @@ export default async function Home() {
       {/* ---------- hero ---------- */}
       <section className="relative z-10 mx-auto max-w-4xl px-6 pt-32 pb-20 text-center sm:pt-40">
         <div className="animate-rise">
-          <span className="inline-flex items-center gap-2 rounded-full glass px-3 py-1 text-xs text-zinc-300">
+          <span className="lq-glass inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs text-zinc-300">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
             O'zbekcha ta'lim platformasi
           </span>
@@ -147,27 +166,23 @@ export default async function Home() {
           </Link>
           <a
             href="#qanday"
-            className="rounded-xl glass px-6 py-3 text-sm font-medium text-zinc-200 transition hover:bg-white/10"
+            className="lq-glass rounded-xl px-6 py-3 text-sm font-medium text-zinc-200"
           >
             Qanday ishlaydi?
           </a>
         </div>
 
-        <dl
-          className="animate-rise mx-auto mt-16 grid max-w-lg grid-cols-3 gap-6 text-center"
+        <div
+          className="lq-glass animate-rise mx-auto mt-16 flex max-w-lg flex-wrap items-stretch justify-center divide-x divide-white/10 rounded-2xl px-2 py-5"
           style={{ animationDelay: "240ms" }}
         >
-          {[
-            ["2", "rol: buyurtmachi va tayyorlovchi"],
-            ["10 daq", "ichida birinchi taklif"],
-            ["100%", "xavfsiz fayl almashinuvi"],
-          ].map(([n, l]) => (
-            <div key={l}>
-              <dt className="text-2xl font-semibold text-white">{n}</dt>
-              <dd className="mt-1 text-xs leading-relaxed text-zinc-500">{l}</dd>
+          {STATS.map(([n, l]) => (
+            <div key={l} className="min-w-[7rem] flex-1 px-4 text-center">
+              <div className="text-2xl font-semibold text-white">{n}</div>
+              <div className="mt-1 text-xs leading-relaxed text-zinc-500">{l}</div>
             </div>
           ))}
-        </dl>
+        </div>
       </section>
 
       {/* ---------- dual role ---------- */}
@@ -222,58 +237,82 @@ export default async function Home() {
               t: "Kelishuv va topshirish",
               d: "Buyurtmachi bitta taklifni tanlaydi, fayllar xavfsiz almashiladi, ish yakunlanadi.",
             },
-          ].map((s, i) => (
-            <div
-              key={s.n}
-              className="relative rounded-2xl glass p-6"
-              style={{ animationDelay: `${i * 80}ms` }}
-            >
-              <div className="text-sm font-mono text-indigo-400">{s.n}</div>
-              <h3 className="mt-3 text-lg font-semibold text-white">{s.t}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-zinc-400">{s.d}</p>
+          ].map((s) => (
+            <div key={s.n} className="lq-glass blur-in relative rounded-2xl p-6">
+              <div className="relative text-sm font-mono text-indigo-400">{s.n}</div>
+              <h3 className="relative mt-3 text-lg font-semibold text-white">{s.t}</h3>
+              <p className="relative mt-2 text-sm leading-relaxed text-zinc-400">{s.d}</p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* ---------- work types ---------- */}
+      {/* ---------- work types — bento ---------- */}
       <section id="turlar" className="relative z-10 mx-auto max-w-6xl px-6 py-20">
         <SectionHeading
           kicker="Ish turlari"
           title="Nima buyurtma qilish mumkin"
           subtitle="Eng ko'p so'raladigan yo'nalishlar — ro'yxat kengayib boradi."
         />
-        <div className="mt-12 flex flex-wrap justify-center gap-3">
-          {[
-            "Prezentatsiya",
-            "Kurs ishi",
-            "Referat",
-            "Diplom ishi",
-            "Esse",
-            "Mustaqil ish",
-            "Taqdimot dizayni",
-            "Amaliyot hisoboti",
-            "Slaydlar",
-          ].map((t) => (
-            <span
-              key={t}
-              className="rounded-full glass px-4 py-2 text-sm text-zinc-300 transition hover:bg-white/10 hover:text-white"
+        <div className="mt-12 grid grid-cols-2 gap-4 lg:grid-cols-4">
+          <div className="lq-glass blur-in relative col-span-2 flex flex-col justify-between rounded-3xl p-7 lg:row-span-2">
+            <div className="relative">
+              <h3 className="text-xl font-semibold text-white">
+                Xizmatlar ro'yxati
+              </h3>
+              <p className="mt-2 max-w-sm text-sm leading-relaxed text-zinc-400">
+                Har bir yo'nalish uchun narx qanday belgilanishi, muddat va
+                ko'p so'raladigan savollar bilan alohida sahifa bor.
+              </p>
+              <div className="mt-6 flex flex-wrap gap-2">
+                {WORK_TYPES.map((t) => (
+                  <span
+                    key={t}
+                    className="rounded-full border border-white/10 bg-white/5 px-3.5 py-1.5 text-xs text-zinc-300 transition hover:border-white/20 hover:bg-white/10 hover:text-white"
+                  >
+                    {t}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <Link
+              href="/xizmatlar"
+              className="relative mt-8 inline-flex w-fit items-center gap-1.5 text-sm font-medium text-indigo-300 transition hover:text-indigo-200"
             >
-              {t}
-            </span>
-          ))}
+              Barcha xizmatlarni ko'rish →
+            </Link>
+          </div>
+
+          <BentoStat n="2" label="rol: buyurtmachi va tayyorlovchi" />
+          <BentoStat n="10 daq" label="ichida birinchi taklif" />
+          <BentoStat n="100%" label="xavfsiz fayl almashinuvi" />
+          <div className="lq-glass blur-in relative col-span-1 flex flex-col justify-between rounded-2xl p-5">
+            <TelegramIcon className="relative h-5 w-5 text-indigo-300" />
+            <div className="relative">
+              <div className="text-sm font-medium text-white">Telegram kanal</div>
+              <a
+                href={TELEGRAM_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-1 inline-block text-xs text-zinc-500 transition hover:text-zinc-300"
+              >
+                Yangiliklarga obuna bo'ling →
+              </a>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* ---------- features ---------- */}
+      {/* ---------- features — bento ---------- */}
       <section id="imkoniyat" className="relative z-10 mx-auto max-w-6xl px-6 py-20">
         <SectionHeading
           kicker="Imkoniyatlar"
           title="Nega tayyorr.uz"
           subtitle="Ishni tez, tartibli va xavfsiz qiladigan mayda-chuydalar."
         />
-        <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-14 grid grid-cols-2 gap-4 lg:grid-cols-4">
           <Feature
+            span="col-span-2"
             icon={<IconShield />}
             title="Xavfsiz fayllar"
             text="Tayyor ishlar yopiq saqlanadi, faqat ishtirokchilarga vaqtinchalik havola."
@@ -289,6 +328,13 @@ export default async function Home() {
             text="Parolni unutish muammosi yo'q — Google orqali ishonchli tasdiqlash."
           />
           <Feature
+            span="col-span-2"
+            icon={<IconLock />}
+            title="Eskrou to'lov"
+            text="To'lov ish yakunlanguncha hamyonda bloklanadi — na buyurtmachi, na tayyorlovchi oldindan xavf ostida qolmaydi."
+          />
+          <Feature
+            span="col-span-2"
             icon={<IconChat />}
             title="Takliflar tizimi"
             text="Har bir buyurtmaga narx va izohli takliflar; eng mosini tanlaysiz."
@@ -298,7 +344,7 @@ export default async function Home() {
 
       {/* ---------- final CTA ---------- */}
       <section className="relative z-10 mx-auto max-w-5xl px-6 py-24">
-        <div className="relative overflow-hidden rounded-3xl glass-strong p-10 text-center sm:p-16">
+        <div className="lq-glass-strong blur-in relative overflow-hidden rounded-3xl p-10 text-center sm:p-16">
           <div
             aria-hidden
             className="blob"
@@ -477,7 +523,7 @@ function SectionHeading({
   subtitle: string;
 }) {
   return (
-    <div className="mx-auto max-w-2xl text-center">
+    <div className="blur-in mx-auto max-w-2xl text-center">
       <div className="text-xs font-medium uppercase tracking-[0.2em] text-indigo-400">
         {kicker}
       </div>
@@ -485,6 +531,17 @@ function SectionHeading({
         {title}
       </h2>
       <p className="mt-3 text-zinc-400">{subtitle}</p>
+    </div>
+  );
+}
+
+function BentoStat({ n, label }: { n: string; label: string }) {
+  return (
+    <div className="lq-glass blur-in relative col-span-1 flex flex-col justify-center rounded-2xl p-5 text-center">
+      <div className="relative text-2xl font-semibold text-white">{n}</div>
+      <div className="relative mt-1 text-xs leading-relaxed text-zinc-500">
+        {label}
+      </div>
     </div>
   );
 }
@@ -507,7 +564,7 @@ function RolePanel({
       ? "from-indigo-500/25"
       : "from-fuchsia-500/25";
   return (
-    <div className="group relative overflow-hidden rounded-3xl glass p-8">
+    <div className="lq-glass blur-in group relative rounded-3xl p-8">
       <div
         className={`pointer-events-none absolute -right-16 -top-16 h-52 w-52 rounded-full bg-gradient-to-br ${ring} to-transparent blur-2xl`}
       />
@@ -541,18 +598,20 @@ function Feature({
   icon,
   title,
   text,
+  span,
 }: {
   icon: React.ReactNode;
   title: string;
   text: string;
+  span?: string;
 }) {
   return (
-    <div className="rounded-2xl glass p-6">
-      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 text-indigo-300">
+    <div className={`lq-glass blur-in relative col-span-1 rounded-2xl p-6 ${span ?? ""}`}>
+      <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 text-indigo-300">
         {icon}
       </div>
-      <h3 className="mt-4 font-semibold text-white">{title}</h3>
-      <p className="mt-2 text-sm leading-relaxed text-zinc-400">{text}</p>
+      <h3 className="relative mt-4 font-semibold text-white">{title}</h3>
+      <p className="relative mt-2 text-sm leading-relaxed text-zinc-400">{text}</p>
     </div>
   );
 }
@@ -586,6 +645,14 @@ function IconChat() {
   return (
     <svg viewBox="0 0 24 24" className="h-5 w-5" {...sw}>
       <path d="M5 6h14v10H9l-4 3V6z" />
+    </svg>
+  );
+}
+function IconLock() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5" {...sw}>
+      <rect x="5" y="11" width="14" height="9" rx="2" />
+      <path d="M8 11V7a4 4 0 0 1 8 0v4" />
     </svg>
   );
 }
