@@ -60,7 +60,7 @@ export default async function Home() {
 
       {/* ---------- nav (fixed) ---------- */}
       <ScrollHeader>
-        <Logo className="h-6" />
+        <Logo className="h-5 sm:h-6" />
         <div className="hidden items-center gap-7 text-sm text-zinc-400 sm:flex">
           <Link href="/xizmatlar" className="transition hover:text-white">
             Xizmatlar
@@ -124,19 +124,19 @@ export default async function Home() {
             </p>
 
             <div
-              className="animate-rise mt-9 flex flex-wrap items-center justify-center gap-3 lg:justify-start"
+              className="animate-rise mt-9 grid grid-cols-2 gap-3 sm:inline-flex sm:flex-wrap sm:items-center sm:justify-center lg:justify-start"
               style={{ animationDelay: "140ms" }}
             >
               <Link
                 href={loggedIn ? "/dashboard" : "/register"}
-                className="group inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-semibold text-black transition hover:bg-zinc-200"
+                className="group inline-flex items-center justify-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-semibold text-black transition hover:bg-zinc-200"
               >
                 {loggedIn ? "Asosiy menyuga o'tish" : "Bepul boshlash"}
                 <span className="transition-transform group-hover:translate-x-0.5">→</span>
               </Link>
               <a
                 href="#qanday"
-                className="lq-glass rounded-xl px-6 py-3 text-sm font-medium text-zinc-200"
+                className="lq-glass inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-medium text-zinc-200"
               >
                 Qanday ishlaydi?
               </a>
@@ -155,8 +155,8 @@ export default async function Home() {
             </div>
           </div>
 
-          {/* vizual: prezentatsiya + hujjat maketi — birinchi qarashda "bu nima uchun sayt" ayon bo'lsin */}
-          <div className="animate-rise" style={{ animationDelay: "100ms" }}>
+          {/* vizual: prezentatsiya + hujjat maketi — birinchi qarashda "bu nima uchun sayt" ayon bo'lsin (mobilda joy tejash uchun yashirin) */}
+          <div className="animate-rise hidden lg:block" style={{ animationDelay: "100ms" }}>
             <HeroMockup />
           </div>
         </div>
@@ -200,7 +200,7 @@ export default async function Home() {
             {
               n: "01",
               t: "Ro'yxatdan o'ting",
-              d: "Rolni tanlaysiz, Google bilan tasdiqlaysiz, ism-familiya, login va glavniy rasm kiritasiz.",
+              d: "Rolni tanlaysiz, Google bilan tasdiqlaysiz, ism-familiya va login kiritasiz.",
             },
             {
               n: "02",
@@ -263,7 +263,7 @@ export default async function Home() {
           title="Nega tayyorr.uz"
           subtitle="Ishni tez, tartibli va xavfsiz qiladigan mayda-chuydalar."
         />
-        <div className="mt-14 grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <div className="mt-14 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Feature
             icon={<IconShield />}
             title="Xavfsiz fayllar"
@@ -324,7 +324,7 @@ export default async function Home() {
           <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
             {/* brend + ijtimoiy tarmoqlar */}
             <div>
-              <Logo className="h-6" />
+              <Logo className="h-5 sm:h-6" />
               <p className="mt-4 max-w-xs text-sm leading-relaxed text-zinc-500">
                 Prezentatsiya, kurs ishi, referat va diplom ishini ishonchli
                 tayyorlovchilarga buyurtma qiling yoki o&apos;zingiz tayyorlab
