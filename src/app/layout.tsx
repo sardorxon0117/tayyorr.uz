@@ -1,8 +1,17 @@
 import type { Metadata, Viewport } from "next";
 import { cookies } from "next/headers";
+import { Baloo_2 } from "next/font/google";
 
 import "./globals.css";
 import { Providers } from "@/components/providers";
+
+// sarlavhalar uchun asosiy (display) shrift — Baloo 2, dumaloq va qalin
+const baloo = Baloo_2({
+  subsets: ["latin"],
+  weight: ["600", "700", "800"],
+  variable: "--font-baloo",
+  display: "swap",
+});
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://tayyorr.uz";
 const TITLE = "tayyorr.uz — prezentatsiya, kurs ishi va referat buyurtma qilish";
@@ -95,7 +104,10 @@ export default async function RootLayout({
   const light = (await cookies()).get("tyr_theme")?.value === "light";
 
   return (
-    <html lang="uz" className={light ? "light" : undefined}>
+    <html
+      lang="uz"
+      className={[light ? "light" : "", baloo.variable].filter(Boolean).join(" ")}
+    >
       <head>
         <script
           dangerouslySetInnerHTML={{

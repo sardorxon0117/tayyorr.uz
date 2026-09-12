@@ -107,7 +107,7 @@ export default async function Home() {
           {/* matn */}
           <div className="text-center lg:text-left">
             <h1
-              className="animate-rise text-5xl font-semibold leading-[1.1] tracking-tight sm:text-6xl"
+              className="font-display animate-rise text-5xl font-extrabold leading-[1.1] tracking-tight sm:text-6xl"
             >
               Ilmiy ishlaringiz uchun{" "}
               <span className="text-indigo-300">doim odam</span> topiladi
@@ -250,7 +250,7 @@ export default async function Home() {
           ].map((s) => (
             <div key={s.n} className="lq-glass blur-in rounded-2xl p-6">
               <div className="text-sm font-mono text-indigo-400">{s.n}</div>
-              <h3 className="mt-3 text-lg font-semibold text-white">{s.t}</h3>
+              <h3 className="font-display mt-3 text-lg font-bold text-white">{s.t}</h3>
               <p className="mt-2 text-sm leading-relaxed text-zinc-400">{s.d}</p>
             </div>
           ))}
@@ -271,7 +271,7 @@ export default async function Home() {
               href={`/xizmatlar/${s.slug}`}
               className="lq-glass blur-in group flex flex-col rounded-2xl p-6"
             >
-              <h3 className="font-semibold text-white">{s.title}</h3>
+              <h3 className="font-display font-bold text-white">{s.title}</h3>
               <p className="mt-2 flex-1 text-sm leading-relaxed text-zinc-400">
                 {s.tagline}
               </p>
@@ -338,7 +338,7 @@ export default async function Home() {
               opacity: 0.3,
             }}
           />
-          <h2 className="relative text-3xl font-semibold tracking-tight sm:text-4xl">
+          <h2 className="font-display relative text-3xl font-extrabold tracking-tight sm:text-4xl">
             Bugun birinchi buyurtmangizni qoldiring
           </h2>
           <p className="relative mx-auto mt-4 max-w-md text-zinc-400">
@@ -506,7 +506,7 @@ function SectionHeading({
       <div className="text-xs font-medium uppercase tracking-[0.2em] text-indigo-400">
         {kicker}
       </div>
-      <h2 className="mt-3 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+      <h2 className="font-display mt-3 text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
         {title}
       </h2>
       <p className="mt-3 text-zinc-400">{subtitle}</p>
@@ -527,7 +527,7 @@ function RolePanel({
 }) {
   return (
     <div className="lq-glass blur-in rounded-2xl p-8">
-      <h3 className="text-xl font-semibold text-white">{title}</h3>
+      <h3 className="font-display text-xl font-bold text-white">{title}</h3>
       <p className="mt-1 text-sm text-zinc-400">{lead}</p>
       <ul className="mt-6 space-y-3">
         {points.map((p) => (
@@ -563,7 +563,7 @@ function Feature({
       <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 text-indigo-300">
         {icon}
       </div>
-      <h3 className="mt-4 font-semibold text-white">{title}</h3>
+      <h3 className="font-display mt-4 font-bold text-white">{title}</h3>
       <p className="mt-2 text-sm leading-relaxed text-zinc-400">{text}</p>
     </div>
   );

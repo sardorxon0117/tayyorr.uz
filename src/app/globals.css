@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* sarlavhalar uchun asosiy (display) shrift — Baloo 2 (next/font orqali yuklanadi) */
+@theme inline {
+  --font-display: var(--font-baloo), ui-sans-serif, system-ui, sans-serif;
+}
+
 :root {
   color-scheme: dark;
   /* auto -> auto o'lchamlar orasida silliq o'tish (qo'llab-quvvatlagan brauzerda) */
