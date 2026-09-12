@@ -2,40 +2,54 @@
 
 import { useEffect, useRef, useState } from "react";
 
-type Slide =
+type Slide = {
+  titleW: string;
+  subW: string;
+} & (
   | { kind: "bars"; bars: number[] }
   | { kind: "donut"; pct: number }
-  | { kind: "image" };
+  | { kind: "image" }
+);
 
 /** Prezentatsiya slaydlari — turli ko'rinishlar orasida aylanadi. */
 const SLIDES: Slide[] = [
-  { kind: "bars", bars: [34, 58, 26, 78, 46] },
-  { kind: "donut", pct: 64 },
-  { kind: "image" },
+  { kind: "bars", bars: [34, 58, 26, 78, 46], titleW: "66%", subW: "38%" },
+  { kind: "donut", pct: 64, titleW: "50%", subW: "70%" },
+  { kind: "image", titleW: "74%", subW: "34%" },
 ];
 
 const CYCLE_MS = 3200;
 const FADE_MS = 380;
+const GROW_DELAY_MS = 90;
 
 /**
  * Hero vizuali: orqada statik hujjat kartasi, oldda — doimiy animatsiyali
- * "prezentatsiya" kartasi. Slaydlar orasidagi o'tish blur bilan silliq
- * (to'satdan almashmaydi), karta foni deyarli qattiq (orqasi ko'rinmasin).
+ * "prezentatsiya" kartasi. Slaydlar orasida blur bilan silliq o'tiladi,
+ * har safar paydo bo'lganda ichidagi diagramma/matn qatorlari 0dan
+ * o'sib chiqadi.
  */
 export function HeroMockup() {
   const [idx, setIdx] = useState(0);
   const [phase, setPhase] = useState<"in" | "out">("in");
+  const [grow, setGrow] = useState(false);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   useEffect(() => {
+    const t0 = setTimeout(() => setGrow(true), GROW_DELAY_MS);
+    timers.current.push(t0);
+
     const cycle = setInterval(() => {
+      setGrow(false);
       setPhase("out");
-      const t = setTimeout(() => {
+      const t1 = setTimeout(() => {
         setIdx((v) => (v + 1) % SLIDES.length);
         setPhase("in");
+        const t2 = setTimeout(() => setGrow(true), GROW_DELAY_MS);
+        timers.current.push(t2);
       }, FADE_MS);
-      timers.current.push(t);
+      timers.current.push(t1);
     }, CYCLE_MS);
+
     return () => {
       clearInterval(cycle);
       timers.current.forEach(clearTimeout);
@@ -71,8 +85,15 @@ export function HeroMockup() {
           <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/70" />
         </div>
 
-        <div className="relative mt-5 h-3 w-2/3 rounded-full bg-white/30" />
-        <div className="relative mt-2.5 h-1.5 w-2/5 rounded-full bg-white/10" />
+        {/* sarlavha "soyasi" — slayd almashganda kengligi ham o'zgarib, 0dan o'sadi */}
+        <div
+          className="relative mt-5 h-3 rounded-full bg-white/30 transition-all duration-700 ease-out"
+          style={{ width: grow ? slide.titleW : "0%" }}
+        />
+        <div
+          className="relative mt-2.5 h-1.5 rounded-full bg-white/10 transition-all duration-700 ease-out"
+          style={{ width: grow ? slide.subW : "0%" }}
+        />
 
         <div
           className={`hero-slide relative mt-7 flex h-28 items-center justify-center ${phase}`}
@@ -83,22 +104,16 @@ export function HeroMockup() {
                 <div
                   key={i}
                   className="w-7 rounded-t-md bg-indigo-400 transition-all duration-700 ease-out"
-                  style={{ height: `${h}%`, opacity: 0.45 + (h / 100) * 0.55 }}
+                  style={{
+                    height: grow ? `${h}%` : "0%",
+                    opacity: 0.45 + (h / 100) * 0.55,
+                  }}
                 />
               ))}
             </div>
           )}
 
-          {slide.kind === "donut" && (
-            <div
-              className="relative h-28 w-28 shrink-0 rounded-full transition-[background] duration-700 ease-out"
-              style={{
-                background: `conic-gradient(#818cf8 ${slide.pct}%, rgba(255,255,255,0.1) ${slide.pct}% 100%)`,
-              }}
-            >
-              <div className="absolute inset-[16%] rounded-full bg-[#0c0c13]" />
-            </div>
-          )}
+          {slide.kind === "donut" && <ProgressRing pct={slide.pct} grow={grow} />}
 
           {slide.kind === "image" && (
             <div className="flex w-full items-center gap-4">
@@ -106,9 +121,18 @@ export function HeroMockup() {
                 <IconImage className="h-8 w-8 text-indigo-300" />
               </div>
               <div className="flex-1 space-y-2.5">
-                <div className="h-1.5 w-full rounded-full bg-white/15" />
-                <div className="h-1.5 w-4/5 rounded-full bg-white/10" />
-                <div className="h-1.5 w-3/5 rounded-full bg-white/10" />
+                <div
+                  className="h-1.5 rounded-full bg-white/15 transition-all duration-700 ease-out"
+                  style={{ width: grow ? "100%" : "0%" }}
+                />
+                <div
+                  className="h-1.5 rounded-full bg-white/10 transition-all delay-100 duration-700 ease-out"
+                  style={{ width: grow ? "80%" : "0%" }}
+                />
+                <div
+                  className="h-1.5 rounded-full bg-white/10 transition-all delay-200 duration-700 ease-out"
+                  style={{ width: grow ? "60%" : "0%" }}
+                />
               </div>
             </div>
           )}
@@ -131,6 +155,40 @@ export function HeroMockup() {
         </div>
       </div>
     </div>
+  );
+}
+
+/** Doiraviy diagramma — SVG halqa, uchlari dumaloq, 0dan foizgacha o'sib chiqadi. */
+function ProgressRing({ pct, grow }: { pct: number; grow: boolean }) {
+  const size = 112;
+  const stroke = 16;
+  const r = (size - stroke) / 2;
+  const c = 2 * Math.PI * r;
+  const filled = grow ? pct : 0;
+
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="-rotate-90">
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={r}
+        fill="none"
+        stroke="rgba(255,255,255,0.1)"
+        strokeWidth={stroke}
+      />
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={r}
+        fill="none"
+        stroke="#818cf8"
+        strokeWidth={stroke}
+        strokeLinecap="round"
+        strokeDasharray={c}
+        strokeDashoffset={c - (filled / 100) * c}
+        style={{ transition: "stroke-dashoffset 0.9s cubic-bezier(0.22, 1, 0.36, 1)" }}
+      />
+    </svg>
   );
 }
 
