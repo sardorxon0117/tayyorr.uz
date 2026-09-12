@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 
@@ -50,6 +51,15 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Bu login band" }, { status: 409 });
   }
 
+  // tashrif havolasi orqali kelgan bo'lsa — akkauntga bog'laymiz
+  const refCode = (await cookies()).get("tyr_ref")?.value;
+  const refLink = refCode
+    ? await db.referralLink.findUnique({
+        where: { code: refCode.toUpperCase() },
+        select: { id: true },
+      })
+    : null;
+
   await db.user.update({
     where: { id: session.user.id },
     data: {
@@ -60,6 +70,7 @@ export async function POST(req: Request) {
       passwordHash: await bcrypt.hash(password, 10),
       termsAcceptedAt: new Date(),
       termsVersion: TERMS_VERSION,
+      ...(refLink ? { referralLinkId: refLink.id } : {}),
       ...rest,
     },
   });

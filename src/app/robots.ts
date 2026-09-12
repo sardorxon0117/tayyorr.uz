@@ -17,6 +17,7 @@ export default function robots(): MetadataRoute.Robots {
           "/orders",
           "/onboarding",
           "/u/",
+          "/r/",
           "/sardorxon",
         ],
       },

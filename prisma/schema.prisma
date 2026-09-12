@@ -125,6 +125,10 @@ model User {
   termsAcceptedAt DateTime?
   termsVersion    String?
 
+  // qaysi tashriflar (referral) havolasi orqali ro'yxatdan o'tgan
+  referralLinkId String?
+  referralLink   ReferralLink? @relation(fields: [referralLinkId], references: [id], onDelete: SetNull)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -168,6 +172,20 @@ model ActivityLog {
 
   @@index([userId, createdAt])
   @@index([action, createdAt])
+}
+
+// ----------------- Tashriflar (referral havolalar) -----------------
+
+model ReferralLink {
+  id        String   @id @default(cuid())
+  name      String // admin bergan nom (masalan "Instagram reklama")
+  code      String   @unique // /r/<code> — tasodifiy belgilar
+  visits    Int      @default(0) // havola necha marta ochilgani
+  createdAt DateTime @default(now())
+
+  users User[] // shu havola orqali ro'yxatdan o'tganlar
+
+  @@index([createdAt])
 }
 
 model PayoutRequest {
