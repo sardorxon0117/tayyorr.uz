@@ -24,10 +24,15 @@ const TXN_LABEL: Record<string, string> = {
 };
 const OUTFLOW = new Set(["SPEND", "TRANSFER_OUT", "PAYOUT", "HOLD"]);
 
-export default async function WalletPage() {
+export default async function WalletPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ click?: string }>;
+}) {
   const session = await auth();
   const userId = session!.user.id;
   const t = await getT();
+  const fromClick = (await searchParams).click === "1";
   const PAYOUT_STATUS: Record<string, string> = {
     PENDING: t("payout.PENDING"),
     PAID: t("payout.PAID"),
@@ -56,6 +61,12 @@ export default async function WalletPage() {
 
   return (
     <div className="flex flex-col gap-8">
+      {fromClick && (
+        <p className="rounded-xl border border-indigo-400/30 bg-indigo-500/10 p-3 text-sm text-indigo-200">
+          To'lovingiz qayta ishlanmoqda. Bir necha soniyadan so'ng balansingiz
+          yangilanadi — topilmasa sahifani qayta yuklang.
+        </p>
+      )}
       <div>
         <h1 className="text-2xl font-semibold tracking-tight text-white">{t("wallet.title")}</h1>
         <p className="mt-1 text-sm text-zinc-400">
