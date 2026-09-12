@@ -78,6 +78,10 @@ export default async function Home() {
           }}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#07070c]" />
+        <div
+          className="chrome-orb animate-float-b"
+          style={{ top: "5.5rem", right: "8%", width: "9rem", height: "9rem" }}
+        />
       </div>
 
       {/* ---------- nav (fixed) ---------- */}
@@ -126,11 +130,12 @@ export default async function Home() {
 
       {/* ---------- hero ---------- */}
       <section className="relative z-10 mx-auto max-w-4xl px-6 pt-32 pb-20 text-center sm:pt-40">
-        <div className="animate-rise">
+        <div className="relative inline-block animate-rise">
           <span className="lq-glass inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs text-zinc-300">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
             O'zbekcha ta'lim platformasi
           </span>
+          <SparkleIcon className="sparkle absolute -right-4 -top-3.5 h-4 w-4 text-fuchsia-300" />
         </div>
 
         <h1
@@ -139,7 +144,11 @@ export default async function Home() {
         >
           Ilmiy ishlaringiz uchun
           <br />
-          <span className="text-sheen">to'g'ri odam</span> topiladi
+          <span className="relative inline-block">
+            <span className="chrome-text">to'g'ri odam</span>
+            <SparkleIcon className="sparkle absolute -right-6 -top-2 h-5 w-5 text-cyan-300 sm:-right-8 sm:h-6 sm:w-6" />
+          </span>{" "}
+          topiladi
         </h1>
 
         <p
@@ -157,7 +166,7 @@ export default async function Home() {
         >
           <Link
             href={loggedIn ? "/dashboard" : "/register"}
-            className="group inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-semibold text-black transition hover:bg-zinc-200"
+            className="y2k-btn group inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-semibold text-black transition hover:bg-zinc-100"
           >
             {loggedIn ? "Asosiy menyuga o'tish" : "Bepul boshlash"}
             <span className="transition-transform group-hover:translate-x-0.5">
@@ -359,6 +368,13 @@ export default async function Home() {
               opacity: 0.4,
             }}
           />
+          <div
+            aria-hidden
+            className="chrome-orb"
+            style={{ top: "-2.5rem", right: "6%", width: "6rem", height: "6rem" }}
+          />
+          <SparkleIcon className="sparkle absolute left-[18%] top-8 h-4 w-4 text-cyan-300" />
+          <SparkleIcon className="sparkle absolute right-[20%] bottom-10 h-5 w-5 text-fuchsia-300" style={{ animationDelay: "1.1s" }} />
           <h2 className="relative text-3xl font-semibold tracking-tight sm:text-4xl">
             Bugun birinchi buyurtmangizni qoldiring
           </h2>
@@ -367,7 +383,7 @@ export default async function Home() {
           </p>
           <Link
             href={loggedIn ? "/dashboard" : "/register"}
-            className="relative mt-8 inline-flex items-center gap-2 rounded-xl bg-white px-7 py-3 text-sm font-semibold text-black transition hover:bg-zinc-200"
+            className="y2k-btn relative mt-8 inline-flex items-center gap-2 rounded-xl bg-white px-7 py-3 text-sm font-semibold text-black transition hover:bg-zinc-100"
           >
             {loggedIn ? "Asosiy menyuga o'tish" : "Hoziroq boshlash"} →
           </Link>
@@ -653,6 +669,25 @@ function IconLock() {
     <svg viewBox="0 0 24 24" className="h-5 w-5" {...sw}>
       <rect x="5" y="11" width="14" height="9" rx="2" />
       <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+    </svg>
+  );
+}
+function SparkleIcon({
+  className,
+  style,
+}: {
+  className?: string;
+  style?: React.CSSProperties;
+}) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className={className}
+      style={style}
+      aria-hidden
+    >
+      <path d="M12 2c.6 3.6 2.4 5.4 6 6-3.6.6-5.4 2.4-6 6-.6-3.6-2.4-5.4-6-6 3.6-.6 5.4-2.4 6-6z" />
     </svg>
   );
 }
