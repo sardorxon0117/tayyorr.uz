@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type Slide =
   | { kind: "bars"; bars: number[] }
@@ -15,21 +15,34 @@ const SLIDES: Slide[] = [
 ];
 
 const CYCLE_MS = 3200;
+const FADE_MS = 380;
 
 /**
  * Hero vizuali: orqada statik hujjat kartasi, oldda — doimiy animatsiyali
- * "prezentatsiya" kartasi. Karta fonini deyarli tiniq qilmadik — orqadagi
- * karta ko'rinib qolmasligi uchun.
+ * "prezentatsiya" kartasi. Slaydlar orasidagi o'tish blur bilan silliq
+ * (to'satdan almashmaydi), karta foni deyarli qattiq (orqasi ko'rinmasin).
  */
 export function HeroMockup() {
-  const [i, setI] = useState(0);
+  const [idx, setIdx] = useState(0);
+  const [phase, setPhase] = useState<"in" | "out">("in");
+  const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   useEffect(() => {
-    const id = setInterval(() => setI((v) => (v + 1) % SLIDES.length), CYCLE_MS);
-    return () => clearInterval(id);
+    const cycle = setInterval(() => {
+      setPhase("out");
+      const t = setTimeout(() => {
+        setIdx((v) => (v + 1) % SLIDES.length);
+        setPhase("in");
+      }, FADE_MS);
+      timers.current.push(t);
+    }, CYCLE_MS);
+    return () => {
+      clearInterval(cycle);
+      timers.current.forEach(clearTimeout);
+    };
   }, []);
 
-  const slide = SLIDES[i];
+  const slide = SLIDES[idx];
 
   return (
     <div className="relative mx-auto h-80 w-full max-w-sm sm:h-[26rem] lg:mx-0 lg:h-[28rem] lg:max-w-none">
@@ -49,7 +62,7 @@ export function HeroMockup() {
 
       {/* oldda: prezentatsiya — deyarli tiniq bo'lmagan (orqasi ko'rinmasin), doimiy animatsiyalanadi */}
       <div className="absolute right-0 top-0 w-72 rotate-3 overflow-hidden rounded-2xl border border-white/12 bg-[#0c0c13]/95 p-6 shadow-2xl shadow-black/50 backdrop-blur-2xl sm:w-80 lg:w-96">
-        {/* doimiy sirpanuvchi yorug'lik */}
+        {/* doimiy sirpanuvchi yorug'lik — chetlarda yumshoq so'nadi, to'satdan yo'qolmaydi */}
         <div className="hero-shimmer" aria-hidden />
 
         <div className="relative flex items-center gap-1.5">
@@ -61,12 +74,14 @@ export function HeroMockup() {
         <div className="relative mt-5 h-3 w-2/3 rounded-full bg-white/30" />
         <div className="relative mt-2.5 h-1.5 w-2/5 rounded-full bg-white/10" />
 
-        <div className="relative mt-7 flex h-28 items-center justify-center">
+        <div
+          className={`hero-slide relative mt-7 flex h-28 items-center justify-center ${phase}`}
+        >
           {slide.kind === "bars" && (
             <div className="flex h-full w-full items-end gap-2.5">
-              {slide.bars.map((h, idx) => (
+              {slide.bars.map((h, i) => (
                 <div
-                  key={idx}
+                  key={i}
                   className="w-7 rounded-t-md bg-indigo-400 transition-all duration-700 ease-out"
                   style={{ height: `${h}%`, opacity: 0.45 + (h / 100) * 0.55 }}
                 />
@@ -104,11 +119,11 @@ export function HeroMockup() {
             Prezentatsiya
           </span>
           <div className="flex gap-1.5">
-            {SLIDES.map((_, idx) => (
+            {SLIDES.map((_, i) => (
               <span
-                key={idx}
+                key={i}
                 className={`h-1.5 rounded-full transition-all duration-500 ${
-                  idx === i ? "w-4 bg-indigo-400" : "w-1.5 bg-white/20"
+                  i === idx ? "w-4 bg-indigo-400" : "w-1.5 bg-white/20"
                 }`}
               />
             ))}
