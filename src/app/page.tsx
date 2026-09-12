@@ -107,7 +107,7 @@ export default async function Home() {
           {/* matn */}
           <div className="text-center lg:text-left">
             <h1
-              className="font-display animate-rise text-5xl font-extrabold leading-[1.1] tracking-tight sm:text-6xl"
+              className="font-display animate-rise text-5xl font-bold leading-[1.1] tracking-tight sm:text-6xl"
             >
               Ilmiy ishlaringiz uchun{" "}
               <span className="text-indigo-300">doim odam</span> topiladi
@@ -338,7 +338,7 @@ export default async function Home() {
               opacity: 0.3,
             }}
           />
-          <h2 className="font-display relative text-3xl font-extrabold tracking-tight sm:text-4xl">
+          <h2 className="font-display relative text-3xl font-bold tracking-tight sm:text-4xl">
             Bugun birinchi buyurtmangizni qoldiring
           </h2>
           <p className="relative mx-auto mt-4 max-w-md text-zinc-400">
@@ -506,7 +506,7 @@ function SectionHeading({
       <div className="text-xs font-medium uppercase tracking-[0.2em] text-indigo-400">
         {kicker}
       </div>
-      <h2 className="font-display mt-3 text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+      <h2 className="font-display mt-3 text-3xl font-bold tracking-tight text-white sm:text-4xl">
         {title}
       </h2>
       <p className="mt-3 text-zinc-400">{subtitle}</p>

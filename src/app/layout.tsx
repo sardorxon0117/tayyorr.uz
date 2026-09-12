@@ -1,14 +1,15 @@
 import type { Metadata, Viewport } from "next";
 import { cookies } from "next/headers";
-import { Orbitron } from "next/font/google";
+import { Space_Grotesk } from "next/font/google";
 
 import "./globals.css";
 import { Providers } from "@/components/providers";
 
-// sarlavhalar uchun asosiy (display) shrift — logotipdagi kabi uchli/texnik uslub
-const headingFont = Orbitron({
+// sarlavhalar uchun asosiy (display) shrift — geometrik, lekin haddan
+// tashqari o'yinqaro (Baloo) ham, haddan tashqari qat'iy (Orbitron) ham emas
+const headingFont = Space_Grotesk({
   subsets: ["latin"],
-  weight: ["600", "700", "800", "900"],
+  weight: ["500", "600", "700"],
   variable: "--font-heading",
   display: "swap",
 });
