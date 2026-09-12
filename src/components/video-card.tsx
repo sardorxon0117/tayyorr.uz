@@ -15,11 +15,13 @@ export function VideoCard({
   spanClassName: string;
 }) {
   const cardRef = useRef<HTMLDivElement>(null);
+  const ambientVideoRef = useRef<HTMLVideoElement>(null);
   const modalVideoRef = useRef<HTMLVideoElement>(null);
   const [open, setOpen] = useState(false);
   const [grown, setGrown] = useState(false);
   const [ended, setEnded] = useState(false);
   const [startRect, setStartRect] = useState<Rect | null>(null);
+  const [ratio, setRatio] = useState(16 / 9);
 
   // Escape bosilsa yopiladi, oyna ochiq bo'lganda fon aylanmaydi
   useEffect(() => {
@@ -37,11 +39,19 @@ export function VideoCard({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
-  function targetRect(): Rect {
+  // videoning haqiqiy nisbatiga mos box hisoblaydi — 16:9 deb qattiq
+  // belgilanmaydi, aks holda vertikal videolar atrofida bo'sh joy qoladi
+  function targetRect(r: number): Rect {
     const vw = window.innerWidth;
     const vh = window.innerHeight;
-    const width = Math.min(vw * 0.92, 900);
-    const height = Math.min((width * 9) / 16, vh * 0.85);
+    const maxW = Math.min(vw * 0.92, 900);
+    const maxH = vh * 0.85;
+    let width = maxW;
+    let height = width / r;
+    if (height > maxH) {
+      height = maxH;
+      width = height * r;
+    }
     return { width, height, left: (vw - width) / 2, top: (vh - height) / 2 };
   }
 
@@ -49,6 +59,12 @@ export function VideoCard({
     const r = cardRef.current?.getBoundingClientRect();
     if (r) {
       setStartRect({ top: r.top, left: r.left, width: r.width, height: r.height });
+    }
+    // fon videosi allaqachon yuklangan bo'lsa, uning haqiqiy nisbatidan
+    // darhol foydalanamiz — modal videosi metadatasini kutib turmay
+    const amb = ambientVideoRef.current;
+    if (amb && amb.videoWidth && amb.videoHeight) {
+      setRatio(amb.videoWidth / amb.videoHeight);
     }
     setEnded(false);
     setOpen(true);
@@ -74,7 +90,7 @@ export function VideoCard({
     setEnded(false);
   }
 
-  const rect = grown ? targetRect() : startRect;
+  const rect = grown ? targetRect(ratio) : startRect;
 
   return (
     <>
@@ -83,6 +99,7 @@ export function VideoCard({
         className={`lq-glass blur-in group relative aspect-video overflow-hidden rounded-2xl sm:aspect-auto ${spanClassName}`}
       >
         <video
+          ref={ambientVideoRef}
           className="h-full w-full object-cover"
           src={video.videoUrl}
           autoPlay
@@ -126,6 +143,12 @@ export function VideoCard({
                 src={video.videoUrl}
                 autoPlay
                 playsInline
+                onLoadedMetadata={(e) => {
+                  const v = e.currentTarget;
+                  if (v.videoWidth && v.videoHeight) {
+                    setRatio(v.videoWidth / v.videoHeight);
+                  }
+                }}
                 onEnded={() => setEnded(true)}
               />
               {ended && (
