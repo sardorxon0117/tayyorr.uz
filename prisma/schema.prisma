@@ -271,6 +271,18 @@ model Announcement {
   @@index([active, createdAt])
 }
 
+/** Hero bo'limining fon videosi — bitta faol video (singleton). */
+model HeroVideo {
+  id        String   @id @default(cuid())
+  videoUrl  String
+  videoKey  String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([active, createdAt])
+}
+
 model LandingFaq {
   id        String   @id @default(cuid())
   question  String

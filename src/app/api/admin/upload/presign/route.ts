@@ -12,7 +12,9 @@ import {
 } from "@/lib/r2";
 
 const schema = z.object({
-  kind: z.enum(["CHAT", "AVATAR", "BROADCAST", "LANDING_VIDEO"]).default("CHAT"),
+  kind: z
+    .enum(["CHAT", "AVATAR", "BROADCAST", "LANDING_VIDEO", "HERO_VIDEO"])
+    .default("CHAT"),
   conversationId: z.string().optional(),
   filename: z.string().min(1).max(200),
   contentType: z.string().min(1).max(150),
@@ -52,11 +54,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ uploadUrl, key, bucket: "private" });
   }
 
-  if (kind === "LANDING_VIDEO") {
+  if (kind === "LANDING_VIDEO" || kind === "HERO_VIDEO") {
     if (!VIDEO_TYPES.includes(contentType)) {
       return NextResponse.json({ error: "Faqat video fayl yuklang" }, { status: 400 });
     }
-    const key = buildKey("landing/videos", filename);
+    const prefix = kind === "HERO_VIDEO" ? "hero" : "landing/videos";
+    const key = buildKey(prefix, filename);
     const uploadUrl = await presignPut({
       bucket: PUBLIC_BUCKET,
       key,

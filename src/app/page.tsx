@@ -6,6 +6,7 @@ import { Logo } from "@/components/logo";
 import { ScrollHeader } from "@/components/scroll-header";
 import { RevealOnScroll } from "@/components/reveal-on-scroll";
 import { HeroMockup } from "@/components/hero-mockup";
+import { HeroBgVideo } from "@/components/hero-bg-video";
 import { LandingVideos } from "@/components/landing-videos";
 import { LandingFaq } from "@/components/landing-faq";
 import { TelegramIcon, InstagramIcon } from "@/components/icons";
@@ -23,7 +24,8 @@ export default async function Home() {
   const session = await auth();
   const loggedIn = !!session?.user;
 
-  const [videoRows, faqRows] = await Promise.all([
+  const [heroVideo, videoRows, faqRows] = await Promise.all([
+    db.heroVideo.findUnique({ where: { id: "hero" } }),
     db.landingVideo.findMany({
       where: { active: true },
       orderBy: [{ order: "asc" }, { createdAt: "asc" }],
@@ -64,6 +66,7 @@ export default async function Home() {
             opacity: 0.3,
           }}
         />
+        {heroVideo?.active && <HeroBgVideo url={heroVideo.videoUrl} />}
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#07070c]" />
       </div>
 
