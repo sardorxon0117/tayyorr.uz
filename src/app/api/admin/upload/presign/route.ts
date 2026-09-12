@@ -12,11 +12,18 @@ import {
 } from "@/lib/r2";
 
 const schema = z.object({
-  kind: z.enum(["CHAT", "AVATAR", "BROADCAST"]).default("CHAT"),
+  kind: z.enum(["CHAT", "AVATAR", "BROADCAST", "LANDING_VIDEO"]).default("CHAT"),
   conversationId: z.string().optional(),
   filename: z.string().min(1).max(200),
   contentType: z.string().min(1).max(150),
 });
+
+const VIDEO_TYPES = [
+  "video/mp4",
+  "video/webm",
+  "video/ogg",
+  "video/quicktime",
+];
 
 export async function POST(req: Request) {
   const denied = await adminApiGuard();
@@ -43,6 +50,25 @@ export async function POST(req: Request) {
     const key = buildKey("broadcast", filename);
     const uploadUrl = await presignPut({ bucket: PRIVATE_BUCKET, key, contentType });
     return NextResponse.json({ uploadUrl, key, bucket: "private" });
+  }
+
+  if (kind === "LANDING_VIDEO") {
+    if (!VIDEO_TYPES.includes(contentType)) {
+      return NextResponse.json({ error: "Faqat video fayl yuklang" }, { status: 400 });
+    }
+    const key = buildKey("landing/videos", filename);
+    const uploadUrl = await presignPut({
+      bucket: PUBLIC_BUCKET,
+      key,
+      contentType,
+      expiresIn: 900,
+    });
+    return NextResponse.json({
+      uploadUrl,
+      key,
+      bucket: "public",
+      publicUrl: publicUrl(key),
+    });
   }
 
   if (!conversationId) {

@@ -22,6 +22,7 @@ const BASE: NavLink[] = [
   { href: "/sardorxon/admin/users", label: "Foydalanuvchilar", icon: "👥" },
   { href: "/sardorxon/admin/chats", label: "Suhbatlar", icon: "🗨️" },
   { href: "/sardorxon/admin/referrals", label: "Tashriflar", icon: "🔗" },
+  { href: "/sardorxon/admin/landing", label: "Sayt kontenti", icon: "🎬" },
 ];
 
 export const metadata: Metadata = {

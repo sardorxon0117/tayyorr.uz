@@ -8,14 +8,12 @@ type Slide = {
 } & (
   | { kind: "bars"; bars: number[] }
   | { kind: "donut"; pct: number }
-  | { kind: "image" }
 );
 
 /** Prezentatsiya slaydlari — turli ko'rinishlar orasida aylanadi. */
 const SLIDES: Slide[] = [
   { kind: "bars", bars: [34, 58, 26, 78, 46], titleW: "66%", subW: "38%" },
   { kind: "donut", pct: 64, titleW: "50%", subW: "70%" },
-  { kind: "image", titleW: "74%", subW: "34%" },
 ];
 
 const CYCLE_MS = 3200;
@@ -114,28 +112,6 @@ export function HeroMockup() {
           )}
 
           {slide.kind === "donut" && <ProgressRing pct={slide.pct} grow={grow} />}
-
-          {slide.kind === "image" && (
-            <div className="flex w-full items-center gap-4">
-              <div className="flex h-20 w-24 shrink-0 items-center justify-center rounded-xl bg-white/10">
-                <IconImage className="h-8 w-8 text-indigo-300" />
-              </div>
-              <div className="flex-1 space-y-2.5">
-                <div
-                  className="h-1.5 rounded-full bg-white/15 transition-all duration-700 ease-out"
-                  style={{ width: grow ? "100%" : "0%" }}
-                />
-                <div
-                  className="h-1.5 rounded-full bg-white/10 transition-all delay-100 duration-700 ease-out"
-                  style={{ width: grow ? "80%" : "0%" }}
-                />
-                <div
-                  className="h-1.5 rounded-full bg-white/10 transition-all delay-200 duration-700 ease-out"
-                  style={{ width: grow ? "60%" : "0%" }}
-                />
-              </div>
-            </div>
-          )}
         </div>
 
         <div className="relative mt-6 flex items-center justify-between">
@@ -188,23 +164,6 @@ function ProgressRing({ pct, grow }: { pct: number; grow: boolean }) {
         strokeDashoffset={c - (filled / 100) * c}
         style={{ transition: "stroke-dashoffset 0.9s cubic-bezier(0.22, 1, 0.36, 1)" }}
       />
-    </svg>
-  );
-}
-
-function IconImage({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      className={className}
-      aria-hidden
-    >
-      <rect x="3" y="4" width="18" height="16" rx="2" />
-      <circle cx="8.5" cy="9.5" r="1.5" />
-      <path d="M21 15l-5-5-9 9" />
     </svg>
   );
 }

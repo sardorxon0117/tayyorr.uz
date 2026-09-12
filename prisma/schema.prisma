@@ -271,6 +271,31 @@ model Announcement {
   @@index([active, createdAt])
 }
 
+model LandingFaq {
+  id        String   @id @default(cuid())
+  question  String
+  answer    String
+  order     Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([active, order])
+}
+
+model LandingVideo {
+  id        String   @id @default(cuid())
+  title     String
+  videoUrl  String
+  videoKey  String?
+  order     Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([active, order])
+}
+
 model PushSubscription {
   id        String   @id @default(cuid())
   userId    String

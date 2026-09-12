@@ -6,8 +6,11 @@ import { Logo } from "@/components/logo";
 import { ScrollHeader } from "@/components/scroll-header";
 import { RevealOnScroll } from "@/components/reveal-on-scroll";
 import { HeroMockup } from "@/components/hero-mockup";
+import { LandingVideos } from "@/components/landing-videos";
+import { LandingFaq } from "@/components/landing-faq";
 import { TelegramIcon, InstagramIcon } from "@/components/icons";
 import { SERVICES } from "@/lib/services";
+import { db } from "@/lib/db";
 
 const TELEGRAM_URL = "https://t.me/tayyorruz";
 const INSTAGRAM_URL = "https://instagram.com/tayyorr.uz";
@@ -25,6 +28,18 @@ const STATS: [string, string][] = [
 export default async function Home() {
   const session = await auth();
   const loggedIn = !!session?.user;
+
+  const [videoRows, faqRows] = await Promise.all([
+    db.landingVideo.findMany({
+      where: { active: true },
+      orderBy: [{ order: "asc" }, { createdAt: "asc" }],
+      take: 4,
+    }),
+    db.landingFaq.findMany({
+      where: { active: true },
+      orderBy: [{ order: "asc" }, { createdAt: "asc" }],
+    }),
+  ]);
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#07070c] text-zinc-100 antialiased">
@@ -60,7 +75,7 @@ export default async function Home() {
 
       {/* ---------- nav (fixed) ---------- */}
       <ScrollHeader>
-        <Logo className="h-5 sm:h-6" />
+        <Logo className="h-4 sm:h-6" />
         <div className="hidden items-center gap-7 text-sm text-zinc-400 sm:flex">
           <Link href="/xizmatlar" className="transition hover:text-white">
             Xizmatlar
@@ -124,19 +139,19 @@ export default async function Home() {
             </p>
 
             <div
-              className="animate-rise mt-9 grid grid-cols-2 gap-3 sm:inline-flex sm:flex-wrap sm:items-center sm:justify-center lg:justify-start"
+              className="animate-rise mx-auto mt-9 grid max-w-md grid-cols-1 gap-3 sm:mx-0 sm:inline-flex sm:max-w-none sm:flex-wrap sm:items-center sm:justify-center lg:justify-start"
               style={{ animationDelay: "140ms" }}
             >
               <Link
                 href={loggedIn ? "/dashboard" : "/register"}
-                className="group inline-flex items-center justify-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-semibold text-black transition hover:bg-zinc-200"
+                className="group inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-semibold text-black transition hover:bg-zinc-200 sm:w-auto"
               >
                 {loggedIn ? "Asosiy menyuga o'tish" : "Bepul boshlash"}
                 <span className="transition-transform group-hover:translate-x-0.5">→</span>
               </Link>
               <a
                 href="#qanday"
-                className="lq-glass inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-medium text-zinc-200"
+                className="lq-glass inline-flex w-full items-center justify-center rounded-xl px-6 py-3 text-sm font-medium text-zinc-200 sm:w-auto"
               >
                 Qanday ishlaydi?
               </a>
@@ -155,8 +170,8 @@ export default async function Home() {
             </div>
           </div>
 
-          {/* vizual: prezentatsiya + hujjat maketi — birinchi qarashda "bu nima uchun sayt" ayon bo'lsin (mobilda joy tejash uchun yashirin) */}
-          <div className="animate-rise hidden lg:block" style={{ animationDelay: "100ms" }}>
+          {/* vizual: prezentatsiya + hujjat maketi — birinchi qarashda "bu nima uchun sayt" ayon bo'lsin */}
+          <div className="animate-rise" style={{ animationDelay: "100ms" }}>
             <HeroMockup />
           </div>
         </div>
@@ -318,13 +333,16 @@ export default async function Home() {
         </div>
       </section>
 
+      <LandingVideos videos={videoRows} />
+      <LandingFaq faqs={faqRows} />
+
       {/* ---------- footer ---------- */}
       <footer className="relative z-10 border-t border-white/10 bg-[#08080d]/70 backdrop-blur-2xl">
         <div className="mx-auto max-w-5xl px-6 py-14">
           <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
             {/* brend + ijtimoiy tarmoqlar */}
             <div>
-              <Logo className="h-5 sm:h-6" />
+              <Logo className="h-4 sm:h-6" />
               <p className="mt-4 max-w-xs text-sm leading-relaxed text-zinc-500">
                 Prezentatsiya, kurs ishi, referat va diplom ishini ishonchli
                 tayyorlovchilarga buyurtma qiling yoki o&apos;zingiz tayyorlab
