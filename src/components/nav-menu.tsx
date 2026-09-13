@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { createPortal } from "react-dom";
 
 import { useLocale } from "@/components/locale-provider";
 
@@ -16,6 +17,10 @@ export interface NavLink {
 
 /**
  * Barcha qurilmalarda: o'ng tarafdagi menyu tugmasi + animatsiyali panel.
+ * Panel va fon (backdrop) Portal orqali <body>ga chiqariladi — aks holda
+ * headerdagi backdrop-blur qatlami "fixed" elementlar uchun o'z konteyner
+ * chegarasini yaratib qo'yadi va tashqariga bosish backdropga yetib
+ * bormay, menyu yopilmay qoladi (ayniqsa mobilda sezilarli).
  */
 export function NavMenu({
   links,
@@ -28,6 +33,8 @@ export function NavMenu({
 }) {
   const [open, setOpen] = useState(false);
   const [closing, setClosing] = useState(false);
+  const [anchor, setAnchor] = useState({ top: 0, right: 0 });
+  const btnRef = useRef<HTMLButtonElement>(null);
   const pathname = usePathname();
   const { t } = useLocale();
   const hasBadge = links.some((l) => !!l.badge && l.badge > 0);
@@ -40,6 +47,14 @@ export function NavMenu({
     }, 160);
   }
 
+  function openMenu() {
+    const r = btnRef.current?.getBoundingClientRect();
+    if (r) {
+      setAnchor({ top: r.bottom + 8, right: window.innerWidth - r.right });
+    }
+    setOpen(true);
+  }
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && close();
@@ -50,8 +65,9 @@ export function NavMenu({
   return (
     <div className="relative">
       <button
+        ref={btnRef}
         type="button"
-        onClick={() => (open ? close() : setOpen(true))}
+        onClick={() => (open ? close() : openMenu())}
         aria-label="Menyu"
         aria-expanded={open}
         className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-zinc-200 transition hover:bg-white/10"
@@ -78,72 +94,76 @@ export function NavMenu({
         </span>
       </button>
 
-      {open && (
-        <>
-          <div
-            className="menu-backdrop fixed inset-0 z-40 bg-black/50"
-            onClick={close}
-          />
-          <div
-            className={`menu-panel absolute right-0 top-12 z-50 w-60 overflow-hidden rounded-2xl border border-white/10 bg-[#0e0e16]/95 p-1.5 shadow-2xl shadow-black/50 backdrop-blur-2xl ${
-              closing ? "closing" : ""
-            }`}
-          >
-            {links.map((l, i) => {
-              const active =
-                pathname === l.href || pathname.startsWith(l.href + "/");
-              return (
-                <Link
-                  key={l.href}
-                  href={l.href}
-                  onClick={close}
-                  style={{ ["--i" as string]: i }}
-                  className={`menu-item flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition ${
-                    active
-                      ? "bg-indigo-500/15 text-white"
-                      : "text-zinc-300 hover:bg-white/5 hover:pl-4"
-                  }`}
-                >
-                  <span className="text-base">{l.icon}</span>
-                  <span className="flex-1">
-                    {l.tkey ? t(l.tkey) : l.label}
-                  </span>
-                  {!!l.badge && l.badge > 0 && (
-                    <span className="rounded-full bg-indigo-500 px-1.5 text-xs font-semibold text-white">
-                      {l.badge}
+      {open &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <>
+            <div
+              className="menu-backdrop fixed inset-0 z-[70] bg-black/50"
+              onClick={close}
+            />
+            <div
+              className={`menu-panel fixed z-[71] w-60 overflow-hidden rounded-2xl border border-white/10 bg-[#0e0e16]/95 p-1.5 shadow-2xl shadow-black/50 backdrop-blur-2xl ${
+                closing ? "closing" : ""
+              }`}
+              style={{ top: anchor.top, right: anchor.right }}
+            >
+              {links.map((l, i) => {
+                const active =
+                  pathname === l.href || pathname.startsWith(l.href + "/");
+                return (
+                  <Link
+                    key={l.href}
+                    href={l.href}
+                    onClick={close}
+                    style={{ ["--i" as string]: i }}
+                    className={`menu-item flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition ${
+                      active
+                        ? "bg-indigo-500/15 text-white"
+                        : "text-zinc-300 hover:bg-white/5 hover:pl-4"
+                    }`}
+                  >
+                    <span className="text-base">{l.icon}</span>
+                    <span className="flex-1">
+                      {l.tkey ? t(l.tkey) : l.label}
                     </span>
-                  )}
-                </Link>
-              );
-            })}
+                    {!!l.badge && l.badge > 0 && (
+                      <span className="rounded-full bg-indigo-500 px-1.5 text-xs font-semibold text-white">
+                        {l.badge}
+                      </span>
+                    )}
+                  </Link>
+                );
+              })}
 
-            {onSignOut && (
-              <>
-                <div className="my-1 h-px bg-white/10" />
-                <button
-                  type="button"
-                  style={{ ["--i" as string]: links.length }}
-                  onClick={() => {
-                    close();
-                    onSignOut();
-                  }}
-                  className="menu-item flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm text-red-400 transition hover:bg-red-500/10 hover:pl-4"
-                >
-                  <span className="text-base">⏻</span>
-                  Chiqish
-                </button>
-              </>
-            )}
+              {onSignOut && (
+                <>
+                  <div className="my-1 h-px bg-white/10" />
+                  <button
+                    type="button"
+                    style={{ ["--i" as string]: links.length }}
+                    onClick={() => {
+                      close();
+                      onSignOut();
+                    }}
+                    className="menu-item flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm text-red-400 transition hover:bg-red-500/10 hover:pl-4"
+                  >
+                    <span className="text-base">⏻</span>
+                    Chiqish
+                  </button>
+                </>
+              )}
 
-            {footer && (
-              <>
-                <div className="my-1 h-px bg-white/10" />
-                <div className="px-1 pb-1 pt-1">{footer}</div>
-              </>
-            )}
-          </div>
-        </>
-      )}
+              {footer && (
+                <>
+                  <div className="my-1 h-px bg-white/10" />
+                  <div className="px-1 pb-1 pt-1">{footer}</div>
+                </>
+              )}
+            </div>
+          </>,
+          document.body,
+        )}
     </div>
   );
 }
