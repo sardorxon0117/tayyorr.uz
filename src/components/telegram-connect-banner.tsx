@@ -11,13 +11,16 @@ export function TelegramConnectBanner({
   connected: boolean;
   connectUrl: string;
 }) {
-  const [dismissed, setDismissed] = useState(true);
+  // boshlanishida ko'rsatilgan deb hisoblaymiz — aks holda ko'pchilik
+  // (hali yopmagan) foydalanuvchida sahifa yuklangach banner "sakrab"
+  // paydo bo'lib, pastdagi tarkibni siljitib yuboradi
+  const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
     try {
-      setDismissed(localStorage.getItem(DISMISS_KEY) === "1");
+      if (localStorage.getItem(DISMISS_KEY) === "1") setDismissed(true);
     } catch {
-      setDismissed(false);
+      /* ignore */
     }
   }, []);
 
@@ -50,7 +53,7 @@ export function TelegramConnectBanner({
         <button
           type="button"
           onClick={dismiss}
-          className="rounded-lg px-2 py-1 text-sky-300/70 transition hover:text-sky-100"
+          className="rounded-lg px-2 py-1 text-sky-300 transition hover:text-sky-100"
           aria-label="Yopish"
         >
           ✕
