@@ -157,6 +157,29 @@ export default async function AdminUserDetail({
         </section>
 
         <section className="rounded-xl border border-white/10 bg-white/[0.03] p-5">
+          <h2 className="mb-3 font-semibold text-white">Telegram bot</h2>
+          {user.telegramChatId ? (
+            <div className="flex flex-col gap-3">
+              <p className="text-sm text-emerald-300">
+                ✅ Ulangan
+                {user.telegramUsername ? ` — @${user.telegramUsername}` : ""}
+                {user.telegramLinkedAt
+                  ? ` · ${shortDateTime(user.telegramLinkedAt)}`
+                  : ""}
+              </p>
+              <AdminPostButton
+                url={`/api/admin/users/${user.id}/telegram-unlink`}
+                label="Ulanishni uzish"
+                confirmText="Telegram bot ulanishi uzilsinmi?"
+                className="rounded-full bg-red-500/15 px-3 py-1.5 text-sm text-red-300 hover:bg-red-500/25"
+              />
+            </div>
+          ) : (
+            <p className="text-sm text-zinc-500">Ulanmagan</p>
+          )}
+        </section>
+
+        <section className="rounded-xl border border-white/10 bg-white/[0.03] p-5">
           <h2 className="mb-3 font-semibold text-white">
             tayyorr.uz support xabari
           </h2>

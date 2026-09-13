@@ -1,18 +1,18 @@
 import { NextResponse } from "next/server";
 
-import { handleStartCommand } from "@/lib/telegram-notify";
+import { handleIncomingMessage } from "@/lib/telegram-link";
 
 const WEBHOOK_SECRET = process.env.TELEGRAM_NOTIFY_WEBHOOK_SECRET;
 
 interface TgUpdate {
   message?: {
     chat?: { id?: number };
-    from?: { first_name?: string };
+    from?: { first_name?: string; username?: string };
     text?: string;
   };
 }
 
-/** Telegram shaxsiy bildirishnoma botining webhook manzili (faqat /start ni qayta ishlaydi). */
+/** Telegram shaxsiy bildirishnoma botining webhook manzili (akkaunt ulash oqimini boshqaradi). */
 export async function POST(req: Request) {
   if (WEBHOOK_SECRET) {
     const got = req.headers.get("x-telegram-bot-api-secret-token");
@@ -26,11 +26,11 @@ export async function POST(req: Request) {
   const chatId = msg?.chat?.id;
   const text = msg?.text?.trim();
 
-  if (chatId && text?.startsWith("/start")) {
-    const token = text.slice("/start".length).trim();
-    if (token) {
-      await handleStartCommand(chatId, token, msg?.from?.first_name);
-    }
+  if (chatId && text) {
+    await handleIncomingMessage(chatId, text, {
+      first_name: msg?.from?.first_name,
+      username: msg?.from?.username,
+    }).catch(() => {});
   }
 
   // Telegramga har doim 200 qaytaramiz — aks holda qayta-qayta jo'natishga urinadi

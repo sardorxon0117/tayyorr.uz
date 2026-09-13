@@ -42,6 +42,28 @@ export async function POST(req: Request) {
   return NextResponse.json({ ok: true });
 }
 
+const toggleSchema = z.object({ active: z.boolean() });
+
+/** Hero fon videosini faollashtiradi/o'chirmasdan nofaol qiladi. */
+export async function PATCH(req: Request) {
+  const denied = await adminApiGuard();
+  if (denied) return denied;
+
+  const parsed = toggleSchema.safeParse(await req.json().catch(() => null));
+  if (!parsed.success) {
+    return NextResponse.json({ error: "Noto'g'ri so'rov" }, { status: 400 });
+  }
+
+  const found = await db.heroVideo.findUnique({ where: { id: HERO_VIDEO_ID } });
+  if (!found) return NextResponse.json({ error: "Video yo'q" }, { status: 404 });
+
+  await db.heroVideo.update({
+    where: { id: HERO_VIDEO_ID },
+    data: { active: parsed.data.active },
+  });
+  return NextResponse.json({ ok: true });
+}
+
 /** Hero fon videosini o'chiradi. */
 export async function DELETE() {
   const denied = await adminApiGuard();

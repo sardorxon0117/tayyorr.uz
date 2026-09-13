@@ -2,22 +2,26 @@
 
 import { useEffect } from "react";
 
-/** Yangi qurilmada cookie bo'lmasa — DB'даги mavzuni qo'llaydi. */
+/**
+ * DB'dagi mavzu har doim ustuvor — foydalanuvchi qaysi qurilmadan kirsa
+ * ham bir xil rejim ko'rinishi uchun, shu qurilmaning eski cookie'sini
+ * ham qayta yozib qo'yadi (avval cookie ustuvor bo'lib, DB bilan
+ * sinxron bo'lmagan qurilmalarda eski rejim qolib ketardi).
+ */
 export function ThemeSync({ serverTheme }: { serverTheme: string | null }) {
   useEffect(() => {
     if (serverTheme !== "light" && serverTheme !== "dark") return;
-    if (document.cookie.includes("tyr_theme=")) return; // cookie ustuvor
 
     const cur = document.documentElement.classList.contains("light")
       ? "light"
       : "dark";
-    document.cookie = `tyr_theme=${serverTheme}; path=/; max-age=31536000; samesite=lax`;
     if (serverTheme !== cur) {
       document.documentElement.classList.toggle(
         "light",
         serverTheme === "light",
       );
     }
+    document.cookie = `tyr_theme=${serverTheme}; path=/; max-age=31536000; samesite=lax`;
   }, [serverTheme]);
   return null;
 }

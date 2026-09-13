@@ -39,7 +39,7 @@ export function TelegramConnectBanner({
     <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-sky-400/25 bg-sky-500/10 p-3 text-sm text-sky-100">
       <span>
         ✈️ Endi bildirishnomalarni Telegram orqali ham olishingiz mumkin —
-        botga ulaning.
+        botni oching, email manzilingizni yuboring va kod bilan ulang.
       </span>
       <div className="flex shrink-0 items-center gap-2">
         <a

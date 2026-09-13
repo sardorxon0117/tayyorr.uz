@@ -42,7 +42,10 @@ export default async function AdminLandingContent() {
 
       <section>
         <h2 className="mb-3 text-lg font-semibold text-white">Hero fon videosi</h2>
-        <HeroVideoManager initialUrl={heroVideo?.videoUrl ?? ""} />
+        <HeroVideoManager
+          initialUrl={heroVideo?.videoUrl ?? ""}
+          initialActive={heroVideo?.active ?? true}
+        />
       </section>
 
       <section>

@@ -131,6 +131,7 @@ model User {
 
   // shaxsiy bildirishnoma boti bilan bog'langan Telegram chat
   telegramChatId   String?
+  telegramUsername String?
   telegramLinkedAt DateTime?
 
   createdAt DateTime @default(now())
@@ -285,6 +286,22 @@ model HeroVideo {
   updatedAt DateTime @updatedAt
 
   @@index([active, createdAt])
+}
+
+/**
+ * Telegram bot orqali akkaunt ulash jarayonining vaqtinchalik holati
+ * (bitta Telegram chat — bitta faol so'rov). Email so'ralganda userId
+ * hali bo'sh, kod yuborilgach to'ldiriladi.
+ */
+model TelegramLinkSession {
+  id        String    @id @default(cuid())
+  chatId    String    @unique
+  userId    String?
+  code      String?
+  attempts  Int       @default(0)
+  expiresAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }
 
 model LandingFaq {

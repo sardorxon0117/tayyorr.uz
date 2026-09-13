@@ -15,7 +15,7 @@ import { RestrictionBanner } from "@/components/restriction-banner";
 import { TelegramConnectBanner } from "@/components/telegram-connect-banner";
 import { UnreadProvider } from "@/components/unread-provider";
 import { getRestriction, restrictionText } from "@/lib/restriction";
-import { buildConnectDeepLink } from "@/lib/telegram-notify";
+import { botLink } from "@/lib/telegram-notify";
 
 export const metadata: Metadata = {
   robots: { index: false, follow: false },
@@ -87,7 +87,7 @@ export default async function AppLayout({
           <div className="mx-auto w-full max-w-5xl">
             <TelegramConnectBanner
               connected={!!u?.telegramChatId}
-              connectUrl={buildConnectDeepLink(session.user.id)}
+              connectUrl={botLink()}
             />
             {restriction && (
               <RestrictionBanner text={restrictionText(restriction)} />
