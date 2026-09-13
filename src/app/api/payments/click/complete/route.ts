@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { db } from "@/lib/db";
 import { logActivity } from "@/lib/activity";
+import { sendTelegramToUser, siteUrl } from "@/lib/telegram-notify";
 import {
   CLICK_SERVICE_ID,
   ClickError,
@@ -104,6 +105,13 @@ export async function POST(req: Request) {
     `Hisobni Click orqali to'ldirdi: ${wtx.amount.toLocaleString("ru-RU")} so'm`,
     { amount: wtx.amount, clickTransId: click_trans_id },
   );
+
+  await sendTelegramToUser(wtx.userId, {
+    title: "💳 Hisob to'ldirildi",
+    body: `${wtx.amount.toLocaleString("ru-RU")} so'm Click orqali hamyoningizga tushdi.`,
+    url: siteUrl("/wallet"),
+    buttonLabel: "Tranzaksiyalarni ko'rish",
+  });
 
   return NextResponse.json({
     click_trans_id,

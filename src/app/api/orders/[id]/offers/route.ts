@@ -5,6 +5,7 @@ import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { restrictionApiError } from "@/lib/restriction";
 import { logActivity } from "@/lib/activity";
+import { sendTelegramToUser, siteUrl } from "@/lib/telegram-notify";
 
 const schema = z.object({
   price: z.number().int().positive(),
@@ -59,6 +60,25 @@ export async function POST(
     `Taklif yubordi: «${order.title}» — ${parsed.data.price.toLocaleString("ru-RU")} so'm`,
     { orderId: id, price: parsed.data.price },
   );
+
+  const preparer = await db.user.findUnique({
+    where: { id: session.user.id },
+    select: { name: true, firstName: true, login: true },
+  });
+  const preparerName =
+    preparer?.firstName ||
+    preparer?.name ||
+    (preparer?.login ? `@${preparer.login}` : "Tayyorlovchi");
+
+  await sendTelegramToUser(order.ordererId, {
+    title: "🙋 Yangi ko'ngilli topildi",
+    body:
+      `«${order.title}» buyurtmangizga ${preparerName} taklif yubordi: ` +
+      `${parsed.data.price.toLocaleString("ru-RU")} so'm` +
+      (parsed.data.message ? `\n\n«${parsed.data.message}»` : ""),
+    url: siteUrl(`/orders/${id}`),
+    buttonLabel: "Ko'ngillilarni ko'rish",
+  });
 
   return NextResponse.json({ offer }, { status: 201 });
 }

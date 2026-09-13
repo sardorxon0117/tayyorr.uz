@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
+import { createPortal } from "react-dom";
 
 const VAPID = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || "";
 
@@ -37,6 +38,7 @@ export function PushSetup() {
     "loading" | "unsupported" | "default" | "granted" | "denied"
   >("loading");
   const [busy, setBusy] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
     if (
@@ -59,8 +61,23 @@ export function PushSetup() {
       .catch(() => setState("unsupported"));
   }, []);
 
-  if (state !== "default") return null;
-  if (/^\/messages\/[^/]+$/.test(pathname)) return null;
+  const show = state === "default" && !dismissed && !/^\/messages\/[^/]+$/.test(pathname);
+
+  useEffect(() => {
+    if (!show) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setDismissed(true);
+    }
+    window.addEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [show]);
+
+  if (!show || typeof document === "undefined") return null;
 
   async function enable() {
     setBusy(true);
@@ -75,17 +92,45 @@ export function PushSetup() {
     }
   }
 
-  return (
-    <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-indigo-400/25 bg-indigo-500/10 p-3 text-sm text-indigo-100">
-      <span>🔔 Yangi xabarlar haqida bildirishnoma olishni yoqasizmi?</span>
-      <button
-        type="button"
-        onClick={enable}
-        disabled={busy}
-        className="btn-primary shrink-0"
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[90] flex items-center justify-center bg-black/75 p-4"
+      onClick={() => setDismissed(true)}
+    >
+      <div
+        className="pop-in w-full max-w-sm rounded-2xl border border-white/10 bg-[#14141b] p-6 text-center shadow-2xl shadow-black/50"
+        onClick={(e) => e.stopPropagation()}
       >
-        {busy ? "..." : "Yoqish"}
-      </button>
-    </div>
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-indigo-500/15 text-2xl">
+          🔔
+        </div>
+        <h3 className="mt-4 font-semibold text-white">
+          Bildirishnomalarni yoqasizmi?
+        </h3>
+        <p className="mt-1.5 text-sm text-zinc-400">
+          Yangi xabarlar, takliflar va buyurtma holati haqida darhol
+          xabardor bo&apos;lasiz.
+        </p>
+        <div className="mt-5 flex justify-center gap-2">
+          <button
+            type="button"
+            className="btn-ghost"
+            onClick={() => setDismissed(true)}
+            disabled={busy}
+          >
+            Keyinroq
+          </button>
+          <button
+            type="button"
+            className="btn-primary"
+            onClick={enable}
+            disabled={busy}
+          >
+            {busy ? "..." : "Yoqish"}
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body,
   );
 }

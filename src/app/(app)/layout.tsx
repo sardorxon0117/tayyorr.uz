@@ -7,14 +7,15 @@ import { ensureWalletCode } from "@/lib/wallet";
 import { AuroraBackground } from "@/components/aurora-background";
 import { AppHeader } from "@/components/app-header";
 import { AppSidebar } from "@/components/app-sidebar";
-import { PushSetup } from "@/components/push-setup";
 import { PresencePing } from "@/components/presence-ping";
 import { NavHistoryTracker } from "@/components/nav-history";
 import { ThemeSync } from "@/components/theme-sync";
 import { RevealOnScroll } from "@/components/reveal-on-scroll";
 import { RestrictionBanner } from "@/components/restriction-banner";
+import { TelegramConnectBanner } from "@/components/telegram-connect-banner";
 import { UnreadProvider } from "@/components/unread-provider";
 import { getRestriction, restrictionText } from "@/lib/restriction";
+import { buildConnectDeepLink } from "@/lib/telegram-notify";
 
 export const metadata: Metadata = {
   robots: { index: false, follow: false },
@@ -43,6 +44,7 @@ export default async function AppLayout({
         balance: true,
         walletCode: true,
         theme: true,
+        telegramChatId: true,
       },
     }),
     db.message.count({
@@ -83,7 +85,10 @@ export default async function AppLayout({
 
         <main className="relative z-10 px-3 py-6 sm:px-5 sm:py-8 lg:pl-[17rem] lg:pr-6">
           <div className="mx-auto w-full max-w-5xl">
-            <PushSetup />
+            <TelegramConnectBanner
+              connected={!!u?.telegramChatId}
+              connectUrl={buildConnectDeepLink(session.user.id)}
+            />
             {restriction && (
               <RestrictionBanner text={restrictionText(restriction)} />
             )}

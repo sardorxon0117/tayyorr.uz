@@ -3,7 +3,7 @@ import type { Message } from "@prisma/client";
 import { db } from "@/lib/db";
 import { publishToConversation } from "@/lib/chat-bus";
 import { toSerializedMessage } from "@/lib/chat-messages";
-import { sendPushToUser } from "@/lib/push";
+import { sendTelegramToUser, siteUrl } from "@/lib/telegram-notify";
 import { SUPPORT_NAME } from "@/lib/support";
 
 function snippet(m: Message) {
@@ -41,10 +41,10 @@ export async function deliverMessage(m: Message) {
       sender?.firstName ||
       (sender?.login ? `@${sender.login}` : "Yangi xabar");
 
-  await sendPushToUser(recipientId, {
+  await sendTelegramToUser(recipientId, {
     title,
     body: snippet(m),
-    url: `/messages/${m.conversationId}`,
-    tag: `conv-${m.conversationId}`,
+    url: siteUrl(`/messages/${m.conversationId}`),
+    buttonLabel: "Xabarni ko'rish",
   });
 }

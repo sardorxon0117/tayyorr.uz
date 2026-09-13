@@ -129,6 +129,10 @@ model User {
   referralLinkId String?
   referralLink   ReferralLink? @relation(fields: [referralLinkId], references: [id], onDelete: SetNull)
 
+  // shaxsiy bildirishnoma boti bilan bog'langan Telegram chat
+  telegramChatId   String?
+  telegramLinkedAt DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

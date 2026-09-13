@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { db } from "@/lib/db";
 import { adminApiGuard } from "@/lib/admin";
+import { sendTelegramToUser, siteUrl } from "@/lib/telegram-notify";
 
 // pulni qo'shgan turlar (bekor qilinganda balansdan ayiriladi)
 const INFLOW = new Set(["TOPUP", "TRANSFER_IN", "REFUND"]);
@@ -48,6 +49,13 @@ export async function POST(
         meta: { reverses: txn.id },
       },
     });
+  });
+
+  await sendTelegramToUser(txn.userId, {
+    title: "⚠️ Tranzaksiya bekor qilindi",
+    body: `${txn.amount.toLocaleString("ru-RU")} so'mlik amal admin tomonidan bekor qilindi, hisobingiz tuzatildi.`,
+    url: siteUrl("/wallet"),
+    buttonLabel: "Tranzaksiyalarni ko'rish",
   });
 
   return NextResponse.json({ ok: true });
