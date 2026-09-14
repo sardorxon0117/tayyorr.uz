@@ -26,10 +26,13 @@ export function NavMenu({
   links,
   onSignOut,
   footer,
+  topSlot,
 }: {
   links: NavLink[];
   onSignOut?: () => void;
   footer?: React.ReactNode;
+  /** Havolalar ro'yxatidan OLDIN chiqadigan qo'shimcha qator (masalan star). */
+  topSlot?: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
   const [closing, setClosing] = useState(false);
@@ -108,6 +111,12 @@ export function NavMenu({
               }`}
               style={{ top: anchor.top, right: anchor.right }}
             >
+              {topSlot && (
+                <>
+                  <div onClick={close}>{topSlot}</div>
+                  <div className="my-1 h-px bg-white/10" />
+                </>
+              )}
               {links.map((l, i) => {
                 const active =
                   pathname === l.href || pathname.startsWith(l.href + "/");

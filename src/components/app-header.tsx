@@ -17,7 +17,7 @@ export function AppHeader({
 }: {
   image: string | null;
   unread?: number;
-  /** null bo'lsa (masalan buyurtma beruvchi) belgi umuman ko'rsatilmaydi. */
+  /** null bo'lsa (masalan buyurtma beruvchi) qator umuman ko'rsatilmaydi. */
   starBalance?: number | null;
   role?: string | null;
 }) {
@@ -38,15 +38,6 @@ export function AppHeader({
           <Logo className="h-4 max-w-[70vw] sm:h-6" />
         </Link>
         <div className="ml-auto flex items-center gap-2.5">
-          {starBalance !== null && (
-            <Link
-              href="/wallet"
-              className="flex items-center gap-1 rounded-full border border-amber-400/25 bg-amber-500/10 px-2.5 py-1 text-xs font-semibold text-amber-300 transition hover:bg-amber-500/20"
-              aria-label="Star balansi"
-            >
-              {starBalance} ⭐
-            </Link>
-          )}
           <Link
             href="/profile"
             className="h-9 w-9 overflow-hidden rounded-full border border-white/15 bg-white/5 transition hover:border-white/30"
@@ -57,7 +48,24 @@ export function AppHeader({
               <img src={image} alt="" className="h-full w-full object-cover" />
             )}
           </Link>
-          <NavMenu links={nav} footer={<ThemeToggle bare />} />
+          <NavMenu
+            links={nav}
+            footer={<ThemeToggle bare />}
+            topSlot={
+              starBalance !== null ? (
+                <Link
+                  href="/wallet"
+                  className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-amber-300 transition hover:bg-white/5"
+                >
+                  <span className="text-base">⭐</span>
+                  <span className="flex-1">Stars</span>
+                  <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-xs font-semibold text-amber-300">
+                    {starBalance}
+                  </span>
+                </Link>
+              ) : null
+            }
+          />
         </div>
       </div>
     </header>
