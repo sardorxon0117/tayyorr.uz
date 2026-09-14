@@ -121,7 +121,7 @@ export default async function OrderDetailPage({
             starsSpent: o.starsSpent,
             ...(mine
               ? { visible: displayName, hiddenLen: 0 }
-              : maskName(displayName)),
+              : maskName(displayName, 0.2)), // ozgina boshi ochiq, qolgani blur
           };
         })
       : [];

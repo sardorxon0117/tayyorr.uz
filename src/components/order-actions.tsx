@@ -84,6 +84,7 @@ export function OrderActions(props: Props) {
   const [price, setPrice] = useState(myOffer?.price?.toString() ?? "");
   const [message, setMessage] = useState(myOffer?.message ?? "");
   const [boostStars, setBoostStars] = useState("");
+  const [offerStars, setOfferStars] = useState(String(MIN_OFFER_STARS));
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
@@ -233,90 +234,8 @@ export function OrderActions(props: Props) {
         </div>
       )}
 
-      {/* Tayyorlovchi: taklif yuborish */}
-      {isPreparer && !isAssigned && status === "OPEN" && (
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            call(`/api/orders/${orderId}/offers`, "POST", {
-              price: Number(price),
-              message: message || undefined,
-            });
-          }}
-          className="card flex flex-col gap-3"
-        >
-          <h2 className="font-semibold">
-            {myOffer ? "Taklifni yangilash" : "Taklif yuborish"}
-          </h2>
-          <div>
-            <label className="label">Narx (so'm)</label>
-            <input
-              className="input"
-              type="number"
-              min={1}
-              required
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-            />
-          </div>
-          <div>
-            <label className="label">Xabar</label>
-            <textarea
-              className="input"
-              rows={3}
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-            />
-          </div>
-          {!myOffer && (
-            <p className="text-xs text-amber-300">
-              ⭐ Taklif yuborish {MIN_OFFER_STARS} star talab qiladi — star
-              balansingizdan sarflanadi.{" "}
-              <Link href="/wallet" className="underline hover:text-amber-200">
-                Star yetarli emasmi? Hamyondan sotib oling →
-              </Link>
-            </p>
-          )}
-          <button className="btn-primary" disabled={busy}>
-            {myOffer ? "Yangilash" : `Yuborish (${MIN_OFFER_STARS} ⭐)`}
-          </button>
-          {myOffer && (
-            <div className="flex flex-col gap-2 border-t border-white/10 pt-3">
-              <p className="text-xs text-zinc-500">
-                Holat: {myOffer.status} · Jami sarflangan:{" "}
-                <b className="text-amber-300">{myOffer.starsSpent} ⭐</b>
-              </p>
-              <div className="flex items-center gap-2">
-                <input
-                  className="input w-28"
-                  type="number"
-                  min={1}
-                  step={1}
-                  placeholder="star"
-                  value={boostStars}
-                  onChange={(e) => setBoostStars(e.target.value)}
-                />
-                <button
-                  type="button"
-                  className="btn-ghost"
-                  disabled={busy}
-                  onClick={boost}
-                >
-                  🚀 Navbatda yuqoriga chiqish
-                </button>
-              </div>
-              <p className="text-xs text-zinc-600">
-                Navbatda ko'proq star sarflaganlar yuqorida turadi.{" "}
-                <Link href="/wallet" className="underline hover:text-zinc-400">
-                  Star sotib olish →
-                </Link>
-              </p>
-            </div>
-          )}
-        </form>
-      )}
-
-      {/* Navbat — boshqa tayyorlovchilarga (ismlar qisman yashirilgan) */}
+      {/* Navbat — taklif berishdan oldin ham ko'rinadi, shunga qarab qancha
+          star sarflashni tanlaydi (ismlar qisman yashirilgan) */}
       {isPreparer && !isOrderer && status === "OPEN" && queue.length > 0 && (
         <div className="card flex flex-col gap-2">
           <h2 className="font-semibold">Navbat ({queue.length})</h2>
@@ -356,6 +275,108 @@ export function OrderActions(props: Props) {
             ))}
           </ul>
         </div>
+      )}
+
+      {/* Tayyorlovchi: taklif yuborish */}
+      {isPreparer && !isAssigned && status === "OPEN" && (
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            call(`/api/orders/${orderId}/offers`, "POST", {
+              price: Number(price),
+              message: message || undefined,
+              ...(myOffer ? {} : { stars: Number(offerStars) || MIN_OFFER_STARS }),
+            });
+          }}
+          className="card flex flex-col gap-3"
+        >
+          <h2 className="font-semibold">
+            {myOffer ? "Taklifni yangilash" : "Taklif yuborish"}
+          </h2>
+          <div>
+            <label className="label">Narx (so'm)</label>
+            <input
+              className="input"
+              type="number"
+              min={1}
+              required
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="label">Xabar</label>
+            <textarea
+              className="input"
+              rows={3}
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+            />
+          </div>
+          {!myOffer && (
+            <div>
+              <label className="label">
+                Star (navbatdagi boshlang'ich o'rningiz — kamida{" "}
+                {MIN_OFFER_STARS})
+              </label>
+              <input
+                className="input"
+                type="number"
+                min={MIN_OFFER_STARS}
+                step={1}
+                required
+                value={offerStars}
+                onChange={(e) => setOfferStars(e.target.value)}
+              />
+              <p className="mt-1 text-xs text-amber-300">
+                ⭐ Kamida {MIN_OFFER_STARS} star talab qiladi — navbatda
+                yuqoriroqda turish uchun boshidanoq ko'proq yuborishingiz
+                mumkin. Star balansingizdan sarflanadi.{" "}
+                <Link href="/wallet" className="underline hover:text-amber-200">
+                  Star yetarli emasmi? Hamyondan sotib oling →
+                </Link>
+              </p>
+            </div>
+          )}
+          <button className="btn-primary" disabled={busy}>
+            {myOffer
+              ? "Yangilash"
+              : `Yuborish (${Number(offerStars) || MIN_OFFER_STARS} ⭐)`}
+          </button>
+          {myOffer && (
+            <div className="flex flex-col gap-2 border-t border-white/10 pt-3">
+              <p className="text-xs text-zinc-500">
+                Holat: {myOffer.status} · Jami sarflangan:{" "}
+                <b className="text-amber-300">{myOffer.starsSpent} ⭐</b>
+              </p>
+              <div className="flex items-center gap-2">
+                <input
+                  className="input w-28"
+                  type="number"
+                  min={1}
+                  step={1}
+                  placeholder="star"
+                  value={boostStars}
+                  onChange={(e) => setBoostStars(e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  disabled={busy}
+                  onClick={boost}
+                >
+                  🚀 Navbatda yuqoriga chiqish
+                </button>
+              </div>
+              <p className="text-xs text-zinc-600">
+                Navbatda ko'proq star sarflaganlar yuqorida turadi.{" "}
+                <Link href="/wallet" className="underline hover:text-zinc-400">
+                  Star sotib olish →
+                </Link>
+              </p>
+            </div>
+          )}
+        </form>
       )}
 
       {/* Buyurtmachi: takliflar ro'yxati */}

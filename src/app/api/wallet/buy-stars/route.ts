@@ -37,7 +37,7 @@ export async function POST(req: Request) {
   });
 
   await logToGroup(
-    "payments",
+    "stars",
     "⭐ Star sotib olindi",
     [
       `Foydalanuvchi: ${userLabel(user)}`,

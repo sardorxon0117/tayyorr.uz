@@ -66,7 +66,7 @@ export async function POST(
   });
 
   await logToGroup(
-    "offers",
+    "stars",
     "🚀 Navbatda yuqoriga chiqish",
     [
       `«${order.title}»`,

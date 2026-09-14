@@ -12,13 +12,16 @@ import { useStars, MIN_OFFER_STARS } from "@/lib/stars";
 const schema = z.object({
   price: z.number().int().positive(),
   message: z.string().max(1000).optional(),
+  stars: z.number().int().min(MIN_OFFER_STARS).max(100_000).optional(),
 });
 
 /**
- * Taklif (ariza) yuborish. Birinchi marta yuborilganda majburiy
- * MIN_OFFER_STARS star to'lanadi (navbatdagi boshlang'ich o'rinni
- * belgilaydi) — [[stars.ts]]. Narx/xabarni keyin bepul yangilash mumkin,
- * yuqoriga chiqish uchun esa alohida "boost" orqali qo'shimcha star kerak.
+ * Taklif (ariza) yuborish. Birinchi marta yuborilganda kamida
+ * MIN_OFFER_STARS star sarflanadi (navbatdagi boshlang'ich o'rinni
+ * belgilaydi) — [[stars.ts]]. Tayyorlovchi xohlasa boshidanoq ko'proq
+ * star ko'rsatib yuqoriroq o'rinni tanlashi mumkin. Narx/xabarni keyin
+ * bepul yangilash mumkin; yuqoriga chiqish uchun esa alohida "boost"
+ * orqali qo'shimcha star kerak.
  */
 export async function POST(
   req: Request,
@@ -55,9 +58,11 @@ export async function POST(
     where: { orderId_preparerId: { orderId: id, preparerId: session.user.id } },
   });
 
-  // birinchi marta yuborilyapti — star sarflanadi (navbatga yozilish narxi)
+  // birinchi marta yuborilyapti — star sarflanadi (kamida MIN_OFFER_STARS,
+  // xohlasa boshidanoq ko'proq ko'rsatib yuqoriroq o'rin tanlaydi)
+  const initialStars = Math.max(MIN_OFFER_STARS, parsed.data.stars ?? MIN_OFFER_STARS);
   if (!existing) {
-    const spend = await useStars({ userId: session.user.id, stars: MIN_OFFER_STARS });
+    const spend = await useStars({ userId: session.user.id, stars: initialStars });
     if (!spend.ok) {
       return NextResponse.json({ error: spend.error }, { status: 400 });
     }
@@ -71,7 +76,7 @@ export async function POST(
       preparerId: session.user.id,
       price: parsed.data.price,
       message: parsed.data.message,
-      starsSpent: MIN_OFFER_STARS,
+      starsSpent: initialStars,
     },
   });
 
@@ -113,7 +118,7 @@ export async function POST(
       `Narx: ${parsed.data.price.toLocaleString("ru-RU")} so'm`,
       parsed.data.message ? `Xabar: ${parsed.data.message}` : "",
       !existing
-        ? `Ariza uchun sarflandi: ${MIN_OFFER_STARS} ⭐`
+        ? `Ariza uchun sarflandi: ${initialStars} ⭐`
         : `Jami star: ${offer.starsSpent} ⭐`,
       `Buyurtma ID: ${id}`,
       `Taklif ID: ${offer.id}`,
