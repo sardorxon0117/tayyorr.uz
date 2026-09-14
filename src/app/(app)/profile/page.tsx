@@ -32,7 +32,7 @@ export default async function ProfilePage() {
   if (!user) return null;
 
   return (
-    <div className="mx-auto max-w-lg">
+    <div className="mx-auto max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-3xl">
       <h1 className="mb-1 text-2xl font-semibold tracking-tight text-white">
         Profil
       </h1>
