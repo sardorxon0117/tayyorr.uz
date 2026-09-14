@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 export function BalanceAdjustForm({ userId }: { userId: string }) {
   const router = useRouter();
+  const [currency, setCurrency] = useState<"SOM" | "STAR">("SOM");
   const [direction, setDirection] = useState<"ADD" | "SUBTRACT">("ADD");
   const [amount, setAmount] = useState("");
   const [reason, setReason] = useState("");
@@ -24,6 +25,7 @@ export function BalanceAdjustForm({ userId }: { userId: string }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           direction,
+          currency,
           amount: Number(amount),
           reason,
           notify,
@@ -44,6 +46,30 @@ export function BalanceAdjustForm({ userId }: { userId: string }) {
 
   return (
     <form onSubmit={submit} className="flex flex-col gap-3">
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={() => setCurrency("SOM")}
+          className={`flex-1 rounded-xl px-3 py-2 text-sm font-medium transition ${
+            currency === "SOM"
+              ? "bg-indigo-500/20 text-indigo-300"
+              : "bg-white/5 text-zinc-400 hover:bg-white/10"
+          }`}
+        >
+          💰 So'm
+        </button>
+        <button
+          type="button"
+          onClick={() => setCurrency("STAR")}
+          className={`flex-1 rounded-xl px-3 py-2 text-sm font-medium transition ${
+            currency === "STAR"
+              ? "bg-amber-500/20 text-amber-300"
+              : "bg-white/5 text-zinc-400 hover:bg-white/10"
+          }`}
+        >
+          ⭐ Star
+        </button>
+      </div>
       <div className="flex gap-2">
         <button
           type="button"
@@ -69,7 +95,9 @@ export function BalanceAdjustForm({ userId }: { userId: string }) {
         </button>
       </div>
       <div>
-        <label className="label">Summa (so'm)</label>
+        <label className="label">
+          Summa ({currency === "STAR" ? "star" : "so'm"})
+        </label>
         <input
           className="input"
           type="number"

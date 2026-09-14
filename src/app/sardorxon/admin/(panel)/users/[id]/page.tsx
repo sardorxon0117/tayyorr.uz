@@ -234,10 +234,10 @@ export default async function AdminUserDetail({
         </section>
 
         <section className="rounded-xl border border-white/10 bg-white/[0.03] p-5">
-          <h2 className="mb-3 font-semibold text-white">Balansni to'g'irlash</h2>
+          <h2 className="mb-3 font-semibold text-white">Balans / Starni to'g'irlash</h2>
           <p className="mb-3 text-xs text-zinc-500">
-            Joriy balans: {formatSom(user.balance)}. Sababi foydalanuvchiga
-            tranzaksiya tarixida ko'rinadi.
+            Joriy balans: {formatSom(user.balance)} · {user.starBalance} ⭐.
+            Sababi foydalanuvchiga ko'rinadi.
           </p>
           <BalanceAdjustForm userId={user.id} />
         </section>
