@@ -17,8 +17,11 @@ export default async function AdminUsers({
       ...(query
         ? {
             OR: [
+              { id: { equals: query } },
               { login: { contains: query, mode: "insensitive" } },
               { name: { contains: query, mode: "insensitive" } },
+              { firstName: { contains: query, mode: "insensitive" } },
+              { lastName: { contains: query, mode: "insensitive" } },
               { email: { contains: query, mode: "insensitive" } },
               { walletCode: { contains: query.toUpperCase() } },
             ],
@@ -37,7 +40,7 @@ export default async function AdminUsers({
         <input
           name="q"
           defaultValue={query}
-          placeholder="login, ism, email yoki hisob kodi"
+          placeholder="login, ism, email, ID yoki hisob kodi"
           className="input max-w-sm"
         />
         <button className="btn-ghost">Qidirish</button>
