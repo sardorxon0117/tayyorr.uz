@@ -57,26 +57,61 @@ export async function POST(req: Request) {
     return fail(ClickError.TRANSACTION_NOT_FOUND, { click_trans_id, merchant_trans_id });
   }
 
-  if (wtx.status === "SUCCESS") {
-    return fail(ClickError.ALREADY_PAID, {
-      click_trans_id,
-      merchant_trans_id,
-      merchant_confirm_id: wtx.id,
-    });
-  }
+  const actionNum = Number(action);
 
-  // Click o'zi to'lovni bekor qilgan (foydalanuvchi bekor qildi va h.k.) — faqat qayd etamiz
-  if (incomingError < 0) {
-    await db.walletTransaction.update({
-      where: { id: wtx.id },
-      data: { status: "FAILED" },
-    });
+  // Click bekor qilish/qaytarish haqida xabar bermoqda (action=0 yoki manfiy xato kodi).
+  // Bu allaqachon SUCCESS bo'lgan to'lov uchun ham kelishi mumkin — Click.uz'da
+  // to'lov keyinroq bekor qilinsa, shu Complete manzilining o'ziga qayta murojaat
+  // qilinadi. Avval bu holat "allaqachon to'langan" deb noto'g'ri rad etilar edi,
+  // natijada hisobdan mablag' hech qachon ayirilmas edi.
+  if (actionNum === 0 || incomingError < 0) {
+    if (wtx.status === "SUCCESS") {
+      await db.$transaction(async (tx) => {
+        await tx.walletTransaction.update({
+          where: { id: wtx.id },
+          data: {
+            status: "FAILED",
+            reversedAt: new Date(),
+            meta: { ...meta, clickCancelledAt: new Date().toISOString() },
+          },
+        });
+        await tx.user.update({
+          where: { id: wtx.userId },
+          data: { balance: { decrement: wtx.amount } },
+        });
+      });
+      await logActivity(
+        wtx.userId,
+        "WALLET_TOPUP",
+        `Click to'lovi bekor qilindi: ${wtx.amount.toLocaleString("ru-RU")} so'm hisobdan ayirildi`,
+        { amount: wtx.amount, clickTransId: click_trans_id, cancelled: true },
+      );
+      await sendTelegramToUser(wtx.userId, {
+        title: "⚠️ To'lov bekor qilindi",
+        body: `Click orqali to'langan ${wtx.amount.toLocaleString("ru-RU")} so'm bekor qilindi va hisobingizdan ayirildi.`,
+        url: siteUrl("/wallet"),
+        buttonLabel: "Hamyonni ko'rish",
+      });
+    } else if (wtx.status === "PENDING") {
+      await db.walletTransaction.update({
+        where: { id: wtx.id },
+        data: { status: "FAILED" },
+      });
+    }
     return NextResponse.json({
       click_trans_id,
       merchant_trans_id,
       merchant_confirm_id: wtx.id,
       error: ClickError.SUCCESS,
       error_note: "Success",
+    });
+  }
+
+  if (wtx.status === "SUCCESS") {
+    return fail(ClickError.ALREADY_PAID, {
+      click_trans_id,
+      merchant_trans_id,
+      merchant_confirm_id: wtx.id,
     });
   }
 
