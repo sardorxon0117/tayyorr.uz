@@ -1,9 +1,9 @@
-import { SBar, SCard, SWrap } from "@/components/skeleton";
+import { SBar, SBlock, SCard, SWrap } from "@/components/skeleton";
 
 export default function DashboardLoading() {
   return (
     <SWrap>
-      <div className="card h-28 w-full" />
+      <SBlock className="h-28 w-full" />
       <div className="flex items-center gap-2">
         <SBar className="h-10 flex-1" />
         <SBar className="h-10 w-20" />

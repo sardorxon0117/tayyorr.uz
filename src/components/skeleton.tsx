@@ -1,15 +1,22 @@
 /**
  * Skeleton-loading uchun kichik qurilish bloklari — har bir sahifa
  * o'zining haqiqiy shakliga mos ravishda shulardan yig'adi (bir xil
- * "quti" hamma joyda emas).
+ * "quti" hamma joyda emas). Harakatlanuvchi yorug' chiziq effekti
+ * (`.skel` klassi, globals.css) — heroning "nurli chiziq"iga o'xshash,
+ * oddiy pulslashdan ko'ra jonliroq.
  */
 
 export function SBar({ className = "" }: { className?: string }) {
-  return <div className={`rounded-md bg-white/5 ${className}`} />;
+  return <div className={`skel rounded-md ${className}`} />;
 }
 
 export function SCircle({ className = "h-10 w-10" }: { className?: string }) {
-  return <div className={`shrink-0 rounded-full bg-white/5 ${className}`} />;
+  return <div className={`skel shrink-0 rounded-full ${className}`} />;
+}
+
+/** Karta shaklidagi bo'sh blok (haqiqiy .card o'rnini bosadi). */
+export function SBlock({ className = "" }: { className?: string }) {
+  return <div className={`skel rounded-2xl ${className}`} />;
 }
 
 /** Ro'yxat qatori: doira (avatar) + ikki qator matn + o'ngda kichik belgi. */
@@ -62,7 +69,16 @@ export function STableRow({ cols = 4 }: { cols?: number }) {
   );
 }
 
-/** Umumiy o'ram — pulse animatsiyasi shu yerda beriladi. */
+/** Chat pufakchasi. */
+export function SBubble({ w, mine = false }: { w: string; mine?: boolean }) {
+  return (
+    <div
+      className={`skel h-10 rounded-2xl ${w} ${mine ? "self-end" : ""}`}
+    />
+  );
+}
+
+/** Umumiy o'ram — endi faqat joylashuv (gap) uchun, animatsiya .skel'da. */
 export function SWrap({ children }: { children: React.ReactNode }) {
-  return <div className="flex animate-pulse flex-col gap-4">{children}</div>;
+  return <div className="flex flex-col gap-4">{children}</div>;
 }

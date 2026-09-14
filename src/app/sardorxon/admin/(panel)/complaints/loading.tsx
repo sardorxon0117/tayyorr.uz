@@ -1,9 +1,9 @@
-import { SRow, SWrap } from "@/components/skeleton";
+import { SBar, SRow, SWrap } from "@/components/skeleton";
 
 export default function AdminComplaintsLoading() {
   return (
     <SWrap>
-      <div className="h-6 w-40 rounded-md bg-white/5" />
+      <SBar className="h-6 w-40" />
       <SRow withAvatar={false} />
       <SRow withAvatar={false} />
       <SRow withAvatar={false} />

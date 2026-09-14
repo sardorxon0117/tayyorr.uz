@@ -1,4 +1,4 @@
-import { SBar, SCircle, SWrap } from "@/components/skeleton";
+import { SBar, SBlock, SCircle, SWrap } from "@/components/skeleton";
 
 export default function AdminUserDetailLoading() {
   return (
@@ -10,10 +10,10 @@ export default function AdminUserDetailLoading() {
       </div>
       <div className="grid gap-6 md:grid-cols-2">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="card h-40" />
+          <SBlock key={i} className="h-40" />
         ))}
       </div>
-      <div className="card h-48" />
+      <SBlock className="h-48" />
     </SWrap>
   );
 }

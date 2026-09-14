@@ -1,11 +1,11 @@
-import { SBar, SWrap } from "@/components/skeleton";
+import { SBar, SBlock, SCircle, SWrap } from "@/components/skeleton";
 
 export default function OrderDetailLoading() {
   return (
     <SWrap>
       <SBar className="h-4 w-20" />
       <div className="card flex items-center gap-3">
-        <div className="h-11 w-11 shrink-0 rounded-full bg-white/5" />
+        <SCircle className="h-11 w-11" />
         <div className="flex-1 space-y-2">
           <SBar className="h-4 w-1/3" />
           <SBar className="h-3 w-1/4" />
@@ -13,7 +13,7 @@ export default function OrderDetailLoading() {
       </div>
       <SBar className="h-3 w-24" />
       <SBar className="h-7 w-2/3" />
-      <div className="card h-28 w-full" />
+      <SBlock className="h-28 w-full" />
       <div className="flex gap-4">
         <SBar className="h-4 w-24" />
         <SBar className="h-4 w-28" />

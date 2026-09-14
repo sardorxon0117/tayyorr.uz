@@ -444,6 +444,47 @@ html.light .lq-glass-strong {
   }
 }
 
+/* Skeleton-loading — heroning "nurli chiziq"iga o'xshash harakatlanuvchi
+   yorug' chiziq, oddiy pulslashdan (yorug'-xira) ko'ra jonliroq. */
+@keyframes skel-sweep {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+.skel {
+  position: relative;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.06);
+}
+.skel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    100deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.16) 50%,
+    transparent 80%
+  );
+  animation: skel-sweep 1.7s ease-in-out infinite;
+}
+html.light .skel {
+  background: rgba(0, 0, 0, 0.05);
+}
+html.light .skel::after {
+  background: linear-gradient(
+    100deg,
+    transparent 20%,
+    rgba(99, 102, 241, 0.2) 50%,
+    transparent 80%
+  );
+}
+@media (prefers-reduced-motion: reduce) {
+  .skel::after {
+    animation: none;
+  }
+}
+
 /* hero maketidagi slaydlar orasidagi o'tish — blur bilan silliq */
 .hero-slide {
   transition:

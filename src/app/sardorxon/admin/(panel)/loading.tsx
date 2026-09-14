@@ -1,4 +1,4 @@
-import { SBar, SWrap } from "@/components/skeleton";
+import { SBar, SBlock, SWrap } from "@/components/skeleton";
 
 /** Admin bosh sahifasi (statistik kartalar) shakliga mos — pastki
  * bo'limlar o'zining aniqroq loading.tsx faylini beradi. */
@@ -8,7 +8,7 @@ export default function AdminHomeLoading() {
       <SBar className="h-6 w-48" />
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="card h-20" />
+          <SBlock key={i} className="h-20" />
         ))}
       </div>
     </SWrap>
