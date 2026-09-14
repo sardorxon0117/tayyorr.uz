@@ -44,7 +44,9 @@ export async function reverseWalletTopup(wtx: Reversible, reason: string) {
 
   await sendTelegramToUser(wtx.userId, {
     title: "⚠️ To'lov bekor qilindi",
-    body: `Click orqali to'langan ${wtx.amount.toLocaleString("ru-RU")} so'm bekor qilindi va hisobingizdan ayirildi.`,
+    body:
+      `Click orqali to'langan ${wtx.amount.toLocaleString("ru-RU")} so'm bekor qilindi va hisobingizdan ayirildi. ` +
+      `Pulingiz 24 ish soati ichida kartangizga qaytariladi.`,
     url: siteUrl("/wallet"),
     buttonLabel: "Hamyonni ko'rish",
   });
