@@ -12,10 +12,8 @@ import { NavHistoryTracker } from "@/components/nav-history";
 import { ThemeSync } from "@/components/theme-sync";
 import { RevealOnScroll } from "@/components/reveal-on-scroll";
 import { RestrictionBanner } from "@/components/restriction-banner";
-import { TelegramConnectBanner } from "@/components/telegram-connect-banner";
 import { UnreadProvider } from "@/components/unread-provider";
 import { getRestriction, restrictionText } from "@/lib/restriction";
-import { botLink } from "@/lib/telegram-notify";
 
 export const metadata: Metadata = {
   robots: { index: false, follow: false },
@@ -44,7 +42,6 @@ export default async function AppLayout({
         balance: true,
         walletCode: true,
         theme: true,
-        telegramChatId: true,
       },
     }),
     db.message.count({
@@ -85,10 +82,6 @@ export default async function AppLayout({
 
         <main className="relative z-10 px-3 py-6 sm:px-5 sm:py-8 lg:pl-[17rem] lg:pr-6">
           <div className="mx-auto w-full max-w-5xl">
-            <TelegramConnectBanner
-              connected={!!u?.telegramChatId}
-              connectUrl={botLink()}
-            />
             {restriction && (
               <RestrictionBanner text={restrictionText(restriction)} />
             )}
