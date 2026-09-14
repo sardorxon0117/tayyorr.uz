@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { restrictionApiError } from "@/lib/restriction";
 import { logActivity } from "@/lib/activity";
 import { sendTelegramToUser, siteUrl } from "@/lib/telegram-notify";
+import { logToGroup } from "@/lib/telegram-log";
 
 const schema = z.object({
   price: z.number().int().positive(),
@@ -79,6 +80,17 @@ export async function POST(
     url: siteUrl(`/orders/${id}`),
     buttonLabel: "Ko'ngillilarni ko'rish",
   });
+
+  await logToGroup(
+    "offers",
+    "🙋 Yangi taklif",
+    [
+      `«${order.title}»`,
+      `Tayyorlovchi: ${preparerName}`,
+      `Narx: ${parsed.data.price.toLocaleString("ru-RU")} so'm`,
+    ],
+    siteUrl(`/sardorxon/admin/orders/${id}`),
+  );
 
   return NextResponse.json({ offer }, { status: 201 });
 }

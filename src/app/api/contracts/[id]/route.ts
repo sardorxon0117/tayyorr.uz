@@ -9,6 +9,7 @@ import { deliverMessage } from "@/lib/chat-notify";
 import { getPlatformUserId, commission, COMMISSION_CANCEL } from "@/lib/platform";
 import { updateOrderChannelPost } from "@/lib/telegram";
 import { logActivity } from "@/lib/activity";
+import { logToGroup, siteUrl } from "@/lib/telegram-log";
 
 const schema = z.object({ action: z.enum(["ACCEPT", "DECLINE", "CANCEL"]) });
 
@@ -94,6 +95,12 @@ export async function POST(
         `${action === "DECLINE" ? "Shartnomani rad etdi" : "Shartnomani bekor qildi"}: «${contract.order.title}»`,
         { orderId: contract.orderId, contractId: id },
       );
+      await logToGroup(
+        "contracts",
+        action === "DECLINE" ? "📄 Shartnoma rad etildi" : "📄 Shartnoma bekor qilindi",
+        [`«${contract.order.title}»`, `${contract.amount.toLocaleString("ru-RU")} so'm qaytarildi`],
+        siteUrl(`/sardorxon/admin/orders/${contract.orderId}`),
+      );
       return NextResponse.json({ ok: true });
     }
 
@@ -138,6 +145,12 @@ export async function POST(
         "CONTRACT_ACCEPT",
         `Shartnomani qabul qildi: «${contract.order.title}» — ${contract.amount.toLocaleString("ru-RU")} so'm`,
         { orderId: contract.orderId, contractId: id, amount: contract.amount },
+      );
+      await logToGroup(
+        "contracts",
+        "✅ Shartnoma qabul qilindi",
+        [`«${contract.order.title}»`, `${contract.amount.toLocaleString("ru-RU")} so'm`],
+        siteUrl(`/sardorxon/admin/orders/${contract.orderId}`),
       );
       return NextResponse.json({ ok: true });
     }
@@ -215,6 +228,16 @@ export async function POST(
       "CONTRACT_CANCEL",
       `Shartnomani bekor qildi (ish jarayonida): «${contract.order.title}»`,
       { orderId: contract.orderId, contractId: id, fee, refund },
+    );
+    await logToGroup(
+      "contracts",
+      "📄 Shartnoma bekor qilindi (jarayonda)",
+      [
+        `«${contract.order.title}»`,
+        `Komissiya: ${fee.toLocaleString("ru-RU")} so'm`,
+        `Qaytarildi: ${refund.toLocaleString("ru-RU")} so'm`,
+      ],
+      siteUrl(`/sardorxon/admin/orders/${contract.orderId}`),
     );
     return NextResponse.json({ ok: true });
   }

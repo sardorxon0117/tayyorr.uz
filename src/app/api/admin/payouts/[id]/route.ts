@@ -6,6 +6,7 @@ import { adminApiGuard } from "@/lib/admin";
 import { getSupportUserId } from "@/lib/support";
 import { createMessage, getOrCreateConversation } from "@/lib/chat";
 import { deliverMessage } from "@/lib/chat-notify";
+import { logToGroup } from "@/lib/telegram-log";
 
 const schema = z.object({
   action: z.enum(["PAID", "REJECT"]),
@@ -93,6 +94,12 @@ export async function POST(
     system: false, // support xabari — oddiy bubble
   });
   await deliverMessage(msg);
+
+  await logToGroup(
+    "payouts",
+    action === "PAID" ? "🏧 Pul o'tkazildi" : "🏧 Yechish rad etildi",
+    [`${p.amount.toLocaleString("ru-RU")} so'm`, note ? `Izoh: ${note}` : ""].filter(Boolean),
+  );
 
   return NextResponse.json({ ok: true });
 }

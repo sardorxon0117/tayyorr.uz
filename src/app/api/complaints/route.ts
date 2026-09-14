@@ -4,6 +4,7 @@ import { z } from "zod";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { logActivity } from "@/lib/activity";
+import { logToGroup, siteUrl } from "@/lib/telegram-log";
 
 const schema = z.object({
   suspectId: z.string().optional(),
@@ -49,6 +50,12 @@ export async function POST(req: Request) {
     "COMPLAINT_CREATE",
     `Shikoyat yubordi${messageId ? " (xabar ustidan)" : orderId ? " (buyurtma bo'yicha)" : ""}`,
     { suspectId: suspectId || null, orderId: orderId || null, messageId: messageId || null },
+  );
+  await logToGroup(
+    "complaints",
+    "⚠️ Yangi shikoyat",
+    [body.length > 200 ? body.slice(0, 200) + "…" : body],
+    siteUrl("/sardorxon/admin/complaints"),
   );
 
   return NextResponse.json({ ok: true });

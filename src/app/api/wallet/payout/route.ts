@@ -5,6 +5,7 @@ import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { maskCard } from "@/lib/wallet";
 import { logActivity } from "@/lib/activity";
+import { logToGroup, siteUrl } from "@/lib/telegram-log";
 
 const MIN = 10_000;
 
@@ -73,6 +74,12 @@ export async function POST(req: Request) {
     "PAYOUT_REQUEST",
     `Kartaga yechish so'radi: ${amount.toLocaleString("ru-RU")} so'm — ${maskCard(card)}`,
     { amount, payoutId: payout.id },
+  );
+  await logToGroup(
+    "payouts",
+    "🏧 Yangi yechib olish so'rovi",
+    [`${amount.toLocaleString("ru-RU")} so'm`, `Karta: ${maskCard(card)}`],
+    siteUrl("/sardorxon/admin/payouts"),
   );
 
   return NextResponse.json({ ok: true, payoutId: payout.id });

@@ -8,6 +8,7 @@ import { deliverMessage } from "@/lib/chat-notify";
 import { getPlatformUserId, commission, COMMISSION_FINAL } from "@/lib/platform";
 import { updateOrderChannelPost } from "@/lib/telegram";
 import { logActivity } from "@/lib/activity";
+import { logToGroup, siteUrl } from "@/lib/telegram-log";
 
 /** Buyurtmachi ishni yakunlaydi -> eskroudan tayyorlovchiga (95%), saytga (5%). */
 export async function POST(
@@ -95,6 +96,12 @@ export async function POST(
     "ORDER_FINALIZE",
     `Ishni yakunladi: «${order.title}» — tayyorlovchiga ${payout.toLocaleString("ru-RU")} so'm`,
     { orderId: id, payout, fee },
+  );
+  await logToGroup(
+    "completed",
+    "✅ Ish yakunlandi",
+    [`«${order.title}»`, `Tayyorlovchiga: ${payout.toLocaleString("ru-RU")} so'm`],
+    siteUrl(`/sardorxon/admin/orders/${id}`),
   );
 
   return NextResponse.json({ ok: true });

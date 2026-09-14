@@ -7,6 +7,7 @@ import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { sendWelcome } from "@/lib/support-actions";
 import { logActivity } from "@/lib/activity";
+import { logToGroup, siteUrl } from "@/lib/telegram-log";
 import { TERMS_VERSION } from "@/lib/terms";
 
 const schema = z.object({
@@ -56,7 +57,7 @@ export async function POST(req: Request) {
   const refLink = refCode
     ? await db.referralLink.findUnique({
         where: { code: refCode.toUpperCase() },
-        select: { id: true },
+        select: { id: true, name: true },
       })
     : null;
 
@@ -81,6 +82,25 @@ export async function POST(req: Request) {
     "REGISTER",
     `Ro'yxatdan o'tdi — @${login} (${parsed.data.role === "PREPARER" ? "Tayyorlovchi" : "Buyurtma beruvchi"})`,
   );
+  await logToGroup(
+    "registrations",
+    "🆕 Yangi ro'yxatdan o'tish",
+    [
+      `Login: @${login}`,
+      `Ism: ${firstName} ${lastName}`,
+      `Rol: ${parsed.data.role === "PREPARER" ? "Tayyorlovchi" : "Buyurtma beruvchi"}`,
+      refLink ? `Referral havola: ${refLink.name}` : "",
+    ].filter(Boolean),
+    siteUrl(`/sardorxon/admin/users/${session.user.id}`),
+  );
+  if (refLink) {
+    await logToGroup(
+      "referrals",
+      "🔗 Referral orqali ro'yxatdan o'tish",
+      [`Havola: ${refLink.name}`, `Yangi foydalanuvchi: @${login}`],
+      siteUrl(`/sardorxon/admin/referrals/${refLink.id}`),
+    );
+  }
 
   return NextResponse.json({ ok: true });
 }

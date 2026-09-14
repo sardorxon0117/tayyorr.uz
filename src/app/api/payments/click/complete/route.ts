@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { logActivity } from "@/lib/activity";
 import { sendTelegramToUser, siteUrl } from "@/lib/telegram-notify";
 import { reverseWalletTopup } from "@/lib/wallet-reversal";
+import { logToGroup } from "@/lib/telegram-log";
 import {
   CLICK_SERVICE_ID,
   ClickError,
@@ -45,6 +46,10 @@ export async function POST(req: Request) {
       sign_string,
     })
   ) {
+    await logToGroup("errors", "🚨 Click imzosi noto'g'ri (Complete)", [
+      `click_trans_id: ${click_trans_id}`,
+      `merchant_trans_id: ${merchant_trans_id}`,
+    ]);
     return fail(ClickError.SIGN_FAILED, { click_trans_id, merchant_trans_id });
   }
 
@@ -68,6 +73,10 @@ export async function POST(req: Request) {
   if (actionNum === 0 || incomingError < 0) {
     if (wtx.status === "SUCCESS") {
       await reverseWalletTopup(wtx, "click_webhook_cancel");
+      await logToGroup("payments", "⚠️ To'lov bekor qilindi (Click)", [
+        `${wtx.amount.toLocaleString("ru-RU")} so'm`,
+        `Foydalanuvchi ID: ${wtx.userId}`,
+      ]);
     } else if (wtx.status === "PENDING") {
       await db.walletTransaction.update({
         where: { id: wtx.id },
@@ -123,6 +132,10 @@ export async function POST(req: Request) {
     url: siteUrl("/wallet"),
     buttonLabel: "Tranzaksiyalarni ko'rish",
   });
+  await logToGroup("payments", "💳 Hisob to'ldirildi (Click)", [
+    `${wtx.amount.toLocaleString("ru-RU")} so'm`,
+    `Foydalanuvchi ID: ${wtx.userId}`,
+  ]);
 
   return NextResponse.json({
     click_trans_id,

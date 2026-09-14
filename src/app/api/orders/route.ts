@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { restrictionApiError } from "@/lib/restriction";
 import { postOrderToChannel } from "@/lib/telegram";
 import { logActivity } from "@/lib/activity";
+import { logToGroup, siteUrl } from "@/lib/telegram-log";
 
 const createSchema = z.object({
   title: z.string().min(5).max(150),
@@ -97,6 +98,15 @@ export async function POST(req: Request) {
     orderId: order.id,
     budget: budget ?? null,
   });
+  await logToGroup(
+    "orders",
+    "📦 Yangi buyurtma",
+    [
+      `«${title}»`,
+      budget ? `Byudjet: ${budget.toLocaleString("ru-RU")} so'm` : "Byudjet: kelishiladi",
+    ],
+    siteUrl(`/sardorxon/admin/orders/${order.id}`),
+  );
 
   return NextResponse.json({ order }, { status: 201 });
 }

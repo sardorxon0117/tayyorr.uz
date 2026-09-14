@@ -7,6 +7,7 @@ import { restrictionApiError } from "@/lib/restriction";
 import { createMessage, getOrCreateConversation } from "@/lib/chat";
 import { deliverMessage } from "@/lib/chat-notify";
 import { logActivity } from "@/lib/activity";
+import { logToGroup, siteUrl } from "@/lib/telegram-log";
 
 const schema = z.object({
   preparerId: z.string().min(1),
@@ -140,6 +141,12 @@ export async function POST(
     "CONTRACT_SEND",
     `Shartnoma yubordi: «${order.title}» — ${amount.toLocaleString("ru-RU")} so'm`,
     { orderId: id, contractId: contract.id, amount },
+  );
+  await logToGroup(
+    "contracts",
+    "📄 Shartnoma yuborildi",
+    [`«${order.title}»`, `Summa: ${amount.toLocaleString("ru-RU")} so'm`],
+    siteUrl(`/sardorxon/admin/orders/${id}`),
   );
 
   return NextResponse.json({ contract, conversationId: conv.id });
