@@ -7,6 +7,8 @@ import { getRestriction } from "@/lib/restriction";
 import { getT } from "@/lib/i18n-server";
 import { WalletTopUp } from "@/components/wallet-topup";
 import { WalletPayout } from "@/components/wallet-payout";
+import { WalletBuyStars } from "@/components/wallet-buy-stars";
+import { ReferralLinkCard } from "@/components/referral-link-card";
 import { PayoutCancelButton } from "@/components/payout-cancel-button";
 import { BalanceAmount } from "@/components/balance-amount";
 import { WalletCode } from "@/components/wallet-code";
@@ -46,7 +48,10 @@ export default async function WalletPage({
 
   const walletCode = await ensureWalletCode(userId);
   const [user, txns, payouts] = await Promise.all([
-    db.user.findUnique({ where: { id: userId }, select: { balance: true } }),
+    db.user.findUnique({
+      where: { id: userId },
+      select: { balance: true, starBalance: true, login: true },
+    }),
     db.walletTransaction.findMany({
       where: { userId },
       orderBy: { createdAt: "desc" },
@@ -108,6 +113,10 @@ export default async function WalletPage({
           yechib olishingiz mumkin.
         </p>
       )}
+
+      <WalletBuyStars starBalance={user?.starBalance ?? 0} />
+
+      {user?.login && <ReferralLinkCard login={user.login} />}
 
       <WalletTopUp myCode={walletCode} />
 

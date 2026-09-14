@@ -61,7 +61,6 @@ interface Props {
   }[];
 }
 
-const STAR_PRICE = 2_000;
 const MIN_OFFER_STARS = 2;
 
 export function OrderActions(props: Props) {
@@ -271,9 +270,11 @@ export function OrderActions(props: Props) {
           </div>
           {!myOffer && (
             <p className="text-xs text-amber-300">
-              ⭐ Taklif yuborish {MIN_OFFER_STARS} star (
-              {(MIN_OFFER_STARS * STAR_PRICE).toLocaleString("ru-RU")} so'm)
-              talab qiladi — hisobingizdan avtomatik yechiladi.
+              ⭐ Taklif yuborish {MIN_OFFER_STARS} star talab qiladi — star
+              balansingizdan sarflanadi.{" "}
+              <Link href="/wallet" className="underline hover:text-amber-200">
+                Star yetarli emasmi? Hamyondan sotib oling →
+              </Link>
             </p>
           )}
           <button className="btn-primary" disabled={busy}>
@@ -305,8 +306,10 @@ export function OrderActions(props: Props) {
                 </button>
               </div>
               <p className="text-xs text-zinc-600">
-                Har bir qo'shimcha star {STAR_PRICE.toLocaleString("ru-RU")} so'm —
-                navbatda ko'proq star sarflaganlar yuqorida turadi.
+                Navbatda ko'proq star sarflaganlar yuqorida turadi.{" "}
+                <Link href="/wallet" className="underline hover:text-zinc-400">
+                  Star sotib olish →
+                </Link>
               </p>
             </div>
           )}

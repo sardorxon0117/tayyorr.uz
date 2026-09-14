@@ -111,6 +111,9 @@ model User {
   balance    Int     @default(0)
   walletCode String? @unique // qisqa hisob kodi, masalan "TYR-8FK2"
 
+  // star hisobi (pulda emas, alohida sanoq — sotib olinadi, keyin sarflanadi)
+  starBalance Int @default(0)
+
   // admin cheklovi (ban)
   bannedUntil DateTime? // shu sanagacha cheklangan; null = cheklanmagan
   banReason   String?
@@ -125,9 +128,15 @@ model User {
   termsAcceptedAt DateTime?
   termsVersion    String?
 
-  // qaysi tashriflar (referral) havolasi orqali ro'yxatdan o'tgan
+  // qaysi tashriflar (referral) havolasi orqali ro'yxatdan o'tgan (admin havolasi)
   referralLinkId String?
   referralLink   ReferralLink? @relation(fields: [referralLinkId], references: [id], onDelete: SetNull)
+
+  // shaxsiy (foydalanuvchidan-foydalanuvchiga) referal — kim taklif qilgan.
+  // Taklif qiluvchiga yangi a'zo ro'yxatdan o'tganda 1 star beriladi.
+  referredById String?
+  referredBy   User?   @relation("PeerReferrals", fields: [referredById], references: [id], onDelete: SetNull)
+  referredUsers User[] @relation("PeerReferrals")
 
   // shaxsiy bildirishnoma boti bilan bog'langan Telegram chat
   telegramChatId   String?

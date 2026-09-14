@@ -7,7 +7,7 @@ import { restrictionApiError } from "@/lib/restriction";
 import { logActivity } from "@/lib/activity";
 import { sendTelegramToUser, siteUrl } from "@/lib/telegram-notify";
 import { logToGroup, userLabel } from "@/lib/telegram-log";
-import { spendStars, MIN_OFFER_STARS, STAR_PRICE } from "@/lib/stars";
+import { useStars, MIN_OFFER_STARS } from "@/lib/stars";
 
 const schema = z.object({
   price: z.number().int().positive(),
@@ -55,14 +55,9 @@ export async function POST(
     where: { orderId_preparerId: { orderId: id, preparerId: session.user.id } },
   });
 
-  // birinchi marta yuborilyapti — star to'lanadi (navbatga yozilish narxi)
+  // birinchi marta yuborilyapti — star sarflanadi (navbatga yozilish narxi)
   if (!existing) {
-    const spend = await spendStars({
-      userId: session.user.id,
-      stars: MIN_OFFER_STARS,
-      reason: "Buyurtmaga ariza",
-      meta: { orderId: id },
-    });
+    const spend = await useStars({ userId: session.user.id, stars: MIN_OFFER_STARS });
     if (!spend.ok) {
       return NextResponse.json({ error: spend.error }, { status: 400 });
     }
@@ -118,7 +113,7 @@ export async function POST(
       `Narx: ${parsed.data.price.toLocaleString("ru-RU")} so'm`,
       parsed.data.message ? `Xabar: ${parsed.data.message}` : "",
       !existing
-        ? `Ariza uchun to'landi: ${MIN_OFFER_STARS} ⭐ (${(MIN_OFFER_STARS * STAR_PRICE).toLocaleString("ru-RU")} so'm)`
+        ? `Ariza uchun sarflandi: ${MIN_OFFER_STARS} ⭐`
         : `Jami star: ${offer.starsSpent} ⭐`,
       `Buyurtma ID: ${id}`,
       `Taklif ID: ${offer.id}`,

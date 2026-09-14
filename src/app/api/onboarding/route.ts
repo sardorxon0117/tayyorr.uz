@@ -7,7 +7,7 @@ import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { sendWelcome } from "@/lib/support-actions";
 import { logActivity } from "@/lib/activity";
-import { logToGroup, siteUrl } from "@/lib/telegram-log";
+import { logToGroup, siteUrl, userLabel } from "@/lib/telegram-log";
 import { TERMS_VERSION } from "@/lib/terms";
 
 const schema = z.object({
@@ -53,13 +53,32 @@ export async function POST(req: Request) {
   }
 
   // tashrif havolasi orqali kelgan bo'lsa — akkauntga bog'laymiz
-  const refCode = (await cookies()).get("tyr_ref")?.value;
+  const cookieStore = await cookies();
+  const refCode = cookieStore.get("tyr_ref")?.value;
   const refLink = refCode
     ? await db.referralLink.findUnique({
         where: { code: refCode.toUpperCase() },
         select: { id: true, name: true },
       })
     : null;
+
+  // shaxsiy (foydalanuvchidan-foydalanuvchiga) referal — o'zini o'zi
+  // taklif qilishning oldini olamiz
+  const uRefId = cookieStore.get("tyr_uref")?.value;
+  const referrer =
+    uRefId && uRefId !== session.user.id
+      ? await db.user.findUnique({
+          where: { id: uRefId },
+          select: {
+            id: true,
+            login: true,
+            name: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+        })
+      : null;
 
   await db.user.update({
     where: { id: session.user.id },
@@ -72,9 +91,27 @@ export async function POST(req: Request) {
       termsAcceptedAt: new Date(),
       termsVersion: TERMS_VERSION,
       ...(refLink ? { referralLinkId: refLink.id } : {}),
+      ...(referrer ? { referredById: referrer.id } : {}),
       ...rest,
     },
   });
+
+  // taklif qilganga 1 star sovg'a
+  if (referrer) {
+    await db.user.update({
+      where: { id: referrer.id },
+      data: { starBalance: { increment: 1 } },
+    });
+    await logToGroup(
+      "referrals",
+      "🌟 Shaxsiy referal — +1 star",
+      [
+        `Taklif qilgan: ${userLabel(referrer)}`,
+        `Yangi a'zo: @${login} (${firstName} ${lastName})`,
+      ],
+      siteUrl(`/sardorxon/admin/users/${referrer.id}`),
+    );
+  }
 
   await sendWelcome(session.user.id, firstName).catch(() => {});
   await logActivity(

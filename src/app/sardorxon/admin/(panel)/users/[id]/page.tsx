@@ -33,6 +33,11 @@ export default async function AdminUserDetail({
     where: { id },
     include: {
       walletTxns: { orderBy: { createdAt: "desc" }, take: 15 },
+      referredBy: { select: { id: true, login: true, name: true } },
+      referredUsers: {
+        select: { id: true, login: true, name: true, createdAt: true },
+        orderBy: { createdAt: "desc" },
+      },
       _count: {
         select: {
           ordersCreated: true,
@@ -67,6 +72,7 @@ export default async function AdminUserDetail({
     ["Rol", user.role ?? "—"],
     ["Hisob kodi", user.walletCode ?? "—"],
     ["Balans", formatSom(user.balance)],
+    ["Star balansi", `${user.starBalance} ⭐`],
     ["Ro'yxatdan", shortDateTime(user.createdAt)],
     [
       "Oferta",
@@ -178,6 +184,53 @@ export default async function AdminUserDetail({
           ) : (
             <p className="text-sm text-zinc-500">Ulanmagan</p>
           )}
+        </section>
+
+        <section className="rounded-xl border border-white/10 bg-white/[0.03] p-5">
+          <h2 className="mb-3 font-semibold text-white">Referallar</h2>
+          <div className="flex flex-col gap-3 text-sm">
+            <div>
+              <div className="mb-1 text-xs text-zinc-500">Kim taklif qilgan</div>
+              {user.referredBy ? (
+                <Link
+                  href={`/sardorxon/admin/users/${user.referredBy.id}`}
+                  className="text-indigo-400 hover:underline"
+                >
+                  {user.referredBy.name ?? "—"}{" "}
+                  <span className="text-zinc-500">
+                    @{user.referredBy.login ?? "—"}
+                  </span>
+                </Link>
+              ) : (
+                <span className="text-zinc-500">—</span>
+              )}
+            </div>
+            <div>
+              <div className="mb-1 text-xs text-zinc-500">
+                Kimlarni taklif qilgan ({user.referredUsers.length})
+              </div>
+              {user.referredUsers.length === 0 ? (
+                <span className="text-zinc-500">—</span>
+              ) : (
+                <ul className="flex flex-col gap-1">
+                  {user.referredUsers.map((r) => (
+                    <li key={r.id}>
+                      <Link
+                        href={`/sardorxon/admin/users/${r.id}`}
+                        className="text-indigo-400 hover:underline"
+                      >
+                        {r.name ?? "—"}{" "}
+                        <span className="text-zinc-500">@{r.login ?? "—"}</span>
+                      </Link>{" "}
+                      <span className="text-xs text-zinc-600">
+                        · {shortDate(r.createdAt)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
         </section>
 
         <section className="rounded-xl border border-white/10 bg-white/[0.03] p-5">

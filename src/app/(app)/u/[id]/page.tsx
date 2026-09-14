@@ -9,6 +9,7 @@ import { BackLink } from "@/components/back-link";
 import { BlockedIcon } from "@/components/icons";
 import { presenceText } from "@/lib/presence";
 import { shortDate } from "@/lib/date";
+import { maskName } from "@/lib/mask-name";
 
 const STATUS_LABEL: Record<string, string> = {
   OPEN: "Ochiq",
@@ -63,22 +64,10 @@ export default async function PublicProfile({
   const blockedMe =
     !!me && me !== id && (await blockState(me, id)).blockedMe;
 
-  // Email faqat profil egasining o'ziga, yoki u bilan ish boshlagan
-  // (shartnoma qabul qilingan) tomonga ko'rinadi — boshqalar ish
-  // boshlamaguncha kontaktni ko'ra olmaydi.
-  const canSeeEmail =
-    me === id ||
-    (!!me &&
-      (await db.order.findFirst({
-        where: {
-          OR: [
-            { ordererId: me, preparerId: id },
-            { ordererId: id, preparerId: me },
-          ],
-          status: { in: ["IN_PROGRESS", "DELIVERED", "DONE"] },
-        },
-        select: { id: true },
-      })) !== null);
+  // Email faqat profil egasining o'ziga to'liq ko'rinadi — boshqalarga
+  // har doim yarmi yashiringan (blur) holatda ko'rsatiladi, kontaktni
+  // to'g'ridan-to'g'ri ulashib yubormaslik uchun.
+  const isOwner = me === id;
 
   const displayName =
     user.name ||
@@ -193,10 +182,7 @@ export default async function PublicProfile({
       {/* ma'lumotlar */}
       <div className="card">
         <dl className="divide-y divide-white/5 text-sm">
-          <Row
-            k="Email"
-            v={canSeeEmail ? user.email ?? "—" : "🔒 ish boshlanmaguncha yashiringan"}
-          />
+          <Row k="Email" v={<MaskedEmail email={user.email} full={isOwner} />} />
           <Row
             k="Ro'yxatdan o'tgan"
             v={shortDate(user.createdAt)}
@@ -272,11 +258,26 @@ export default async function PublicProfile({
   );
 }
 
-function Row({ k, v }: { k: string; v: string }) {
+function Row({ k, v }: { k: string; v: React.ReactNode }) {
   return (
     <div className="flex justify-between gap-4 py-2">
       <dt className="text-zinc-500">{k}</dt>
       <dd className="text-right text-zinc-200">{v}</dd>
     </div>
+  );
+}
+
+/** Email — profil egasiga to'liq, boshqalarga har doim yarmi blur holatda. */
+function MaskedEmail({ email, full }: { email: string | null; full: boolean }) {
+  if (!email) return <>—</>;
+  if (full) return <>{email}</>;
+  const { visible, hiddenLen } = maskName(email);
+  return (
+    <>
+      {visible}
+      <span aria-hidden className="select-none blur-[3px]">
+        {"•".repeat(Math.min(hiddenLen, 14))}
+      </span>
+    </>
   );
 }

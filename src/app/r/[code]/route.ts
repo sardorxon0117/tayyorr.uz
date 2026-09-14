@@ -4,13 +4,18 @@ import { db } from "@/lib/db";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://tayyorr.uz";
 const REF_COOKIE = "tyr_ref";
+const UREF_COOKIE = "tyr_uref"; // shaxsiy (foydalanuvchidan-foydalanuvchiga) referal
 const REF_MAX_AGE = 60 * 60 * 24 * 30; // 30 kun
 
 /**
  * Tashrif havolasi: /r/<code>
- * Tashrif sonini oshiradi, brauzerga referal cookie qo'yadi va bosh sahifaga
- * yo'naltiradi. Foydalanuvchi keyinroq ro'yxatdan o'tsa (onboarding), shu
- * cookie orqali qaysi havoladan kelgani aniqlanadi.
+ * Avval admin yaratgan marketing havolasi (ReferralLink) tekshiriladi;
+ * topilmasa, `code` biror foydalanuvchining login'i bo'lishi mumkin —
+ * shaxsiy referal havolasi (har bir foydalanuvchi o'zining login'ini
+ * ulashishi mumkin, /r/<login>). Tashrif sonini oshiradi, brauzerga
+ * referal cookie qo'yadi va bosh sahifaga yo'naltiradi. Foydalanuvchi
+ * keyinroq ro'yxatdan o'tsa (onboarding), shu cookie orqali qaysi
+ * havoladan/kimdan kelgani aniqlanadi.
  */
 export async function GET(
   _req: Request,
@@ -23,19 +28,36 @@ export async function GET(
     .findUnique({ where: { code: code.toUpperCase() } })
     .catch(() => null);
 
-  if (!link) {
-    return NextResponse.redirect(home);
+  if (link) {
+    await db.referralLink
+      .update({ where: { id: link.id }, data: { visits: { increment: 1 } } })
+      .catch(() => {});
+
+    const res = NextResponse.redirect(home);
+    res.cookies.set(REF_COOKIE, link.code, {
+      maxAge: REF_MAX_AGE,
+      path: "/",
+      sameSite: "lax",
+    });
+    return res;
   }
 
-  await db.referralLink
-    .update({ where: { id: link.id }, data: { visits: { increment: 1 } } })
-    .catch(() => {});
+  const referrer = await db.user
+    .findFirst({
+      where: { login: { equals: code, mode: "insensitive" } },
+      select: { id: true },
+    })
+    .catch(() => null);
 
-  const res = NextResponse.redirect(home);
-  res.cookies.set(REF_COOKIE, link.code, {
-    maxAge: REF_MAX_AGE,
-    path: "/",
-    sameSite: "lax",
-  });
-  return res;
+  if (referrer) {
+    const res = NextResponse.redirect(home);
+    res.cookies.set(UREF_COOKIE, referrer.id, {
+      maxAge: REF_MAX_AGE,
+      path: "/",
+      sameSite: "lax",
+    });
+    return res;
+  }
+
+  return NextResponse.redirect(home);
 }

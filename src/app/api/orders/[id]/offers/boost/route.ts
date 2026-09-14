@@ -6,7 +6,7 @@ import { db } from "@/lib/db";
 import { restrictionApiError } from "@/lib/restriction";
 import { logActivity } from "@/lib/activity";
 import { logToGroup, siteUrl, userLabel } from "@/lib/telegram-log";
-import { spendStars, STAR_PRICE } from "@/lib/stars";
+import { useStars } from "@/lib/stars";
 
 const schema = z.object({ stars: z.number().int().positive().max(1000) });
 
@@ -43,12 +43,7 @@ export async function POST(
     );
   }
 
-  const spend = await spendStars({
-    userId: session.user.id,
-    stars: parsed.data.stars,
-    reason: "Navbatda yuqoriga chiqish",
-    meta: { orderId: id, offerId: offer.id },
-  });
+  const spend = await useStars({ userId: session.user.id, stars: parsed.data.stars });
   if (!spend.ok) {
     return NextResponse.json({ error: spend.error }, { status: 400 });
   }
@@ -76,7 +71,7 @@ export async function POST(
     [
       `«${order.title}»`,
       `Tayyorlovchi: ${userLabel(preparer)}`,
-      `Qo'shildi: ${parsed.data.stars} ⭐ (${(parsed.data.stars * STAR_PRICE).toLocaleString("ru-RU")} so'm)`,
+      `Sarflandi: ${parsed.data.stars} ⭐`,
       `Jami star: ${updated.starsSpent} ⭐`,
       `Buyurtma ID: ${id}`,
     ],
