@@ -4,7 +4,8 @@ import { db } from "@/lib/db";
 import { publishToConversation } from "@/lib/chat-bus";
 import { toSerializedMessage } from "@/lib/chat-messages";
 import { sendTelegramToUser, siteUrl } from "@/lib/telegram-notify";
-import { SUPPORT_NAME } from "@/lib/support";
+import { logToGroup } from "@/lib/telegram-log";
+import { SUPPORT_NAME, getSupportUserId } from "@/lib/support";
 
 function snippet(m: Message) {
   if (m.deletedAt) return "xabar";
@@ -47,4 +48,15 @@ export async function deliverMessage(m: Message) {
     url: siteUrl(`/messages/${m.conversationId}`),
     buttonLabel: "Xabarni ko'rish",
   });
+
+  // foydalanuvchi support'ga yozgan bo'lsa — admin loglar guruhiga ham tushadi
+  const supportId = await getSupportUserId();
+  if (recipientId === supportId && !sender?.isSupport) {
+    await logToGroup(
+      "support",
+      `💬 ${title}`,
+      [snippet(m)],
+      siteUrl(`/sardorxon/admin/chats/${m.conversationId}`),
+    );
+  }
 }

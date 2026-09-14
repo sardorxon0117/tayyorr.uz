@@ -23,6 +23,7 @@ const TOPICS = {
   completed: process.env.TELEGRAM_TOPIC_COMPLETED,
   errors: process.env.TELEGRAM_TOPIC_ERRORS,
   referrals: process.env.TELEGRAM_TOPIC_REFERRALS,
+  support: process.env.TELEGRAM_TOPIC_SUPPORT,
 } as const;
 
 export type LogTopic = keyof typeof TOPICS;
