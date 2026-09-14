@@ -67,7 +67,11 @@ export default async function Home() {
           }}
         />
         {heroVideo?.active && <HeroBgVideo url={heroVideo.videoUrl} />}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#07070c]" />
+        {/* video pastki chetida keyingi bo'limga silliq qo'shilishi uchun —
+            faqat videoning o'zi balandligida (butun sahifada emas, aks holda
+            gradient deyarli sezilmay, video ostida keskin chiziq qolib
+            ketardi va keyingi bo'lim bilan qo'shilib ko'rinardi) */}
+        <div className="absolute inset-x-0 top-0 h-[46rem] bg-gradient-to-b from-transparent via-transparent to-[#07070c] sm:h-[40rem] lg:h-[46rem]" />
       </div>
 
       {/* ---------- nav (fixed) ---------- */}
