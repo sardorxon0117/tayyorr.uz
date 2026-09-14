@@ -1,3 +1,5 @@
+import { after } from "next/server";
+
 import { db } from "@/lib/db";
 import { shortDate } from "@/lib/date";
 
@@ -104,36 +106,38 @@ export async function postOrderToChannel(order: ChannelOrder): Promise<void> {
   }) =>
     db.order.update({ where: { id: order.id }, data }).catch(() => {});
 
-  try {
-    const res = await tg("sendMessage", {
-      chat_id: CHANNEL,
-      text: buildText(order),
-      parse_mode: "HTML",
-      disable_web_page_preview: true,
-      reply_markup: keyboard(order.id),
-    });
-    const json = (await res.json().catch(() => ({}))) as {
-      ok?: boolean;
-      description?: string;
-      result?: { message_id?: number };
-    };
-    if (res.ok && json.ok && json.result?.message_id) {
-      await rec({
-        telegramStatus: res.status,
-        telegramSentAt: new Date(),
-        telegramError: null,
-        telegramMessageId: json.result.message_id,
+  after(async () => {
+    try {
+      const res = await tg("sendMessage", {
+        chat_id: CHANNEL,
+        text: buildText(order),
+        parse_mode: "HTML",
+        disable_web_page_preview: true,
+        reply_markup: keyboard(order.id),
       });
-    } else {
-      const err = (json.description || `HTTP ${res.status}`).slice(0, 300);
-      console.error("[telegram] sendMessage not ok", res.status, err);
-      await rec({ telegramStatus: res.status, telegramError: err });
+      const json = (await res.json().catch(() => ({}))) as {
+        ok?: boolean;
+        description?: string;
+        result?: { message_id?: number };
+      };
+      if (res.ok && json.ok && json.result?.message_id) {
+        await rec({
+          telegramStatus: res.status,
+          telegramSentAt: new Date(),
+          telegramError: null,
+          telegramMessageId: json.result.message_id,
+        });
+      } else {
+        const err = (json.description || `HTTP ${res.status}`).slice(0, 300);
+        console.error("[telegram] sendMessage not ok", res.status, err);
+        await rec({ telegramStatus: res.status, telegramError: err });
+      }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      console.error("[telegram] post error", msg);
+      await rec({ telegramStatus: 0, telegramError: msg.slice(0, 300) });
     }
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e);
-    console.error("[telegram] post error", msg);
-    await rec({ telegramStatus: 0, telegramError: msg.slice(0, 300) });
-  }
+  });
 }
 
 /**
@@ -141,41 +145,43 @@ export async function postOrderToChannel(order: ChannelOrder): Promise<void> {
  */
 export async function updateOrderChannelPost(orderId: string): Promise<void> {
   if (!TOKEN || !CHANNEL) return;
-  try {
-    const o = await db.order.findUnique({
-      where: { id: orderId },
-      select: {
-        id: true,
-        title: true,
-        type: true,
-        description: true,
-        budget: true,
-        deadline: true,
-        status: true,
-        telegramMessageId: true,
-        deletedAt: true,
-      },
-    });
-    if (!o?.telegramMessageId || o.deletedAt) return;
+  after(async () => {
+    try {
+      const o = await db.order.findUnique({
+        where: { id: orderId },
+        select: {
+          id: true,
+          title: true,
+          type: true,
+          description: true,
+          budget: true,
+          deadline: true,
+          status: true,
+          telegramMessageId: true,
+          deletedAt: true,
+        },
+      });
+      if (!o?.telegramMessageId || o.deletedAt) return;
 
-    const res = await tg("editMessageText", {
-      chat_id: CHANNEL,
-      message_id: o.telegramMessageId,
-      text: buildText(o),
-      parse_mode: "HTML",
-      disable_web_page_preview: true,
-      reply_markup: keyboard(o.id),
-    });
-    if (!res.ok) {
-      const body = await res.text().catch(() => "");
-      // "message is not modified" — normal, e'tibor bermaymiz
-      if (!body.includes("not modified")) {
-        console.error("[telegram] editMessageText failed", res.status, body.slice(0, 300));
+      const res = await tg("editMessageText", {
+        chat_id: CHANNEL,
+        message_id: o.telegramMessageId,
+        text: buildText(o),
+        parse_mode: "HTML",
+        disable_web_page_preview: true,
+        reply_markup: keyboard(o.id),
+      });
+      if (!res.ok) {
+        const body = await res.text().catch(() => "");
+        // "message is not modified" — normal, e'tibor bermaymiz
+        if (!body.includes("not modified")) {
+          console.error("[telegram] editMessageText failed", res.status, body.slice(0, 300));
+        }
       }
+    } catch (e) {
+      console.error("[telegram] edit error", e instanceof Error ? e.message : e);
     }
-  } catch (e) {
-    console.error("[telegram] edit error", e instanceof Error ? e.message : e);
-  }
+  });
 }
 
 /** Buyurtma o'chirilganda kanaldagi postni "o'chirilgan" holatiga keltiradi. */
@@ -186,26 +192,28 @@ export async function markOrderRemovedInChannel(
   reason?: string | null,
 ): Promise<void> {
   if (!TOKEN || !CHANNEL || !messageId) return;
-  try {
-    const lines = [
-      "🗑 <b>Buyurtma o'chirildi</b>",
-      "",
-      `<s>${esc(clip(title, 200))}</s>`,
-      "",
-      `👤 <b>Kim o'chirdi:</b> ${esc(by)}`,
-    ];
-    if (reason?.trim()) lines.push(`✍️ <b>Sabab:</b> ${esc(clip(reason, 400))}`);
-    lines.push("", "— <i>tayyorr.uz</i>");
-    await tg("editMessageText", {
-      chat_id: CHANNEL,
-      message_id: messageId,
-      text: lines.join("\n"),
-      parse_mode: "HTML",
-      disable_web_page_preview: true,
-    });
-  } catch (e) {
-    console.error("[telegram] remove error", e instanceof Error ? e.message : e);
-  }
+  after(async () => {
+    try {
+      const lines = [
+        "🗑 <b>Buyurtma o'chirildi</b>",
+        "",
+        `<s>${esc(clip(title, 200))}</s>`,
+        "",
+        `👤 <b>Kim o'chirdi:</b> ${esc(by)}`,
+      ];
+      if (reason?.trim()) lines.push(`✍️ <b>Sabab:</b> ${esc(clip(reason, 400))}`);
+      lines.push("", "— <i>tayyorr.uz</i>");
+      await tg("editMessageText", {
+        chat_id: CHANNEL,
+        message_id: messageId,
+        text: lines.join("\n"),
+        parse_mode: "HTML",
+        disable_web_page_preview: true,
+      });
+    } catch (e) {
+      console.error("[telegram] remove error", e instanceof Error ? e.message : e);
+    }
+  });
 }
 
 /** Diagnostika: konfiguratsiya + kanalga sinov xabari. */

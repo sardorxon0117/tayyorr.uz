@@ -1,3 +1,5 @@
+import { after } from "next/server";
+
 import { db } from "@/lib/db";
 
 const TOKEN = process.env.TELEGRAM_NOTIFY_BOT_TOKEN;
@@ -49,38 +51,47 @@ export interface TelegramNotifyPayload {
 
 /**
  * Bitta foydalanuvchiga shaxsiy bildirishnoma botidan xabar yuboradi.
- * Foydalanuvchi botga ulanmagan bo'lsa — jim o'tkazib yuboriladi.
+ * Foydalanuvchi botga ulanmagan bo'lsa — jim o'tkazib yuboriladi. Butun
+ * ish (DB qidiruv + Telegram so'rov) `after()` orqali javob qaytgandan
+ * KEYIN bajariladi — foydalanuvchi Telegram sekinlashini kutmaydi.
  */
 export async function sendTelegramToUser(userId: string, payload: TelegramNotifyPayload) {
   if (!TOKEN) return;
-  const user = await db.user.findUnique({
-    where: { id: userId },
-    select: { telegramChatId: true },
-  });
-  if (!user?.telegramChatId) return;
 
-  const text = `<b>${esc(payload.title)}</b>\n\n${esc(payload.body)}`;
-  const reply_markup = payload.url
-    ? {
-        inline_keyboard: [
-          [{ text: payload.buttonLabel || "Ko'rish", url: payload.url }],
-        ],
+  after(async () => {
+    try {
+      const user = await db.user.findUnique({
+        where: { id: userId },
+        select: { telegramChatId: true },
+      });
+      if (!user?.telegramChatId) return;
+
+      const text = `<b>${esc(payload.title)}</b>\n\n${esc(payload.body)}`;
+      const reply_markup = payload.url
+        ? {
+            inline_keyboard: [
+              [{ text: payload.buttonLabel || "Ko'rish", url: payload.url }],
+            ],
+          }
+        : undefined;
+
+      const res = await tg("sendMessage", {
+        chat_id: user.telegramChatId,
+        text,
+        parse_mode: "HTML",
+        reply_markup,
+      });
+
+      // 403 — foydalanuvchi botni bloklagan yoki chatni o'chirgan: ulanishni tozalaymiz
+      if (res && res.status === 403) {
+        await db.user
+          .update({ where: { id: userId }, data: { telegramChatId: null, telegramUsername: null } })
+          .catch(() => {});
       }
-    : undefined;
-
-  const res = await tg("sendMessage", {
-    chat_id: user.telegramChatId,
-    text,
-    parse_mode: "HTML",
-    reply_markup,
+    } catch {
+      /* jim o'tkazamiz — sayt ishiga xalaqit bermasin */
+    }
   });
-
-  // 403 — foydalanuvchi botni bloklagan yoki chatni o'chirgan: ulanishni tozalaymiz
-  if (res && res.status === 403) {
-    await db.user
-      .update({ where: { id: userId }, data: { telegramChatId: null, telegramUsername: null } })
-      .catch(() => {});
-  }
 }
 
 /** Bir nechta foydalanuvchiga bitta xabarni yuboradi (parallel). */

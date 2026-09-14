@@ -1,8 +1,12 @@
+import { after } from "next/server";
+
 /**
  * Admin loglar guruhi — @tayyorrworkbot orqali (mavjud, kanalga buyurtma
  * joylaydigan bot), lekin endi Forum-guruhga, har bir voqea turi o'z
  * topikiga yoziladi. Sayt ishiga hech qachon xalaqit bermaydi (xato
- * bo'lsa jim o'tkaziladi).
+ * bo'lsa jim o'tkaziladi) — HTTP so'rov `next/server`ning `after()`
+ * orqali javob qaytargandan KEYIN yuboriladi, shuning uchun Telegram
+ * sekinlashsa ham foydalanuvchi javobni kutib turmaydi.
  */
 const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const GROUP_ID = process.env.TELEGRAM_LOG_GROUP_ID;
@@ -74,22 +78,24 @@ export async function logToGroup(
   const text =
     `<b>${esc(title)}</b>` + (lines.length ? `\n\n${lines.map(esc).join("\n")}` : "");
 
-  try {
-    await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chat_id: GROUP_ID,
-        message_thread_id: Number(threadId),
-        text,
-        parse_mode: "HTML",
-        reply_markup: url
-          ? { inline_keyboard: [[{ text: "Ko'rish", url }]] }
-          : undefined,
-      }),
-      signal: AbortSignal.timeout(8000),
-    });
-  } catch {
-    /* jim o'tkazamiz — sayt ishiga xalaqit bermasin */
-  }
+  after(async () => {
+    try {
+      await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: GROUP_ID,
+          message_thread_id: Number(threadId),
+          text,
+          parse_mode: "HTML",
+          reply_markup: url
+            ? { inline_keyboard: [[{ text: "Ko'rish", url }]] }
+            : undefined,
+        }),
+        signal: AbortSignal.timeout(8000),
+      });
+    } catch {
+      /* jim o'tkazamiz — sayt ishiga xalaqit bermasin */
+    }
+  });
 }
