@@ -114,12 +114,15 @@ export default async function WalletPage({
         </p>
       )}
 
-      {/* star faqat tayyorlovchiga kerak — buyurtma beruvchiga ariza/navbat yo'q */}
+      {/* star va referal (star sovg'asi uchun) faqat tayyorlovchiga kerak —
+          buyurtma beruvchida ariza/navbat yo'q, shuning uchun starni
+          ishlata olmaydi */}
       {user?.role === "PREPARER" && (
-        <WalletBuyStars starBalance={user?.starBalance ?? 0} />
+        <>
+          <WalletBuyStars starBalance={user?.starBalance ?? 0} />
+          {user.login && <ReferralLinkCard login={user.login} />}
+        </>
       )}
-
-      {user?.login && <ReferralLinkCard login={user.login} />}
 
       <WalletTopUp myCode={walletCode} />
 
