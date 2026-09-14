@@ -139,7 +139,7 @@ export function OrdersBrowser({
   return (
     <div className="flex flex-col gap-3">
       {banner}
-      <div className="sticky top-[4.25rem] z-20 flex flex-col gap-2 rounded-2xl border border-white/10 bg-[#0b0b12]/25 px-3 py-3 backdrop-blur-2xl sm:top-[4.75rem] lg:top-2">
+      <div className="sticky top-[4.75rem] z-20 flex flex-col gap-2 rounded-2xl border border-white/10 bg-[#0b0b12]/25 px-3 py-3 backdrop-blur-2xl sm:top-[5.25rem] lg:top-4">
         {(title || newOrderHref) && (
           <div className="flex items-center justify-between gap-2">
             {title && (
