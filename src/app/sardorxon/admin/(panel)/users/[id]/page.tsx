@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { formatSom } from "@/lib/wallet";
 import { AdminPostButton } from "@/components/admin/admin-post-button";
 import { BanForm } from "@/components/admin/ban-form";
+import { BalanceAdjustForm } from "@/components/admin/balance-adjust-form";
 import { SupportMessageForm } from "@/components/admin/support-message-form";
 import { ActivityLogPanel } from "@/components/admin/activity-log-panel";
 import { shortDateTime, shortDate } from "@/lib/date";
@@ -177,6 +178,15 @@ export default async function AdminUserDetail({
           ) : (
             <p className="text-sm text-zinc-500">Ulanmagan</p>
           )}
+        </section>
+
+        <section className="rounded-xl border border-white/10 bg-white/[0.03] p-5">
+          <h2 className="mb-3 font-semibold text-white">Balansni to'g'irlash</h2>
+          <p className="mb-3 text-xs text-zinc-500">
+            Joriy balans: {formatSom(user.balance)}. Sababi foydalanuvchiga
+            tranzaksiya tarixida ko'rinadi.
+          </p>
+          <BalanceAdjustForm userId={user.id} />
         </section>
 
         <section className="rounded-xl border border-white/10 bg-white/[0.03] p-5">

@@ -78,7 +78,7 @@ export function WalletPayout({ balance }: { balance: number }) {
           <input
             className="input"
             type="number"
-            min={10000}
+            min={1000}
             step={1000}
             value={amount}
             onChange={(e) => setAmount(e.target.value)}

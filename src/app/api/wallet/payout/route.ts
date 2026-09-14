@@ -7,7 +7,7 @@ import { maskCard } from "@/lib/wallet";
 import { logActivity } from "@/lib/activity";
 import { logToGroup, siteUrl } from "@/lib/telegram-log";
 
-const MIN = 10_000;
+const MIN = 1_000;
 
 const schema = z.object({
   amount: z.coerce.number().int().positive(),
