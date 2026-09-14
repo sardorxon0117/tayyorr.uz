@@ -8,6 +8,10 @@ import { db } from "@/lib/db";
 import { sendWelcome } from "@/lib/support-actions";
 import { logActivity } from "@/lib/activity";
 import { logToGroup, siteUrl, userLabel } from "@/lib/telegram-log";
+import { sendTelegramToUser } from "@/lib/telegram-notify";
+import { getSupportUserId } from "@/lib/support";
+import { createMessage, getOrCreateConversation } from "@/lib/chat";
+import { deliverMessage } from "@/lib/chat-notify";
 import { TERMS_VERSION } from "@/lib/terms";
 
 const schema = z.object({
@@ -96,12 +100,31 @@ export async function POST(req: Request) {
     },
   });
 
-  // taklif qilganga 1 star sovg'a
+  // taklif qilganga 1 star sovg'a — kafolatlangan xabar (support chat) +
+  // shaxsiy Telegram bot ulangan bo'lsa qo'shimcha
   if (referrer) {
     await db.user.update({
       where: { id: referrer.id },
       data: { starBalance: { increment: 1 } },
     });
+
+    const text = `🌟 ${firstName} ${lastName} (@${login}) siz yuborgan referal havola orqali ro'yxatdan o'tdi va sizga 1 ⭐ taqdim etildi.`;
+    const supportId = await getSupportUserId();
+    const conv = await getOrCreateConversation(supportId, referrer.id);
+    const msg = await createMessage({
+      conversationId: conv.id,
+      senderId: supportId,
+      body: text,
+      system: false,
+    });
+    await deliverMessage(msg);
+    await sendTelegramToUser(referrer.id, {
+      title: "🌟 Referal orqali +1 star",
+      body: text,
+      url: siteUrl("/referral"),
+      buttonLabel: "Referallarni ko'rish",
+    });
+
     await logToGroup(
       "referrals",
       "🌟 Shaxsiy referal — +1 star",

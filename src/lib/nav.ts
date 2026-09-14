@@ -14,10 +14,17 @@ const MY_OFFERS_LINK: NavLink = {
   icon: "🙋",
 };
 
-/** Rolga qarab navigatsiya ro'yxati — "Mening takliflarim" faqat tayyorlovchiga. */
+const REFERRAL_LINK: NavLink = {
+  href: "/referral",
+  label: "Referal",
+  tkey: "nav.referral",
+  icon: "🎁",
+};
+
+/** Rolga qarab navigatsiya ro'yxati — "Mening takliflarim" va "Referal" faqat tayyorlovchiga. */
 export function navForRole(role: string | null | undefined): NavLink[] {
   if (role !== "PREPARER") return BASE_NAV;
-  return [BASE_NAV[0], MY_OFFERS_LINK, ...BASE_NAV.slice(1)];
+  return [BASE_NAV[0], MY_OFFERS_LINK, REFERRAL_LINK, ...BASE_NAV.slice(1)];
 }
 
 /** Orqaga moslik uchun — rolsiz joylarda standart ro'yxat. */
