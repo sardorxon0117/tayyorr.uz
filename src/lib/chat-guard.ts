@@ -101,6 +101,20 @@ export async function enforceChatGuard(opts: {
   const convUrl = siteUrl(`/sardorxon/admin/chats/${opts.conversationId}`);
 
   if (result.hard) {
+    // xabarni haqiqiy yozishmaga saqlaymiz (o'chirilgan holda) — oddiy
+    // ishtirokchilarga mazmuni ko'rinmaydi (toClientMessage buni yashiradi),
+    // lekin admin panelida (forAdmin) va shikoyat sahifasida to'liq ko'rinadi.
+    // conversation.lastMessageAt YANGILANMAYDI — chatni suhbat ro'yxatida
+    // "yangi xabor" sifatida ko'tarib yubormasligi kerak.
+    const blockedMsg = await db.message.create({
+      data: {
+        conversationId: opts.conversationId,
+        senderId: opts.senderId,
+        body: opts.body,
+        deletedAt: new Date(),
+      },
+    });
+
     await Promise.all([
       logToGroup(
         "moderation",
@@ -120,7 +134,8 @@ export async function enforceChatGuard(opts: {
             data: {
               reporterId,
               suspectId: opts.senderId,
-              body: `Avtomatik nazorat: xabar bloklandi (${result.hard}).\n\nMatn: ${opts.body}`,
+              messageId: blockedMsg.id,
+              body: `Avtomatik nazorat: xabar bloklandi (${result.hard}) va yuborilmadi.`,
             },
           }),
         )
@@ -130,7 +145,7 @@ export async function enforceChatGuard(opts: {
       blocked: true,
       reason:
         `Xabar yuborilmadi: ${result.hard} aniqlandi. ` +
-        `Saytdan tashqarida aloqa yoki to'lov almashish taqiqlangan — barcha muloqot tayyorr.uz orqali bo'lishi kerak.`,
+        `Saytdan tashqarida aloqa yoki to'lov almashish taqiqlangan — bu holat qayd etildi va admin ko'rib chiqadi.`,
     };
   }
 
