@@ -108,6 +108,7 @@ export default async function AdminChatView({
       )}
 
       <AdminConversationView
+        conversationId={conv.id}
         left={{ id: conv.userA.id, label: label(conv.userA) }}
         right={{ id: conv.userB.id, label: label(conv.userB) }}
         messages={clientMsgs}
