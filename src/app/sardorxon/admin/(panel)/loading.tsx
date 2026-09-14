@@ -1,14 +1,16 @@
-/** Admin panelida sahifa o'tishlarini darhol ko'rsatadi (yuqoridagi izohga qarang). */
-export default function AdminLoading() {
+import { SBar, SWrap } from "@/components/skeleton";
+
+/** Admin bosh sahifasi (statistik kartalar) shakliga mos — pastki
+ * bo'limlar o'zining aniqroq loading.tsx faylini beradi. */
+export default function AdminHomeLoading() {
   return (
-    <div className="flex animate-pulse flex-col gap-4">
-      <div className="h-6 w-40 rounded-lg bg-white/5" />
-      <div className="flex flex-col gap-2">
-        <div className="h-16 rounded-xl bg-white/5" />
-        <div className="h-16 rounded-xl bg-white/5" />
-        <div className="h-16 rounded-xl bg-white/5" />
-        <div className="h-16 rounded-xl bg-white/5" />
+    <SWrap>
+      <SBar className="h-6 w-48" />
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="card h-20" />
+        ))}
       </div>
-    </div>
+    </SWrap>
   );
 }
