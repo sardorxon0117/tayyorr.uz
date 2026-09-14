@@ -13,7 +13,6 @@ export default async function ReferralPage() {
   const user = await db.user.findUnique({
     where: { id: me.id },
     select: {
-      login: true,
       starBalance: true,
       referredUsers: {
         select: { id: true, login: true, name: true, createdAt: true },
@@ -33,7 +32,7 @@ export default async function ReferralPage() {
         </p>
       </div>
 
-      {user.login && <ReferralLinkCard login={user.login} />}
+      <ReferralLinkCard userId={me.id} />
 
       <div>
         <h2 className="mb-2 font-semibold text-white">

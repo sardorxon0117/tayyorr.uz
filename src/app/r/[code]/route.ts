@@ -10,12 +10,13 @@ const REF_MAX_AGE = 60 * 60 * 24 * 30; // 30 kun
 /**
  * Tashrif havolasi: /r/<code>
  * Avval admin yaratgan marketing havolasi (ReferralLink) tekshiriladi;
- * topilmasa, `code` biror foydalanuvchining login'i bo'lishi mumkin —
- * shaxsiy referal havolasi (har bir foydalanuvchi o'zining login'ini
- * ulashishi mumkin, /r/<login>). Tashrif sonini oshiradi, brauzerga
- * referal cookie qo'yadi va bosh sahifaga yo'naltiradi. Foydalanuvchi
- * keyinroq ro'yxatdan o'tsa (onboarding), shu cookie orqali qaysi
- * havoladan/kimdan kelgani aniqlanadi.
+ * topilmasa, `code` biror foydalanuvchining ID'si bo'lishi mumkin —
+ * shaxsiy referal havolasi (/r/<userId>). Login emas, ID ishlatiladi —
+ * shunda havolaga qarab bu referal ekanini yoki kim taklif qilayotganini
+ * bilib bo'lmaydi. Tashrif sonini oshiradi, brauzerga referal cookie
+ * qo'yadi va bosh sahifaga yo'naltiradi. Foydalanuvchi keyinroq
+ * ro'yxatdan o'tsa (onboarding), shu cookie orqali qaysi havoladan/kimdan
+ * kelgani aniqlanadi.
  */
 export async function GET(
   _req: Request,
@@ -43,8 +44,8 @@ export async function GET(
   }
 
   const referrer = await db.user
-    .findFirst({
-      where: { login: { equals: code, mode: "insensitive" } },
+    .findUnique({
+      where: { id: code },
       select: { id: true },
     })
     .catch(() => null);

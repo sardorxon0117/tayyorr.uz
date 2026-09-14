@@ -2,12 +2,12 @@
 
 import { useState } from "react";
 
-export function ReferralLinkCard({ login }: { login: string }) {
+export function ReferralLinkCard({ userId }: { userId: string }) {
   const [copied, setCopied] = useState(false);
   const link =
     typeof window !== "undefined"
-      ? `${window.location.origin}/r/${login}`
-      : `https://tayyorr.uz/r/${login}`;
+      ? `${window.location.origin}/r/${userId}`
+      : `https://tayyorr.uz/r/${userId}`;
 
   async function copy() {
     try {
