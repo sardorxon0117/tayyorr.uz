@@ -14,6 +14,12 @@ export async function POST(req: Request) {
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Avval kiring" }, { status: 401 });
   }
+  if (session.user.role !== "PREPARER") {
+    return NextResponse.json(
+      { error: "Star faqat tayyorlovchilarga kerak" },
+      { status: 403 },
+    );
+  }
 
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {

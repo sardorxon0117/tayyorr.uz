@@ -50,7 +50,7 @@ export default async function WalletPage({
   const [user, txns, payouts] = await Promise.all([
     db.user.findUnique({
       where: { id: userId },
-      select: { balance: true, starBalance: true, login: true },
+      select: { balance: true, starBalance: true, login: true, role: true },
     }),
     db.walletTransaction.findMany({
       where: { userId },
@@ -114,7 +114,10 @@ export default async function WalletPage({
         </p>
       )}
 
-      <WalletBuyStars starBalance={user?.starBalance ?? 0} />
+      {/* star faqat tayyorlovchiga kerak — buyurtma beruvchiga ariza/navbat yo'q */}
+      {user?.role === "PREPARER" && (
+        <WalletBuyStars starBalance={user?.starBalance ?? 0} />
+      )}
 
       {user?.login && <ReferralLinkCard login={user.login} />}
 
