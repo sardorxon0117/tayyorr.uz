@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { logActivity } from "@/lib/activity";
 import { sendTelegramToUser, siteUrl } from "@/lib/telegram-notify";
+import { reverseWalletTopup } from "@/lib/wallet-reversal";
 import {
   CLICK_SERVICE_ID,
   ClickError,
@@ -66,32 +67,7 @@ export async function POST(req: Request) {
   // natijada hisobdan mablag' hech qachon ayirilmas edi.
   if (actionNum === 0 || incomingError < 0) {
     if (wtx.status === "SUCCESS") {
-      await db.$transaction(async (tx) => {
-        await tx.walletTransaction.update({
-          where: { id: wtx.id },
-          data: {
-            status: "FAILED",
-            reversedAt: new Date(),
-            meta: { ...meta, clickCancelledAt: new Date().toISOString() },
-          },
-        });
-        await tx.user.update({
-          where: { id: wtx.userId },
-          data: { balance: { decrement: wtx.amount } },
-        });
-      });
-      await logActivity(
-        wtx.userId,
-        "WALLET_TOPUP",
-        `Click to'lovi bekor qilindi: ${wtx.amount.toLocaleString("ru-RU")} so'm hisobdan ayirildi`,
-        { amount: wtx.amount, clickTransId: click_trans_id, cancelled: true },
-      );
-      await sendTelegramToUser(wtx.userId, {
-        title: "⚠️ To'lov bekor qilindi",
-        body: `Click orqali to'langan ${wtx.amount.toLocaleString("ru-RU")} so'm bekor qilindi va hisobingizdan ayirildi.`,
-        url: siteUrl("/wallet"),
-        buttonLabel: "Hamyonni ko'rish",
-      });
+      await reverseWalletTopup(wtx, "click_webhook_cancel");
     } else if (wtx.status === "PENDING") {
       await db.walletTransaction.update({
         where: { id: wtx.id },

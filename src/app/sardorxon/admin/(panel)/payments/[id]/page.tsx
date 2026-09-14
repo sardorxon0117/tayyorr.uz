@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { formatSom } from "@/lib/wallet";
 import { AdminPostButton } from "@/components/admin/admin-post-button";
+import { ClickPaymentActions } from "@/components/admin/click-payment-actions";
 import { shortDateTime } from "@/lib/date";
 
 export default async function AdminPaymentReceipt({
@@ -66,13 +67,25 @@ export default async function AdminPaymentReceipt({
         </dl>
       </div>
 
+      {t.method === "CLICK" && (
+        <ClickPaymentActions txnId={t.id} canReverse={canReverse} />
+      )}
+
       {canReverse ? (
-        <AdminPostButton
-          url={`/api/admin/payments/${t.id}/reverse`}
-          label="Amalni bekor qilish"
-          className="btn-primary w-fit"
-          confirmText="Bu amal bekor qilinadi va balans qayta hisoblanadi. Davom etilsinmi?"
-        />
+        <div className="flex flex-col gap-1">
+          <AdminPostButton
+            url={`/api/admin/payments/${t.id}/reverse`}
+            label="Faqat ichki hisobni to'g'irlash"
+            className="btn-ghost w-fit"
+            confirmText="Bu faqat bizning hamyon balansimizni to'g'irlaydi — Click'ga (kartaga qaytarish) signal yubormaydi. Davom etilsinmi?"
+          />
+          {t.method === "CLICK" && (
+            <p className="text-xs text-zinc-600">
+              Kartaga qaytarish uchun yuqoridagi &quot;Click orqali
+              qaytarish&quot; tugmasidan foydalaning.
+            </p>
+          )}
+        </div>
       ) : (
         <p className="text-sm text-zinc-500">
           Bu amalni bekor qilib bo'lmaydi.
