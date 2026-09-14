@@ -59,7 +59,7 @@ export function HeroMockup() {
   const slide = SLIDES[idx];
 
   return (
-    <div className="relative mx-auto h-80 w-full max-w-sm sm:h-[26rem] lg:mx-0 lg:h-[28rem] lg:max-w-none">
+    <div className="relative mx-auto h-80 w-full max-w-sm lg:mx-0 lg:max-w-none">
       {/* orqada: referat / kurs ishi hujjati */}
       <div className="lq-glass animate-float-a absolute left-0 top-14 w-64 -rotate-6 rounded-2xl p-5 sm:w-72 lg:top-20 lg:w-80">
         <div className="h-2 w-14 rounded-full bg-white/25" />
