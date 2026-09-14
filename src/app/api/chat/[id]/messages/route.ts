@@ -12,6 +12,7 @@ import { getRestriction, restrictionText } from "@/lib/restriction";
 import { getSupportUserId } from "@/lib/support";
 import { toClientMessage } from "@/lib/chat-messages";
 import { deliverMessage } from "@/lib/chat-notify";
+import { enforceChatGuard } from "@/lib/chat-guard";
 
 const schema = z.object({
   body: z.string().trim().max(8000).optional(),
@@ -74,6 +75,18 @@ export async function POST(
         { error: "Bu foydalanuvchi sizni bloklagan." },
         { status: 403 },
       );
+    }
+  }
+
+  // avtomatik nazorat — saytdan tashqariga chiqishga urinish (support chati bundan mustasno)
+  if (!isSupportThread && parsed.data.body) {
+    const guard = await enforceChatGuard({
+      conversationId: id,
+      senderId: me,
+      body: parsed.data.body,
+    });
+    if (guard.blocked) {
+      return NextResponse.json({ error: guard.reason }, { status: 400 });
     }
   }
 

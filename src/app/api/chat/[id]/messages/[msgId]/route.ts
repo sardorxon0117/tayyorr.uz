@@ -6,6 +6,8 @@ import { db } from "@/lib/db";
 import { getConversationForUser } from "@/lib/chat";
 import { publishToConversation } from "@/lib/chat-bus";
 import { toClientMessage, toSerializedMessage } from "@/lib/chat-messages";
+import { enforceChatGuard } from "@/lib/chat-guard";
+import { getSupportUserId } from "@/lib/support";
 
 async function loadOwn(convId: string, msgId: string, meId: string) {
   const conv = await getConversationForUser(convId, meId);
@@ -20,7 +22,7 @@ async function loadOwn(convId: string, msgId: string, meId: string) {
   if (msg.deletedAt) {
     return { error: "Xabar o'chirilgan", status: 400 as const };
   }
-  return { msg };
+  return { msg, conv };
 }
 
 const editSchema = z.object({ body: z.string().trim().min(1).max(8000) });
@@ -47,6 +49,20 @@ export async function PATCH(
   }
   if (parsed.data.body === found.msg.body) {
     return NextResponse.json({ message: await toClientMessage(found.msg, me) });
+  }
+
+  const supportId = await getSupportUserId();
+  const isSupportThread =
+    found.conv.userAId === supportId || found.conv.userBId === supportId;
+  if (!isSupportThread) {
+    const guard = await enforceChatGuard({
+      conversationId: id,
+      senderId: me,
+      body: parsed.data.body,
+    });
+    if (guard.blocked) {
+      return NextResponse.json({ error: guard.reason }, { status: 400 });
+    }
   }
 
   const updated = await db.$transaction(async (tx) => {
