@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { refundOfferStars } from "@/lib/stars";
 
 /**
  * Buyurtmani "soft delete" qiladi — buyurtmachida qoladi, boshqalarga ko'rinmaydi.
@@ -62,6 +63,12 @@ export async function softDeleteOrder(
       },
     });
   });
+
+  // buyurtma hech kim tomonidan bajarilmay o'chirildi — ariza yuborganlarga
+  // sarflagan starlari qaytariladi (bu ularning aybi emas)
+  if (order.status !== "DONE") {
+    await refundOfferStars(orderId, "o'chirildi");
+  }
 
   return order;
 }

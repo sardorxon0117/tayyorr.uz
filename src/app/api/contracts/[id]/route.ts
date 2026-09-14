@@ -9,6 +9,7 @@ import { deliverMessage } from "@/lib/chat-notify";
 import { updateOrderChannelPost } from "@/lib/telegram";
 import { logActivity } from "@/lib/activity";
 import { logToGroup, siteUrl, userLabel } from "@/lib/telegram-log";
+import { refundOfferStars } from "@/lib/stars";
 
 const schema = z.object({ action: z.enum(["ACCEPT", "DECLINE", "CANCEL"]) });
 
@@ -225,6 +226,9 @@ export async function POST(
       `📄 Shartnoma bekor qilindi. ${refund.toLocaleString("ru-RU")} so'm to'liq buyurtmachiga qaytarildi.`,
     );
     await updateOrderChannelPost(contract.orderId);
+    // buyurtma hech kim tomonidan bajarilmay bekor bo'ldi — ariza
+    // yuborgan barcha tayyorlovchilarga sarflagan starlari qaytariladi
+    await refundOfferStars(contract.orderId, "bekor qilindi");
     await logActivity(
       me,
       "CONTRACT_CANCEL",

@@ -8,6 +8,7 @@ import { restrictionApiError } from "@/lib/restriction";
 import { updateOrderChannelPost, markOrderRemovedInChannel } from "@/lib/telegram";
 import { softDeleteOrder } from "@/lib/order-delete";
 import { logActivity } from "@/lib/activity";
+import { refundOfferStars } from "@/lib/stars";
 
 export async function GET(
   _req: Request,
@@ -132,6 +133,12 @@ export async function PATCH(
   });
 
   await updateOrderChannelPost(id);
+
+  // buyurtma hech kim tomonidan bajarilmay bekor qilindi — ariza
+  // yuborganlarga sarflagan starlari qaytariladi
+  if (status === "CANCELLED") {
+    await refundOfferStars(id, "bekor qilindi");
+  }
 
   const act =
     status === "DELIVERED"

@@ -1,5 +1,7 @@
 import { db } from "@/lib/db";
 import { getPlatformUserId } from "@/lib/platform";
+import { sendTelegramToUser, siteUrl } from "@/lib/telegram-notify";
+import { logToGroup, siteUrl as adminUrl } from "@/lib/telegram-log";
 
 /** 1 star narxi (so'm). */
 export const STAR_PRICE = 2_000;
@@ -101,4 +103,56 @@ export async function useStars(opts: {
   });
 
   return { ok: true, newStars: updated.starBalance };
+}
+
+/**
+ * Buyurtma HECH KIM tomonidan bajarilmay bekor bo'lsa yoki o'chirilsa —
+ * shu buyurtmaga taklif yuborgan barcha tayyorlovchilarning sarflagan
+ * starlari qaytariladi (ular aybdor emas). Lekin buyurtma muvaffaqiyatli
+ * yakunlansa (boshqa tayyorlovchi tomonidan bajarilsa ham) — starlar
+ * QAYTARILMAYDI, chunki bu holatda navbat o'z vazifasini bajargan, faqat
+ * boshqa tayyorlovchi tanlangan xolos.
+ */
+export async function refundOfferStars(orderId: string, reason: string) {
+  const [order, offers] = await Promise.all([
+    db.order.findUnique({ where: { id: orderId }, select: { title: true } }),
+    db.offer.findMany({
+      where: { orderId, starsSpent: { gt: 0 } },
+      select: { id: true, preparerId: true, starsSpent: true },
+    }),
+  ]);
+  if (offers.length === 0) return;
+
+  let totalStars = 0;
+  for (const o of offers) {
+    await db.$transaction(async (tx) => {
+      await tx.user.update({
+        where: { id: o.preparerId },
+        data: { starBalance: { increment: o.starsSpent } },
+      });
+      await tx.offer.update({ where: { id: o.id }, data: { starsSpent: 0 } });
+    });
+    totalStars += o.starsSpent;
+
+    await sendTelegramToUser(o.preparerId, {
+      title: "⭐ Star qaytarildi",
+      body:
+        `«${order?.title ?? "Buyurtma"}» ${reason} — sarflagan ${o.starsSpent} ⭐ ` +
+        `staringiz hisobingizga qaytarildi.`,
+      url: siteUrl("/wallet"),
+      buttonLabel: "Hamyonni ko'rish",
+    });
+  }
+
+  await logToGroup(
+    "stars",
+    "↩️ Starlar qaytarildi",
+    [
+      `«${order?.title ?? "Buyurtma"}»`,
+      `Sabab: ${reason}`,
+      `${offers.length} ta tayyorlovchiga jami ${totalStars} ⭐ qaytarildi`,
+      `Buyurtma ID: ${orderId}`,
+    ],
+    adminUrl(`/sardorxon/admin/orders/${orderId}`),
+  );
 }
