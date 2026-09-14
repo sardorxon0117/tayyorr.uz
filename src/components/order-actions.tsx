@@ -234,49 +234,6 @@ export function OrderActions(props: Props) {
         </div>
       )}
 
-      {/* Navbat — taklif berishdan oldin ham ko'rinadi, shunga qarab qancha
-          star sarflashni tanlaydi (ismlar qisman yashirilgan) */}
-      {isPreparer && !isOrderer && status === "OPEN" && queue.length > 0 && (
-        <div className="card flex flex-col gap-2">
-          <h2 className="font-semibold">Navbat ({queue.length})</h2>
-          <p className="text-xs text-zinc-500">
-            Ko'proq star sarflagan yuqorida turadi. Boshqa ishtirokchilarning
-            ismi qisman yashiringan.
-          </p>
-          <ul className="flex flex-col gap-1.5">
-            {queue.map((q) => (
-              <li
-                key={q.position}
-                className={`flex items-center justify-between rounded-lg px-3 py-2 text-sm ${
-                  q.mine
-                    ? "border border-indigo-400/30 bg-indigo-500/10"
-                    : "bg-white/[0.03]"
-                }`}
-              >
-                <span className="flex items-center gap-2">
-                  <span className="text-zinc-500">#{q.position}</span>
-                  <span className="font-medium text-white">
-                    {q.visible}
-                    {q.hiddenLen > 0 && (
-                      <span
-                        aria-hidden
-                        className="select-none blur-[3px]"
-                      >
-                        {"•".repeat(Math.min(q.hiddenLen, 10))}
-                      </span>
-                    )}
-                  </span>
-                  {q.mine && (
-                    <span className="text-xs text-indigo-300">(siz)</span>
-                  )}
-                </span>
-                <span className="text-xs text-amber-300">{q.starsSpent} ⭐</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
       {/* Tayyorlovchi: taklif yuborish */}
       {isPreparer && !isAssigned && status === "OPEN" && (
         <form
@@ -377,6 +334,49 @@ export function OrderActions(props: Props) {
             </div>
           )}
         </form>
+      )}
+
+      {/* Navbat — taklif yuborish qismidan pastroqda, shunga qarab qancha
+          star sarflashni tanlaydi (ismlar qisman yashirilgan) */}
+      {isPreparer && !isOrderer && status === "OPEN" && queue.length > 0 && (
+        <div className="card flex flex-col gap-2">
+          <h2 className="font-semibold">Navbat ({queue.length})</h2>
+          <p className="text-xs text-zinc-500">
+            Ko'proq star sarflagan yuqorida turadi. Boshqa ishtirokchilarning
+            ismi qisman yashiringan.
+          </p>
+          <ul className="flex flex-col gap-1.5">
+            {queue.map((q) => (
+              <li
+                key={q.position}
+                className={`flex items-center justify-between rounded-lg px-3 py-2 text-sm ${
+                  q.mine
+                    ? "border border-indigo-400/30 bg-indigo-500/10"
+                    : "bg-white/[0.03]"
+                }`}
+              >
+                <span className="flex items-center gap-2">
+                  <span className="text-zinc-500">#{q.position}</span>
+                  <span className="font-medium text-white">
+                    {q.visible}
+                    {q.hiddenLen > 0 && (
+                      <span
+                        aria-hidden
+                        className="select-none blur-[3px]"
+                      >
+                        {"•".repeat(Math.min(q.hiddenLen, 10))}
+                      </span>
+                    )}
+                  </span>
+                  {q.mine && (
+                    <span className="text-xs text-indigo-300">(siz)</span>
+                  )}
+                </span>
+                <span className="text-xs text-amber-300">{q.starsSpent} ⭐</span>
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
 
       {/* Buyurtmachi: takliflar ro'yxati */}

@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { logActivity } from "@/lib/activity";
+import { logToGroup, siteUrl } from "@/lib/telegram-log";
 
 export async function POST(
   _req: Request,
@@ -56,6 +57,15 @@ export async function POST(
     "PAYOUT_CANCEL",
     `Yechish so'rovini bekor qildi: ${p.amount.toLocaleString("ru-RU")} so'm`,
     { amount: p.amount, payoutId: id },
+  );
+  await logToGroup(
+    "payouts",
+    "↩️ Yechish so'rovi (o'zi) bekor qilindi",
+    [
+      `Summa: ${p.amount.toLocaleString("ru-RU")} so'm`,
+      `Foydalanuvchi ID: ${session.user.id}`,
+    ],
+    siteUrl(`/sardorxon/admin/users/${session.user.id}`),
   );
 
   return NextResponse.json({ ok: true });

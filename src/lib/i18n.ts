@@ -11,6 +11,7 @@ type Dict = Record<string, string>;
 
 const uz: Dict = {
   "nav.dashboard": "Asosiy menyu",
+  "nav.myOffers": "Mening takliflarim",
   "nav.messages": "Xabarlar",
   "nav.wallet": "Hamyon",
   "nav.profile": "Profil",
@@ -83,6 +84,7 @@ const uz: Dict = {
 
 const ru: Dict = {
   "nav.dashboard": "Кабинет",
+  "nav.myOffers": "Мои предложения",
   "nav.messages": "Сообщения",
   "nav.wallet": "Кошелёк",
   "nav.profile": "Профиль",
@@ -155,6 +157,7 @@ const ru: Dict = {
 
 const en: Dict = {
   "nav.dashboard": "Dashboard",
+  "nav.myOffers": "My offers",
   "nav.messages": "Messages",
   "nav.wallet": "Wallet",
   "nav.profile": "Profile",

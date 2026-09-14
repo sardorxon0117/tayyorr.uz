@@ -40,6 +40,7 @@ export default async function AppLayout({
         avatarUrl: true,
         image: true,
         balance: true,
+        starBalance: true,
         walletCode: true,
         theme: true,
       },
@@ -71,10 +72,16 @@ export default async function AppLayout({
             role: u?.role ?? null,
             image: u?.avatarUrl ?? u?.image ?? session.user.image ?? null,
             balance: u?.balance ?? 0,
+            starBalance: u?.starBalance ?? 0,
             walletCode,
           }}
         />
-        <AppHeader image={session.user.image ?? null} unread={unreadMsgs} />
+        <AppHeader
+          image={session.user.image ?? null}
+          unread={unreadMsgs}
+          starBalance={u?.role === "PREPARER" ? (u?.starBalance ?? 0) : null}
+          role={u?.role ?? null}
+        />
         <PresencePing />
         <NavHistoryTracker />
         <RevealOnScroll />

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { APP_NAV } from "@/lib/nav";
+import { navForRole } from "@/lib/nav";
 import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { BalanceAmount } from "@/components/balance-amount";
@@ -16,6 +16,7 @@ export interface SidebarUser {
   role: string | null;
   image: string | null;
   balance: number;
+  starBalance: number;
   walletCode: string | null;
 }
 
@@ -31,7 +32,7 @@ export function AppSidebar({
   const { t } = useLocale();
   const live = useUnread();
   const unreadCount = live ? live.total : unread;
-  const nav = APP_NAV.map((l) =>
+  const nav = navForRole(user.role).map((l) =>
     l.href === "/messages" ? { ...l, badge: unreadCount } : l,
   );
   const displayName =
@@ -74,7 +75,10 @@ export function AppSidebar({
           </span>
         </Link>
 
-        <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
+        <Link
+          href="/wallet"
+          className="block rounded-xl border border-white/10 bg-white/[0.03] p-3 transition hover:bg-white/[0.06]"
+        >
           <div className="text-[11px] text-zinc-500">
             {t("wallet.balanceLabel")}
           </div>
@@ -82,19 +86,21 @@ export function AppSidebar({
             value={user.balance}
             className="mt-0.5 text-lg font-semibold text-white"
           />
+          {user.role === "PREPARER" && (
+            <div className="mt-1 text-sm font-semibold text-amber-300">
+              {user.starBalance} ⭐
+            </div>
+          )}
           {user.walletCode && (
             <div className="mt-0.5 text-[10px] text-zinc-600">
               kod:{" "}
               <span className="font-mono text-zinc-400">{user.walletCode}</span>
             </div>
           )}
-          <Link
-            href="/wallet"
-            className="mt-2 block text-xs text-indigo-300 hover:underline"
-          >
+          <span className="mt-2 block text-xs text-indigo-300 hover:underline">
             {t("wallet.topup")} →
-          </Link>
-        </div>
+          </span>
+        </Link>
 
         <nav className="flex flex-col gap-0.5">
           {nav.map((l) => {

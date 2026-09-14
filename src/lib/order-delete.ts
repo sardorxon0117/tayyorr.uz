@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { refundOfferStars } from "@/lib/stars";
+import { logToGroup, siteUrl } from "@/lib/telegram-log";
 
 /**
  * Buyurtmani "soft delete" qiladi — buyurtmachida qoladi, boshqalarga ko'rinmaydi.
@@ -69,6 +70,18 @@ export async function softDeleteOrder(
   if (order.status !== "DONE") {
     await refundOfferStars(orderId, "o'chirildi");
   }
+
+  await logToGroup(
+    "orders",
+    "🗑 Buyurtma o'chirildi",
+    [
+      `«${order.title}»`,
+      `Kim: ${by === "ADMIN" ? "Admin" : "Buyurtmachi"}`,
+      reason ? `Sabab: ${reason}` : "",
+      `Buyurtma ID: ${orderId}`,
+    ].filter(Boolean),
+    siteUrl(`/sardorxon/admin/orders/${orderId}`),
+  );
 
   return order;
 }

@@ -5,6 +5,7 @@ import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { restrictionApiError } from "@/lib/restriction";
 import { logActivity } from "@/lib/activity";
+import { logToGroup, siteUrl } from "@/lib/telegram-log";
 
 const schema = z.object({
   stars: z.coerce.number().int().min(1).max(5),
@@ -75,6 +76,17 @@ export async function POST(
     "REVIEW_CREATE",
     `Baho qoldirdi: «${order.title}» — ${stars}/5`,
     { orderId: id, stars },
+  );
+  await logToGroup(
+    "completed",
+    "⭐ Ishga baho qo'yildi",
+    [
+      `«${order.title}»`,
+      `Baho: ${stars}/5`,
+      comment ? `Sharh: ${comment}` : "",
+      `Buyurtma ID: ${id}`,
+    ].filter(Boolean),
+    siteUrl(`/sardorxon/admin/orders/${id}`),
   );
 
   return NextResponse.json({ ok: true });

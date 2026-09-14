@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { restrictionApiError } from "@/lib/restriction";
 import { updateOrderChannelPost } from "@/lib/telegram";
 import { logActivity } from "@/lib/activity";
+import { logToGroup, siteUrl } from "@/lib/telegram-log";
 
 const schema = z.object({ action: z.enum(["ACCEPT", "REJECT"]) });
 
@@ -46,6 +47,12 @@ export async function PATCH(
       `Taklifni rad etdi: «${offer.order.title}»`,
       { orderId: offer.orderId, offerId: id },
     );
+    await logToGroup(
+      "offers",
+      "❌ Taklif rad etildi",
+      [`«${offer.order.title}»`, `Taklif ID: ${id}`],
+      siteUrl(`/sardorxon/admin/orders/${offer.orderId}`),
+    );
     return NextResponse.json({ offer: rejected });
   }
 
@@ -81,6 +88,16 @@ export async function PATCH(
     "OFFER_ACCEPT",
     `Taklifni qabul qildi: «${offer.order.title}» — ${offer.price.toLocaleString("ru-RU")} so'm`,
     { orderId: offer.orderId, offerId: id, price: offer.price },
+  );
+  await logToGroup(
+    "offers",
+    "✅ Taklif qabul qilindi",
+    [
+      `«${offer.order.title}»`,
+      `Narx: ${offer.price.toLocaleString("ru-RU")} so'm`,
+      `Taklif ID: ${id}`,
+    ],
+    siteUrl(`/sardorxon/admin/orders/${offer.orderId}`),
   );
 
   return NextResponse.json({ offer: result });

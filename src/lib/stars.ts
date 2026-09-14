@@ -2,6 +2,9 @@ import { db } from "@/lib/db";
 import { getPlatformUserId } from "@/lib/platform";
 import { sendTelegramToUser, siteUrl } from "@/lib/telegram-notify";
 import { logToGroup, siteUrl as adminUrl } from "@/lib/telegram-log";
+import { getSupportUserId } from "@/lib/support";
+import { createMessage, getOrCreateConversation } from "@/lib/chat";
+import { deliverMessage } from "@/lib/chat-notify";
 
 /** 1 star narxi (so'm). */
 export const STAR_PRICE = 2_000;
@@ -123,6 +126,7 @@ export async function refundOfferStars(orderId: string, reason: string) {
   ]);
   if (offers.length === 0) return;
 
+  const supportId = await getSupportUserId();
   let totalStars = 0;
   for (const o of offers) {
     await db.$transaction(async (tx) => {
@@ -134,11 +138,25 @@ export async function refundOfferStars(orderId: string, reason: string) {
     });
     totalStars += o.starsSpent;
 
+    const text =
+      `⭐ Staringiz qaytarildi. «${order?.title ?? "Buyurtma"}» ${reason} — ` +
+      `sarflagan ${o.starsSpent} ⭐ staringiz hisobingizga qaytarildi.`;
+
+    // saytdagi support chatiga — kafolatlangan bildirishnoma (Telegram
+    // ulanmagan bo'lsa ham ko'radi)
+    const conv = await getOrCreateConversation(supportId, o.preparerId);
+    const msg = await createMessage({
+      conversationId: conv.id,
+      senderId: supportId,
+      body: text,
+      system: false,
+    });
+    await deliverMessage(msg);
+
+    // shaxsiy Telegram boti ulangan bo'lsa — qo'shimcha
     await sendTelegramToUser(o.preparerId, {
       title: "⭐ Star qaytarildi",
-      body:
-        `«${order?.title ?? "Buyurtma"}» ${reason} — sarflagan ${o.starsSpent} ⭐ ` +
-        `staringiz hisobingizga qaytarildi.`,
+      body: text,
       url: siteUrl("/wallet"),
       buttonLabel: "Hamyonni ko'rish",
     });

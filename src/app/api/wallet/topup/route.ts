@@ -5,6 +5,7 @@ import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { luhnValid, maskCard } from "@/lib/wallet";
 import { logActivity } from "@/lib/activity";
+import { logToGroup, siteUrl } from "@/lib/telegram-log";
 
 /**
  * DEMO hisobni to'ldirish. Haqiqiy pul yechilmaydi.
@@ -101,6 +102,16 @@ export async function POST(req: Request) {
       forSelf ? "" : ` (hisob: ${target.walletCode ?? target.login ?? target.id})`
     }`,
     { amount, targetId: target.id, forSelf },
+  );
+  await logToGroup(
+    "payments",
+    "🧪 DEMO to'ldirish",
+    [
+      `Summa: ${amount.toLocaleString("ru-RU")} so'm`,
+      `Kimga: ${target.walletCode ?? target.login ?? target.id}`,
+      `Kim: ${session.user.id}`,
+    ],
+    siteUrl(`/sardorxon/admin/users/${target.id}`),
   );
 
   return NextResponse.json({

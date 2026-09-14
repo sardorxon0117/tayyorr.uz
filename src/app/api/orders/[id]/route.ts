@@ -9,6 +9,7 @@ import { updateOrderChannelPost, markOrderRemovedInChannel } from "@/lib/telegra
 import { softDeleteOrder } from "@/lib/order-delete";
 import { logActivity } from "@/lib/activity";
 import { refundOfferStars } from "@/lib/stars";
+import { logToGroup, siteUrl } from "@/lib/telegram-log";
 
 export async function GET(
   _req: Request,
@@ -155,6 +156,17 @@ export async function PATCH(
   await logActivity(session.user.id, act, `${verb}: «${order.title}»`, {
     orderId: id,
   });
+
+  await logToGroup(
+    "orders",
+    status === "DELIVERED"
+      ? "📦 Ish topshirildi"
+      : status === "DONE"
+        ? "✅ Buyurtma yakunlandi"
+        : "🚫 Buyurtma bekor qilindi",
+    [`«${order.title}»`, `Buyurtma ID: ${id}`],
+    siteUrl(`/sardorxon/admin/orders/${id}`),
+  );
 
   return NextResponse.json({ order: updated });
 }

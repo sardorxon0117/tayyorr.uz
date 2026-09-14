@@ -6,15 +6,20 @@ import { usePathname } from "next/navigation";
 import { NavMenu } from "@/components/nav-menu";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Logo } from "@/components/logo";
-import { APP_NAV } from "@/lib/nav";
+import { navForRole } from "@/lib/nav";
 import { useUnread } from "@/components/unread-provider";
 
 export function AppHeader({
   image,
   unread = 0,
+  starBalance = null,
+  role = null,
 }: {
   image: string | null;
   unread?: number;
+  /** null bo'lsa (masalan buyurtma beruvchi) belgi umuman ko'rsatilmaydi. */
+  starBalance?: number | null;
+  role?: string | null;
 }) {
   const pathname = usePathname();
   const live = useUnread();
@@ -22,7 +27,7 @@ export function AppHeader({
   if (/^\/messages\/[^/]+$/.test(pathname)) return null;
 
   const unreadCount = live ? live.total : unread;
-  const nav = APP_NAV.map((l) =>
+  const nav = navForRole(role).map((l) =>
     l.href === "/messages" ? { ...l, badge: unreadCount } : l,
   );
 
@@ -33,6 +38,15 @@ export function AppHeader({
           <Logo className="h-4 max-w-[70vw] sm:h-6" />
         </Link>
         <div className="ml-auto flex items-center gap-2.5">
+          {starBalance !== null && (
+            <Link
+              href="/wallet"
+              className="flex items-center gap-1 rounded-full border border-amber-400/25 bg-amber-500/10 px-2.5 py-1 text-xs font-semibold text-amber-300 transition hover:bg-amber-500/20"
+              aria-label="Star balansi"
+            >
+              {starBalance} ⭐
+            </Link>
+          )}
           <Link
             href="/profile"
             className="h-9 w-9 overflow-hidden rounded-full border border-white/15 bg-white/5 transition hover:border-white/30"
