@@ -30,8 +30,8 @@ export function AnnouncementBanner({
 }) {
   const external = !!a.buttonUrl && /^https?:\/\//i.test(a.buttonUrl);
   return (
-    <div className="flex h-[9.5rem] flex-col overflow-hidden rounded-2xl border border-indigo-400/25 bg-gradient-to-br from-indigo-500/15 to-fuchsia-500/10 p-4">
-      <div className="flex flex-1 flex-wrap items-center justify-between gap-4">
+    <div className="flex h-auto min-h-[9.5rem] flex-col overflow-hidden rounded-2xl border border-indigo-400/25 bg-gradient-to-br from-indigo-500/15 to-fuchsia-500/10 p-4 sm:h-[9.5rem]">
+      <div className="flex flex-1 flex-col items-start gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-4">
         <div className="min-w-0 flex-1">
           <BlurText
             text={a.title}
@@ -50,7 +50,7 @@ export function AnnouncementBanner({
             {...(external
               ? { target: "_blank", rel: "noopener noreferrer" }
               : {})}
-            className="ann-btn btn-white shrink-0 justify-center overflow-hidden whitespace-nowrap"
+            className="ann-btn btn-white w-full shrink-0 justify-center overflow-hidden whitespace-nowrap sm:w-auto"
           >
             <BlurText text={a.buttonText} />
           </Link>
@@ -61,7 +61,7 @@ export function AnnouncementBanner({
   );
 }
 
-/** Bir nechta e'lon — kompyuterda navbatlashib turadi, joriy tilda. */
+/** Bir nechta e'lon — barcha qurilmalarda navbatlashib turadi, joriy tilda. */
 export function AnnouncementCarousel({ items }: { items: AnnItem[] }) {
   const { locale } = useLocale();
   const [i, setI] = useState(0);
@@ -148,9 +148,5 @@ export function AnnouncementCarousel({ items }: { items: AnnItem[] }) {
     </div>
   ) : undefined;
 
-  return (
-    <div className="hidden lg:block">
-      <AnnouncementBanner a={cur} indicator={indicator} />
-    </div>
-  );
+  return <AnnouncementBanner a={cur} indicator={indicator} />;
 }
