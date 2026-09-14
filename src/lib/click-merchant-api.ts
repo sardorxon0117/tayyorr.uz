@@ -64,7 +64,12 @@ export async function checkClickPaymentStatus(merchantTransId: string, paidOn: D
   );
 }
 
-/** Click orqali to'langan summani bekor qiladi/qaytaradi. paymentId = Click'ning o'z tranzaksiya raqami (click_trans_id). */
+/** Click orqali to'langan summani bekor qiladi/qaytaradi. paymentId = status tekshiruvidan olingan Click "payment_id". */
 export async function reverseClickPayment(paymentId: string) {
   return clickApi("DELETE", `/payment/reversal/${SERVICE_ID}/${paymentId}`);
+}
+
+/** Fiskal chek havolasini (OFD QR kod) oladi — agar shu to'lov uchun fiskal ma'lumot topshirilgan bo'lsa. */
+export async function getClickOfdData(paymentId: string) {
+  return clickApi("GET", `/payment/ofd_data/${SERVICE_ID}/${paymentId}`);
 }

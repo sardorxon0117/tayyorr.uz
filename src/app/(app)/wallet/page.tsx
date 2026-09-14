@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { ensureWalletCode, formatSom } from "@/lib/wallet";
@@ -158,9 +160,10 @@ export default async function WalletPage({
               const reversed = !!tx.reversedAt;
               const out = reversed || OUTFLOW.has(tx.type);
               return (
-                <li
-                  key={tx.id}
-                  className="card flex items-center justify-between py-3"
+                <li key={tx.id}>
+                <Link
+                  href={`/wallet/${tx.id}`}
+                  className="card flex items-center justify-between py-3 transition hover:bg-white/[0.06]"
                 >
                   <div>
                     <div className="text-sm font-medium text-white">
@@ -193,6 +196,7 @@ export default async function WalletPage({
                     {out ? "−" : "+"}
                     {formatSom(tx.amount)}
                   </div>
+                </Link>
                 </li>
               );
             })}

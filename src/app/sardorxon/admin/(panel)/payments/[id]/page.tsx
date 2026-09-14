@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { formatSom } from "@/lib/wallet";
 import { AdminPostButton } from "@/components/admin/admin-post-button";
 import { ClickPaymentActions } from "@/components/admin/click-payment-actions";
+import { ClickReceiptButton } from "@/components/click-receipt-button";
 import { shortDateTime } from "@/lib/date";
 
 export default async function AdminPaymentReceipt({
@@ -68,7 +69,10 @@ export default async function AdminPaymentReceipt({
       </div>
 
       {t.method === "CLICK" && (
-        <ClickPaymentActions txnId={t.id} canReverse={canReverse} />
+        <>
+          <ClickPaymentActions txnId={t.id} canReverse={canReverse} />
+          <ClickReceiptButton apiBase={`/api/admin/payments/${t.id}`} />
+        </>
       )}
 
       {canReverse ? (
