@@ -7,12 +7,19 @@ import { restrictionApiError } from "@/lib/restriction";
 import { logActivity } from "@/lib/activity";
 import { sendTelegramToUser, siteUrl } from "@/lib/telegram-notify";
 import { logToGroup, userLabel } from "@/lib/telegram-log";
+import { spendStars, MIN_OFFER_STARS, STAR_PRICE } from "@/lib/stars";
 
 const schema = z.object({
   price: z.number().int().positive(),
   message: z.string().max(1000).optional(),
 });
 
+/**
+ * Taklif (ariza) yuborish. Birinchi marta yuborilganda majburiy
+ * MIN_OFFER_STARS star to'lanadi (navbatdagi boshlang'ich o'rinni
+ * belgilaydi) — [[stars.ts]]. Narx/xabarni keyin bepul yangilash mumkin,
+ * yuqoriga chiqish uchun esa alohida "boost" orqali qo'shimcha star kerak.
+ */
 export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> },
@@ -44,6 +51,23 @@ export async function POST(
     );
   }
 
+  const existing = await db.offer.findUnique({
+    where: { orderId_preparerId: { orderId: id, preparerId: session.user.id } },
+  });
+
+  // birinchi marta yuborilyapti — star to'lanadi (navbatga yozilish narxi)
+  if (!existing) {
+    const spend = await spendStars({
+      userId: session.user.id,
+      stars: MIN_OFFER_STARS,
+      reason: "Buyurtmaga ariza",
+      meta: { orderId: id },
+    });
+    if (!spend.ok) {
+      return NextResponse.json({ error: spend.error }, { status: 400 });
+    }
+  }
+
   const offer = await db.offer.upsert({
     where: { orderId_preparerId: { orderId: id, preparerId: session.user.id } },
     update: { price: parsed.data.price, message: parsed.data.message, status: "PENDING" },
@@ -52,13 +76,14 @@ export async function POST(
       preparerId: session.user.id,
       price: parsed.data.price,
       message: parsed.data.message,
+      starsSpent: MIN_OFFER_STARS,
     },
   });
 
   await logActivity(
     session.user.id,
-    "OFFER_CREATE",
-    `Taklif yubordi: «${order.title}» — ${parsed.data.price.toLocaleString("ru-RU")} so'm`,
+    existing ? "OFFER_UPDATE" : "OFFER_CREATE",
+    `Taklif ${existing ? "yangiladi" : "yubordi"}: «${order.title}» — ${parsed.data.price.toLocaleString("ru-RU")} so'm`,
     { orderId: id, price: parsed.data.price },
   );
 
@@ -71,25 +96,30 @@ export async function POST(
     preparer?.name ||
     (preparer?.login ? `@${preparer.login}` : "Tayyorlovchi");
 
-  await sendTelegramToUser(order.ordererId, {
-    title: "🙋 Yangi ko'ngilli topildi",
-    body:
-      `«${order.title}» buyurtmangizga ${preparerName} taklif yubordi: ` +
-      `${parsed.data.price.toLocaleString("ru-RU")} so'm` +
-      (parsed.data.message ? `\n\n«${parsed.data.message}»` : ""),
-    url: siteUrl(`/orders/${id}`),
-    buttonLabel: "Ko'ngillilarni ko'rish",
-  });
+  if (!existing) {
+    await sendTelegramToUser(order.ordererId, {
+      title: "🙋 Yangi ko'ngilli topildi",
+      body:
+        `«${order.title}» buyurtmangizga ${preparerName} taklif yubordi: ` +
+        `${parsed.data.price.toLocaleString("ru-RU")} so'm` +
+        (parsed.data.message ? `\n\n«${parsed.data.message}»` : ""),
+      url: siteUrl(`/orders/${id}`),
+      buttonLabel: "Ko'ngillilarni ko'rish",
+    });
+  }
 
   await logToGroup(
     "offers",
-    "🙋 Yangi taklif",
+    existing ? "🙋 Taklif yangilandi" : "🙋 Yangi taklif",
     [
       `«${order.title}»`,
       `Tayyorlovchi: ${userLabel(preparer)}`,
       preparer?.email ? `Email: ${preparer.email}` : "",
       `Narx: ${parsed.data.price.toLocaleString("ru-RU")} so'm`,
       parsed.data.message ? `Xabar: ${parsed.data.message}` : "",
+      !existing
+        ? `Ariza uchun to'landi: ${MIN_OFFER_STARS} ⭐ (${(MIN_OFFER_STARS * STAR_PRICE).toLocaleString("ru-RU")} so'm)`
+        : `Jami star: ${offer.starsSpent} ⭐`,
       `Buyurtma ID: ${id}`,
       `Taklif ID: ${offer.id}`,
     ].filter(Boolean),

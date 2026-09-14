@@ -1,9 +1,10 @@
 import { db } from "@/lib/db";
 
-/** Sayt komissiya hisobi (singleton). Komissiya shu hisobga tushadi. */
-export const COMMISSION_FINAL = 0.05; // muvaffaqiyatli yakunlanганда
-export const COMMISSION_CANCEL = 0.02; // buyurtmachi bekor qilganда
-
+/**
+ * Sayt hisobi (singleton). Endi shartnomalardan komissiya olinmaydi —
+ * pul to'liq (100%) tayyorlovchiga o'tadi. Sayt daromadi endi
+ * star tizimidan keladi (bu hisobga o'sha mablag' tushadi — [[stars.ts]]).
+ */
 let cachedId: string | null = null;
 
 export async function getPlatformUserId(): Promise<string> {
@@ -22,8 +23,4 @@ export async function getPlatformUserId(): Promise<string> {
   });
   cachedId = created.id;
   return created.id;
-}
-
-export function commission(amount: number, rate: number) {
-  return Math.round(amount * rate);
 }

@@ -6,7 +6,6 @@ import { db } from "@/lib/db";
 import { restrictionApiError } from "@/lib/restriction";
 import { createMessage, getOrCreateConversation } from "@/lib/chat";
 import { deliverMessage } from "@/lib/chat-notify";
-import { getPlatformUserId, commission, COMMISSION_CANCEL } from "@/lib/platform";
 import { updateOrderChannelPost } from "@/lib/telegram";
 import { logActivity } from "@/lib/activity";
 import { logToGroup, siteUrl, userLabel } from "@/lib/telegram-log";
@@ -183,9 +182,7 @@ export async function POST(
     if (!["IN_PROGRESS", "DELIVERED"].includes(contract.order.status)) {
       return NextResponse.json({ error: "Hozir bekor qilib bo'lmaydi" }, { status: 400 });
     }
-    const fee = commission(contract.amount, COMMISSION_CANCEL); // 2%
-    const refund = contract.amount - fee;
-    const platformId = await getPlatformUserId();
+    const refund = contract.amount; // komissiyasiz — to'liq qaytariladi
 
     await db.$transaction(async (tx) => {
       await tx.contract.update({
@@ -193,7 +190,7 @@ export async function POST(
         data: {
           status: "CANCELLED",
           resolvedAt: new Date(),
-          commissionAmount: fee,
+          commissionAmount: 0,
           refundAmount: refund,
         },
       });
@@ -205,21 +202,6 @@ export async function POST(
         where: { id: contract.preparerId },
         data: { isAvailable: true },
       });
-      // 2% saytga
-      await tx.user.update({
-        where: { id: platformId },
-        data: { balance: { increment: fee } },
-      });
-      await tx.walletTransaction.create({
-        data: {
-          userId: platformId,
-          type: "COMMISSION",
-          amount: fee,
-          method: "ESCROW",
-          note: `Bekor qilish komissiyasi 2% (shartnoma: ${contract.id})`,
-        },
-      });
-      // qolgani buyurtmachiga
       await tx.user.update({
         where: { id: contract.ordererId },
         data: { balance: { increment: refund } },
@@ -230,7 +212,7 @@ export async function POST(
           type: "REFUND",
           amount: refund,
           method: "ESCROW",
-          note: "Shartnoma bekor qilindi (2% komissiya ushlab qolindi)",
+          note: "Shartnoma bekor qilindi — mablag' to'liq qaytdi",
         },
       });
     });
@@ -240,14 +222,14 @@ export async function POST(
       contract.preparerId,
       contract.orderId,
       me,
-      `📄 Shartnoma bekor qilindi. ${fee.toLocaleString("ru-RU")} so'm (2%) sayt komissiyasi, ${refund.toLocaleString("ru-RU")} so'm buyurtmachiga qaytarildi.`,
+      `📄 Shartnoma bekor qilindi. ${refund.toLocaleString("ru-RU")} so'm to'liq buyurtmachiga qaytarildi.`,
     );
     await updateOrderChannelPost(contract.orderId);
     await logActivity(
       me,
       "CONTRACT_CANCEL",
       `Shartnomani bekor qildi (ish jarayonida): «${contract.order.title}»`,
-      { orderId: contract.orderId, contractId: id, fee, refund },
+      { orderId: contract.orderId, contractId: id, refund },
     );
     await logToGroup(
       "contracts",
@@ -256,9 +238,7 @@ export async function POST(
         `«${contract.order.title}»`,
         `Buyurtmachi: ${userLabel(contract.orderer)}`,
         `Tayyorlovchi: ${userLabel(contract.preparer)}`,
-        `Umumiy summa: ${contract.amount.toLocaleString("ru-RU")} so'm`,
-        `Komissiya: ${fee.toLocaleString("ru-RU")} so'm`,
-        `Qaytarildi: ${refund.toLocaleString("ru-RU")} so'm`,
+        `Qaytarildi (komissiyasiz, to'liq): ${refund.toLocaleString("ru-RU")} so'm`,
         `Shartnoma ID: ${contract.id}`,
       ],
       siteUrl(`/sardorxon/admin/orders/${contract.orderId}`),

@@ -13,6 +13,8 @@ export type ActivityAction =
   | "ORDER_DELIVER"
   | "ORDER_FINALIZE"
   | "OFFER_CREATE"
+  | "OFFER_UPDATE"
+  | "OFFER_BOOST"
   | "OFFER_ACCEPT"
   | "OFFER_REJECT"
   | "CONTRACT_SEND"

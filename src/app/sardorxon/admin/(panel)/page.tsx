@@ -33,7 +33,7 @@ export default async function AdminHome() {
     { label: "24 soatlik amallar", value: txnToday, href: "/sardorxon/admin/payments" },
     { label: "Cheklangan hisoblar", value: banned, href: "/sardorxon/admin/users" },
     {
-      label: "Sayt komissiyasi (jami)",
+      label: "Sayt daromadi — star (jami)",
       value: formatSom(platform?.balance ?? 0),
       href: "/sardorxon/admin/payments",
     },

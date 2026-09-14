@@ -24,9 +24,6 @@ const TOPICS = {
   errors: process.env.TELEGRAM_TOPIC_ERRORS,
   referrals: process.env.TELEGRAM_TOPIC_REFERRALS,
   support: process.env.TELEGRAM_TOPIC_SUPPORT,
-  // alohida topik hali ochilmagan bo'lsa — "Shikoyatlar"ga tushib turadi;
-  // TELEGRAM_TOPIC_MODERATION qo'shilsa avtomatik shunga o'tadi.
-  moderation: process.env.TELEGRAM_TOPIC_MODERATION || process.env.TELEGRAM_TOPIC_COMPLAINTS,
 } as const;
 
 export type LogTopic = keyof typeof TOPICS;

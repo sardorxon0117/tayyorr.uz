@@ -571,12 +571,14 @@ model Offer {
   price      Int
   message    String?
   status     OfferStatus @default(PENDING)
+  starsSpent Int         @default(2) // ariza uchun to'langan star (navbatdagi o'rinni belgilaydi)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@unique([orderId, preparerId])
   @@index([preparerId, status])
+  @@index([orderId, starsSpent, createdAt])
 }
 
 model FileObject {

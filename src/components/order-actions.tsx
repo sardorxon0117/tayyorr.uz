@@ -14,6 +14,7 @@ interface OfferView {
   message: string | null;
   status: string;
   preparerId: string;
+  starsSpent: number;
   preparer: {
     name: string;
     login: string | null;
@@ -21,6 +22,14 @@ interface OfferView {
     rating: number | null;
     ratingCount: number;
   };
+}
+
+interface QueueRow {
+  position: number;
+  mine: boolean;
+  starsSpent: number;
+  visible: string;
+  hiddenLen: number;
 }
 
 interface Props {
@@ -32,8 +41,15 @@ interface Props {
   ordererId: string;
   reviewed: boolean;
   myReview: { stars: number; comment: string | null } | null;
-  myOffer: { id: string; price: number; message: string | null; status: string } | null;
+  myOffer: {
+    id: string;
+    price: number;
+    message: string | null;
+    status: string;
+    starsSpent: number;
+  } | null;
   offers: OfferView[];
+  queue: QueueRow[];
   meId: string;
   contracts: {
     id: string;
@@ -44,6 +60,9 @@ interface Props {
     status: string;
   }[];
 }
+
+const STAR_PRICE = 2_000;
+const MIN_OFFER_STARS = 2;
 
 export function OrderActions(props: Props) {
   const router = useRouter();
@@ -58,12 +77,14 @@ export function OrderActions(props: Props) {
     myReview,
     myOffer,
     offers,
+    queue,
     meId,
     contracts,
   } = props;
 
   const [price, setPrice] = useState(myOffer?.price?.toString() ?? "");
   const [message, setMessage] = useState(myOffer?.message ?? "");
+  const [boostStars, setBoostStars] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
@@ -90,6 +111,16 @@ export function OrderActions(props: Props) {
     setContractFor(null);
     setCAmount("");
     setCNote("");
+  }
+
+  async function boost() {
+    const stars = Number(boostStars);
+    if (!stars || stars <= 0) {
+      setErr("Star sonini kiriting");
+      return;
+    }
+    await call(`/api/orders/${orderId}/offers/boost`, "POST", { stars });
+    setBoostStars("");
   }
 
   async function startChat(userId: string) {
@@ -238,15 +269,90 @@ export function OrderActions(props: Props) {
               onChange={(e) => setMessage(e.target.value)}
             />
           </div>
-          <button className="btn-primary" disabled={busy}>
-            {myOffer ? "Yangilash" : "Yuborish"}
-          </button>
-          {myOffer && (
-            <p className="text-xs text-zinc-500">
-              Holat: {myOffer.status}
+          {!myOffer && (
+            <p className="text-xs text-amber-300">
+              ⭐ Taklif yuborish {MIN_OFFER_STARS} star (
+              {(MIN_OFFER_STARS * STAR_PRICE).toLocaleString("ru-RU")} so'm)
+              talab qiladi — hisobingizdan avtomatik yechiladi.
             </p>
           )}
+          <button className="btn-primary" disabled={busy}>
+            {myOffer ? "Yangilash" : `Yuborish (${MIN_OFFER_STARS} ⭐)`}
+          </button>
+          {myOffer && (
+            <div className="flex flex-col gap-2 border-t border-white/10 pt-3">
+              <p className="text-xs text-zinc-500">
+                Holat: {myOffer.status} · Jami sarflangan:{" "}
+                <b className="text-amber-300">{myOffer.starsSpent} ⭐</b>
+              </p>
+              <div className="flex items-center gap-2">
+                <input
+                  className="input w-28"
+                  type="number"
+                  min={1}
+                  step={1}
+                  placeholder="star"
+                  value={boostStars}
+                  onChange={(e) => setBoostStars(e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  disabled={busy}
+                  onClick={boost}
+                >
+                  🚀 Navbatda yuqoriga chiqish
+                </button>
+              </div>
+              <p className="text-xs text-zinc-600">
+                Har bir qo'shimcha star {STAR_PRICE.toLocaleString("ru-RU")} so'm —
+                navbatda ko'proq star sarflaganlar yuqorida turadi.
+              </p>
+            </div>
+          )}
         </form>
+      )}
+
+      {/* Navbat — boshqa tayyorlovchilarga (ismlar qisman yashirilgan) */}
+      {isPreparer && !isOrderer && status === "OPEN" && queue.length > 0 && (
+        <div className="card flex flex-col gap-2">
+          <h2 className="font-semibold">Navbat ({queue.length})</h2>
+          <p className="text-xs text-zinc-500">
+            Ko'proq star sarflagan yuqorida turadi. Boshqa ishtirokchilarning
+            ismi qisman yashiringan.
+          </p>
+          <ul className="flex flex-col gap-1.5">
+            {queue.map((q) => (
+              <li
+                key={q.position}
+                className={`flex items-center justify-between rounded-lg px-3 py-2 text-sm ${
+                  q.mine
+                    ? "border border-indigo-400/30 bg-indigo-500/10"
+                    : "bg-white/[0.03]"
+                }`}
+              >
+                <span className="flex items-center gap-2">
+                  <span className="text-zinc-500">#{q.position}</span>
+                  <span className="font-medium text-white">
+                    {q.visible}
+                    {q.hiddenLen > 0 && (
+                      <span
+                        aria-hidden
+                        className="select-none blur-[3px]"
+                      >
+                        {"•".repeat(Math.min(q.hiddenLen, 10))}
+                      </span>
+                    )}
+                  </span>
+                  {q.mine && (
+                    <span className="text-xs text-indigo-300">(siz)</span>
+                  )}
+                </span>
+                <span className="text-xs text-amber-300">{q.starsSpent} ⭐</span>
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
 
       {/* Buyurtmachi: takliflar ro'yxati */}
@@ -268,6 +374,9 @@ export function OrderActions(props: Props) {
                     <span className="text-zinc-400"> @{o.preparer.login}</span>
                   )}
                 </Link>
+                <span className="shrink-0 text-xs text-amber-300">
+                  {o.starsSpent} ⭐
+                </span>
               </div>
               <Link
                 href={`/u/${o.preparerId}`}
@@ -417,7 +526,7 @@ export function OrderActions(props: Props) {
               Ish tayyor bo'lsa yakunlang — <b>
                 {acceptedContract.amount.toLocaleString()} so'm
               </b>{" "}
-              dan 5% sayt komissiyasi ushlanib, qolgani tayyorlovchi hisobiga o'tadi.
+              to'liq (komissiyasiz) tayyorlovchi hisobiga o'tadi.
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
               <button
@@ -433,7 +542,7 @@ export function OrderActions(props: Props) {
                 onClick={() => {
                   if (
                     window.confirm(
-                      "Shartnoma bekor qilinadi. 2% sayt komissiyasi ushlanadi, qolgani sizga qaytadi. Davom etilsinmi?",
+                      "Shartnoma bekor qilinadi. Mablag' to'liq (komissiyasiz) sizga qaytadi. Davom etilsinmi?",
                     )
                   ) {
                     call(`/api/contracts/${acceptedContract.id}`, "POST", {

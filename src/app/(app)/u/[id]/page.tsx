@@ -63,6 +63,23 @@ export default async function PublicProfile({
   const blockedMe =
     !!me && me !== id && (await blockState(me, id)).blockedMe;
 
+  // Email faqat profil egasining o'ziga, yoki u bilan ish boshlagan
+  // (shartnoma qabul qilingan) tomonga ko'rinadi — boshqalar ish
+  // boshlamaguncha kontaktni ko'ra olmaydi.
+  const canSeeEmail =
+    me === id ||
+    (!!me &&
+      (await db.order.findFirst({
+        where: {
+          OR: [
+            { ordererId: me, preparerId: id },
+            { ordererId: id, preparerId: me },
+          ],
+          status: { in: ["IN_PROGRESS", "DELIVERED", "DONE"] },
+        },
+        select: { id: true },
+      })) !== null);
+
   const displayName =
     user.name ||
     `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() ||
@@ -176,7 +193,10 @@ export default async function PublicProfile({
       {/* ma'lumotlar */}
       <div className="card">
         <dl className="divide-y divide-white/5 text-sm">
-          <Row k="Email" v={user.email ?? "—"} />
+          <Row
+            k="Email"
+            v={canSeeEmail ? user.email ?? "—" : "🔒 ish boshlanmaguncha yashiringan"}
+          />
           <Row
             k="Ro'yxatdan o'tgan"
             v={shortDate(user.createdAt)}

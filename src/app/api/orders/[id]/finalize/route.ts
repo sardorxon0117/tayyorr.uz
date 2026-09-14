@@ -5,12 +5,11 @@ import { db } from "@/lib/db";
 import { restrictionApiError } from "@/lib/restriction";
 import { createMessage, getOrCreateConversation } from "@/lib/chat";
 import { deliverMessage } from "@/lib/chat-notify";
-import { getPlatformUserId, commission, COMMISSION_FINAL } from "@/lib/platform";
 import { updateOrderChannelPost } from "@/lib/telegram";
 import { logActivity } from "@/lib/activity";
 import { logToGroup, siteUrl, userLabel } from "@/lib/telegram-log";
 
-/** Buyurtmachi ishni yakunlaydi -> eskroudan tayyorlovchiga (95%), saytga (5%). */
+/** Buyurtmachi ishni yakunlaydi -> eskroudan tayyorlovchiga to'liq (100%) o'tadi. */
 export async function POST(
   _req: Request,
   { params }: { params: Promise<{ id: string }> },
@@ -40,17 +39,14 @@ export async function POST(
     return NextResponse.json({ error: "Faol shartnoma yo'q" }, { status: 400 });
   }
 
-  const fee = commission(contract.amount, COMMISSION_FINAL); // 5%
-  const payout = contract.amount - fee;
-  const platformId = await getPlatformUserId();
+  const payout = contract.amount; // komissiyasiz — to'liq summa tayyorlovchiga
 
   await db.$transaction(async (tx) => {
     await tx.order.update({ where: { id }, data: { status: "DONE" } });
     await tx.contract.update({
       where: { id: contract.id },
-      data: { commissionAmount: fee, payoutAmount: payout },
+      data: { commissionAmount: 0, payoutAmount: payout },
     });
-    // tayyorlovchiga
     await tx.user.update({
       where: { id: order.preparerId! },
       data: { balance: { increment: payout }, isAvailable: true },
@@ -61,21 +57,7 @@ export async function POST(
         type: "RELEASE",
         amount: payout,
         method: "ESCROW",
-        note: `Ish yakunlandi: ${order.title} (5% komissiya ushlandi)`,
-      },
-    });
-    // saytga
-    await tx.user.update({
-      where: { id: platformId },
-      data: { balance: { increment: fee } },
-    });
-    await tx.walletTransaction.create({
-      data: {
-        userId: platformId,
-        type: "COMMISSION",
-        amount: fee,
-        method: "ESCROW",
-        note: `Yakuniy komissiya 5% (shartnoma: ${contract.id})`,
+        note: `Ish yakunlandi: ${order.title} (komissiyasiz, to'liq)`,
       },
     });
   });
@@ -84,7 +66,7 @@ export async function POST(
   const msg = await createMessage({
     conversationId: conv.id,
     senderId: me,
-    body: `🎉 Buyurtma yakunlandi. ${payout.toLocaleString("ru-RU")} so'm tayyorlovchi hisobiga o'tkazildi (5% sayt komissiyasi).`,
+    body: `🎉 Buyurtma yakunlandi. ${payout.toLocaleString("ru-RU")} so'm to'liq tayyorlovchi hisobiga o'tkazildi.`,
     system: true,
   });
   await deliverMessage(msg);
@@ -95,7 +77,7 @@ export async function POST(
     me,
     "ORDER_FINALIZE",
     `Ishni yakunladi: «${order.title}» — tayyorlovchiga ${payout.toLocaleString("ru-RU")} so'm`,
-    { orderId: id, payout, fee },
+    { orderId: id, payout },
   );
   const [orderer, preparer] = await Promise.all([
     db.user.findUnique({
@@ -115,9 +97,7 @@ export async function POST(
       `«${order.title}»`,
       `Buyurtmachi: ${userLabel(orderer)}`,
       `Tayyorlovchi: ${userLabel(preparer)}`,
-      `Umumiy summa: ${contract.amount.toLocaleString("ru-RU")} so'm`,
-      `Tayyorlovchiga: ${payout.toLocaleString("ru-RU")} so'm`,
-      `Sayt komissiyasi: ${fee.toLocaleString("ru-RU")} so'm`,
+      `Tayyorlovchiga (komissiyasiz, to'liq): ${payout.toLocaleString("ru-RU")} so'm`,
       `Buyurtma ID: ${id}`,
       `Shartnoma ID: ${contract.id}`,
     ],

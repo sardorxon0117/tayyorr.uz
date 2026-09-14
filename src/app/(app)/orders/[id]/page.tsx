@@ -11,6 +11,7 @@ import { OrderActions } from "@/components/order-actions";
 import { OrderDeleteButton } from "@/components/order-delete-button";
 import { BackLink } from "@/components/back-link";
 import { shortDateTime, shortDate } from "@/lib/date";
+import { maskName } from "@/lib/mask-name";
 
 const TYPE_LABEL: Record<string, string> = {
   PRESENTATION: "Prezentatsiya",
@@ -75,7 +76,9 @@ export default async function OrderDetailPage({
             },
           },
         },
-        orderBy: { createdAt: "asc" },
+        // navbat: ko'proq star sarflagan yuqorida, teng bo'lsa birinchi
+        // yuborgan yuqorida
+        orderBy: [{ starsSpent: "desc" }, { createdAt: "asc" }],
       },
       files: true,
       review: true,
@@ -99,11 +102,29 @@ export default async function OrderDetailPage({
   if (!isParty && (order.status !== "OPEN" || order.deletedAt)) notFound();
   const deleted = !!order.deletedAt;
 
-  // takliflar: buyurtma egasiga hammasi, tayyorlovchiga faqat o'ziniki
+  // takliflar: buyurtma egasiga hammasi (to'liq ism), tayyorlovchiga faqat o'ziniki
   const visibleOffers = isOrderer
     ? order.offers
     : order.offers.filter((o) => o.preparerId === me.id);
   const myOffer = order.offers.find((o) => o.preparerId === me.id) ?? null;
+
+  // navbat: boshqa tayyorlovchilarga o'rin/star ko'rinadi, lekin ism
+  // serverda qisman yashiriladi (haqiqiy ism mijozga umuman yuborilmaydi)
+  const queue =
+    isPreparer && !isOrderer
+      ? order.offers.map((o, i) => {
+          const mine = o.preparerId === me.id;
+          const displayName = o.preparer.name ?? o.preparer.login ?? "Tayyorlovchi";
+          return {
+            position: i + 1,
+            mine,
+            starsSpent: o.starsSpent,
+            ...(mine
+              ? { visible: displayName, hiddenLen: 0 }
+              : maskName(displayName)),
+          };
+        })
+      : [];
 
   const files = await Promise.all(
     order.files.map(async (f) => ({
@@ -226,6 +247,7 @@ export default async function OrderDetailPage({
             price: myOffer.price,
             message: myOffer.message,
             status: myOffer.status,
+            starsSpent: myOffer.starsSpent,
           }
         }
         offers={visibleOffers.map((o) => ({
@@ -234,6 +256,7 @@ export default async function OrderDetailPage({
           message: o.message,
           status: o.status,
           preparerId: o.preparerId,
+          starsSpent: o.starsSpent,
           preparer: {
             name: o.preparer.name ?? o.preparer.login ?? "—",
             login: o.preparer.login,
@@ -244,6 +267,7 @@ export default async function OrderDetailPage({
             ratingCount: o.preparer.ratingCount,
           },
         }))}
+        queue={queue}
       />
       )}
 
