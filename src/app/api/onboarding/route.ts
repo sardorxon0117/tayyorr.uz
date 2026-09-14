@@ -88,8 +88,10 @@ export async function POST(req: Request) {
     [
       `Login: @${login}`,
       `Ism: ${firstName} ${lastName}`,
+      session.user.email ? `Email: ${session.user.email}` : "",
       `Rol: ${parsed.data.role === "PREPARER" ? "Tayyorlovchi" : "Buyurtma beruvchi"}`,
       refLink ? `Referral havola: ${refLink.name}` : "",
+      `Foydalanuvchi ID: ${session.user.id}`,
     ].filter(Boolean),
     siteUrl(`/sardorxon/admin/users/${session.user.id}`),
   );

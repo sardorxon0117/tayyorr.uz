@@ -6,7 +6,7 @@ import { adminApiGuard } from "@/lib/admin";
 import { getSupportUserId } from "@/lib/support";
 import { createMessage, getOrCreateConversation } from "@/lib/chat";
 import { deliverMessage } from "@/lib/chat-notify";
-import { logToGroup } from "@/lib/telegram-log";
+import { logToGroup, siteUrl, userLabel } from "@/lib/telegram-log";
 
 const schema = z.object({
   direction: z.enum(["ADD", "SUBTRACT"]),
@@ -35,11 +35,18 @@ export async function POST(
   const positive = direction === "ADD";
   const delta = positive ? amount : -amount;
 
-  const user = await db.user.findUnique({ where: { id }, select: { id: true } });
+  const user = await db.user.findUnique({
+    where: { id },
+    select: { id: true, login: true, name: true, firstName: true, lastName: true, email: true, walletCode: true },
+  });
   if (!user) return NextResponse.json({ error: "Topilmadi" }, { status: 404 });
 
-  await db.$transaction(async (tx) => {
-    await tx.user.update({ where: { id }, data: { balance: { increment: delta } } });
+  const updated = await db.$transaction(async (tx) => {
+    const u = await tx.user.update({
+      where: { id },
+      data: { balance: { increment: delta } },
+      select: { balance: true },
+    });
     await tx.walletTransaction.create({
       data: {
         userId: id,
@@ -49,6 +56,7 @@ export async function POST(
         note: reason,
       },
     });
+    return u;
   });
 
   if (notify) {
@@ -68,7 +76,17 @@ export async function POST(
   await logToGroup(
     "payments",
     positive ? "➕ Admin balans qo'shdi" : "➖ Admin balans ayirdi",
-    [`${amount.toLocaleString("ru-RU")} so'm`, `Sabab: ${reason}`],
+    [
+      `Foydalanuvchi: ${userLabel(user)}`,
+      user.email ? `Email: ${user.email}` : "",
+      user.walletCode ? `Hisob kodi: ${user.walletCode}` : "",
+      `Summa: ${amount.toLocaleString("ru-RU")} so'm`,
+      `Yangi balans: ${updated.balance.toLocaleString("ru-RU")} so'm`,
+      `Sabab: ${reason}`,
+      `Foydalanuvchiga xabar yuborildi: ${notify ? "ha" : "yo'q"}`,
+      `Foydalanuvchi ID: ${user.id}`,
+    ].filter(Boolean),
+    siteUrl(`/sardorxon/admin/users/${user.id}`),
   );
 
   return NextResponse.json({ ok: true });

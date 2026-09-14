@@ -36,6 +36,26 @@ export function siteUrl(path: string): string {
   return `${SITE}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
+/** Foydalanuvchini guruh logida tanib olish uchun qisqa yorliq: "Ism Familiya · @login". */
+export function userLabel(
+  u:
+    | {
+        login?: string | null;
+        name?: string | null;
+        firstName?: string | null;
+        lastName?: string | null;
+        email?: string | null;
+      }
+    | null
+    | undefined,
+): string {
+  if (!u) return "—";
+  const full = `${u.firstName ?? ""} ${u.lastName ?? ""}`.trim() || u.name || "";
+  const login = u.login ? `@${u.login}` : "";
+  const parts = [full, login].filter(Boolean);
+  return parts.join(" · ") || u.email || "—";
+}
+
 /**
  * Bitta voqeani mos topikka yozadi. `title` qalin qilib chiqadi, `lines`
  * pastda ro'yxat sifatida, `url` bo'lsa havola tugmasi qo'shiladi.

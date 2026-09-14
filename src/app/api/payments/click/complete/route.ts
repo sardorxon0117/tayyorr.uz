@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { logActivity } from "@/lib/activity";
 import { sendTelegramToUser, siteUrl } from "@/lib/telegram-notify";
 import { reverseWalletTopup } from "@/lib/wallet-reversal";
-import { logToGroup } from "@/lib/telegram-log";
+import { logToGroup, siteUrl as logSiteUrl, userLabel } from "@/lib/telegram-log";
 import {
   CLICK_SERVICE_ID,
   ClickError,
@@ -48,7 +48,14 @@ export async function POST(req: Request) {
   ) {
     await logToGroup("errors", "🚨 Click imzosi noto'g'ri (Complete)", [
       `click_trans_id: ${click_trans_id}`,
+      `service_id: ${service_id}`,
       `merchant_trans_id: ${merchant_trans_id}`,
+      `merchant_prepare_id: ${merchant_prepare_id}`,
+      `amount: ${amount}`,
+      `action: ${action}`,
+      `error: ${incomingError}`,
+      `sign_time: ${sign_time}`,
+      `sign_string: ${sign_string}`,
     ]);
     return fail(ClickError.SIGN_FAILED, { click_trans_id, merchant_trans_id });
   }
@@ -73,10 +80,27 @@ export async function POST(req: Request) {
   if (actionNum === 0 || incomingError < 0) {
     if (wtx.status === "SUCCESS") {
       await reverseWalletTopup(wtx, "click_webhook_cancel");
-      await logToGroup("payments", "⚠️ To'lov bekor qilindi (Click)", [
-        `${wtx.amount.toLocaleString("ru-RU")} so'm`,
-        `Foydalanuvchi ID: ${wtx.userId}`,
-      ]);
+      const u = await db.user.findUnique({
+        where: { id: wtx.userId },
+        select: { login: true, name: true, firstName: true, lastName: true, email: true, balance: true, walletCode: true },
+      });
+      await logToGroup(
+        "payments",
+        "⚠️ To'lov bekor qilindi (Click)",
+        [
+          `Foydalanuvchi: ${userLabel(u)}`,
+          u?.email ? `Email: ${u.email}` : "",
+          u?.walletCode ? `Hisob kodi: ${u.walletCode}` : "",
+          `Summa: ${wtx.amount.toLocaleString("ru-RU")} so'm`,
+          `Yangi balans: ${u ? u.balance.toLocaleString("ru-RU") : "?"} so'm`,
+          `Tranzaksiya ID: ${wtx.id}`,
+          `click_trans_id: ${click_trans_id}`,
+          `merchant_trans_id: ${merchant_trans_id}`,
+          `service_id: ${service_id}`,
+          `Foydalanuvchi ID: ${wtx.userId}`,
+        ].filter(Boolean),
+        logSiteUrl(`/sardorxon/admin/payments/${wtx.id}`),
+      );
     } else if (wtx.status === "PENDING") {
       await db.walletTransaction.update({
         where: { id: wtx.id },
@@ -105,7 +129,7 @@ export async function POST(req: Request) {
     return fail(ClickError.WRONG_AMOUNT, { click_trans_id, merchant_trans_id });
   }
 
-  await db.$transaction(async (tx) => {
+  const updatedUser = await db.$transaction(async (tx) => {
     await tx.walletTransaction.update({
       where: { id: wtx.id },
       data: {
@@ -113,9 +137,10 @@ export async function POST(req: Request) {
         meta: { ...meta, clickTransId: click_trans_id },
       },
     });
-    await tx.user.update({
+    return tx.user.update({
       where: { id: wtx.userId },
       data: { balance: { increment: wtx.amount } },
+      select: { login: true, name: true, firstName: true, lastName: true, email: true, balance: true, walletCode: true },
     });
   });
 
@@ -132,10 +157,23 @@ export async function POST(req: Request) {
     url: siteUrl("/wallet"),
     buttonLabel: "Tranzaksiyalarni ko'rish",
   });
-  await logToGroup("payments", "💳 Hisob to'ldirildi (Click)", [
-    `${wtx.amount.toLocaleString("ru-RU")} so'm`,
-    `Foydalanuvchi ID: ${wtx.userId}`,
-  ]);
+  await logToGroup(
+    "payments",
+    "💳 Hisob to'ldirildi (Click)",
+    [
+      `Foydalanuvchi: ${userLabel(updatedUser)}`,
+      updatedUser.email ? `Email: ${updatedUser.email}` : "",
+      updatedUser.walletCode ? `Hisob kodi: ${updatedUser.walletCode}` : "",
+      `Summa: ${wtx.amount.toLocaleString("ru-RU")} so'm`,
+      `Yangi balans: ${updatedUser.balance.toLocaleString("ru-RU")} so'm`,
+      `Tranzaksiya ID: ${wtx.id}`,
+      `click_trans_id: ${click_trans_id}`,
+      `merchant_trans_id: ${merchant_trans_id}`,
+      `service_id: ${service_id}`,
+      `Foydalanuvchi ID: ${wtx.userId}`,
+    ].filter(Boolean),
+    logSiteUrl(`/sardorxon/admin/payments/${wtx.id}`),
+  );
 
   return NextResponse.json({
     click_trans_id,

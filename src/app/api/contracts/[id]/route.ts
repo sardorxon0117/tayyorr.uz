@@ -9,7 +9,7 @@ import { deliverMessage } from "@/lib/chat-notify";
 import { getPlatformUserId, commission, COMMISSION_CANCEL } from "@/lib/platform";
 import { updateOrderChannelPost } from "@/lib/telegram";
 import { logActivity } from "@/lib/activity";
-import { logToGroup, siteUrl } from "@/lib/telegram-log";
+import { logToGroup, siteUrl, userLabel } from "@/lib/telegram-log";
 
 const schema = z.object({ action: z.enum(["ACCEPT", "DECLINE", "CANCEL"]) });
 
@@ -40,7 +40,15 @@ export async function POST(
 
   const contract = await db.contract.findUnique({
     where: { id },
-    include: { order: true },
+    include: {
+      order: true,
+      orderer: {
+        select: { login: true, name: true, firstName: true, lastName: true, email: true },
+      },
+      preparer: {
+        select: { login: true, name: true, firstName: true, lastName: true, email: true },
+      },
+    },
   });
   if (!contract) return NextResponse.json({ error: "Topilmadi" }, { status: 404 });
 
@@ -98,7 +106,13 @@ export async function POST(
       await logToGroup(
         "contracts",
         action === "DECLINE" ? "📄 Shartnoma rad etildi" : "📄 Shartnoma bekor qilindi",
-        [`«${contract.order.title}»`, `${contract.amount.toLocaleString("ru-RU")} so'm qaytarildi`],
+        [
+          `«${contract.order.title}»`,
+          `Buyurtmachi: ${userLabel(contract.orderer)}`,
+          `Tayyorlovchi: ${userLabel(contract.preparer)}`,
+          `${contract.amount.toLocaleString("ru-RU")} so'm qaytarildi`,
+          `Shartnoma ID: ${contract.id}`,
+        ],
         siteUrl(`/sardorxon/admin/orders/${contract.orderId}`),
       );
       return NextResponse.json({ ok: true });
@@ -137,7 +151,7 @@ export async function POST(
         contract.preparerId,
         contract.orderId,
         me,
-        "✅ Shartnoma qabul qilindi. Ish boshlandi. Yakuniga qadar shu chatда gaplashib turishingiz mumkin.",
+        "✅ Shartnoma qabul qilindi. Ish boshlandi. Yakuniga qadar shu chatda gaplashib turishingiz mumkin.",
       );
       await updateOrderChannelPost(contract.orderId);
       await logActivity(
@@ -149,7 +163,13 @@ export async function POST(
       await logToGroup(
         "contracts",
         "✅ Shartnoma qabul qilindi",
-        [`«${contract.order.title}»`, `${contract.amount.toLocaleString("ru-RU")} so'm`],
+        [
+          `«${contract.order.title}»`,
+          `Buyurtmachi: ${userLabel(contract.orderer)}`,
+          `Tayyorlovchi: ${userLabel(contract.preparer)}`,
+          `${contract.amount.toLocaleString("ru-RU")} so'm`,
+          `Shartnoma ID: ${contract.id}`,
+        ],
         siteUrl(`/sardorxon/admin/orders/${contract.orderId}`),
       );
       return NextResponse.json({ ok: true });
@@ -234,8 +254,12 @@ export async function POST(
       "📄 Shartnoma bekor qilindi (jarayonda)",
       [
         `«${contract.order.title}»`,
+        `Buyurtmachi: ${userLabel(contract.orderer)}`,
+        `Tayyorlovchi: ${userLabel(contract.preparer)}`,
+        `Umumiy summa: ${contract.amount.toLocaleString("ru-RU")} so'm`,
         `Komissiya: ${fee.toLocaleString("ru-RU")} so'm`,
         `Qaytarildi: ${refund.toLocaleString("ru-RU")} so'm`,
+        `Shartnoma ID: ${contract.id}`,
       ],
       siteUrl(`/sardorxon/admin/orders/${contract.orderId}`),
     );

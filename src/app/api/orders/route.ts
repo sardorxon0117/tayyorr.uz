@@ -6,7 +6,7 @@ import { db } from "@/lib/db";
 import { restrictionApiError } from "@/lib/restriction";
 import { postOrderToChannel } from "@/lib/telegram";
 import { logActivity } from "@/lib/activity";
-import { logToGroup, siteUrl } from "@/lib/telegram-log";
+import { logToGroup, siteUrl, userLabel } from "@/lib/telegram-log";
 
 const createSchema = z.object({
   title: z.string().min(5).max(150),
@@ -98,13 +98,25 @@ export async function POST(req: Request) {
     orderId: order.id,
     budget: budget ?? null,
   });
+
+  const orderer = await db.user.findUnique({
+    where: { id: session.user.id },
+    select: { login: true, name: true, firstName: true, lastName: true, email: true },
+  });
+
   await logToGroup(
     "orders",
     "📦 Yangi buyurtma",
     [
       `«${title}»`,
+      `Turi: ${type}`,
+      description.length > 500 ? `${description.slice(0, 500)}…` : description,
       budget ? `Byudjet: ${budget.toLocaleString("ru-RU")} so'm` : "Byudjet: kelishiladi",
-    ],
+      deadline ? `Muddat: ${deadline}` : "",
+      `Buyurtmachi: ${userLabel(orderer)}`,
+      orderer?.email ? `Email: ${orderer.email}` : "",
+      `Buyurtma ID: ${order.id}`,
+    ].filter(Boolean),
     siteUrl(`/sardorxon/admin/orders/${order.id}`),
   );
 

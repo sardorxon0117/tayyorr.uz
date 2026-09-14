@@ -6,7 +6,7 @@ import { adminApiGuard } from "@/lib/admin";
 import { getSupportUserId } from "@/lib/support";
 import { createMessage, getOrCreateConversation } from "@/lib/chat";
 import { deliverMessage } from "@/lib/chat-notify";
-import { logToGroup } from "@/lib/telegram-log";
+import { logToGroup, siteUrl, userLabel } from "@/lib/telegram-log";
 
 const schema = z.object({
   action: z.enum(["PAID", "REJECT"]),
@@ -27,7 +27,14 @@ export async function POST(
   }
   const { action, note } = parsed.data;
 
-  const p = await db.payoutRequest.findUnique({ where: { id } });
+  const p = await db.payoutRequest.findUnique({
+    where: { id },
+    include: {
+      user: {
+        select: { login: true, name: true, firstName: true, lastName: true, email: true, walletCode: true },
+      },
+    },
+  });
   if (!p) return NextResponse.json({ error: "Topilmadi" }, { status: 404 });
   if (p.status !== "PENDING") {
     return NextResponse.json({ error: "Allaqachon hal qilingan" }, { status: 400 });
@@ -98,7 +105,18 @@ export async function POST(
   await logToGroup(
     "payouts",
     action === "PAID" ? "🏧 Pul o'tkazildi" : "🏧 Yechish rad etildi",
-    [`${p.amount.toLocaleString("ru-RU")} so'm`, note ? `Izoh: ${note}` : ""].filter(Boolean),
+    [
+      `Foydalanuvchi: ${userLabel(p.user)}`,
+      p.user.email ? `Email: ${p.user.email}` : "",
+      p.user.walletCode ? `Hisob kodi: ${p.user.walletCode}` : "",
+      `Summa: ${p.amount.toLocaleString("ru-RU")} so'm`,
+      `Karta: ${p.card}`,
+      p.cardName ? `Karta egasi: ${p.cardName}` : "",
+      note ? `Izoh: ${note}` : "",
+      `So'rov ID: ${p.id}`,
+      `Foydalanuvchi ID: ${p.userId}`,
+    ].filter(Boolean),
+    siteUrl(`/sardorxon/admin/users/${p.userId}`),
   );
 
   return NextResponse.json({ ok: true });

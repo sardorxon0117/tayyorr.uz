@@ -7,7 +7,7 @@ import { restrictionApiError } from "@/lib/restriction";
 import { createMessage, getOrCreateConversation } from "@/lib/chat";
 import { deliverMessage } from "@/lib/chat-notify";
 import { logActivity } from "@/lib/activity";
-import { logToGroup, siteUrl } from "@/lib/telegram-log";
+import { logToGroup, siteUrl, userLabel } from "@/lib/telegram-log";
 
 const schema = z.object({
   preparerId: z.string().min(1),
@@ -59,13 +59,20 @@ export async function POST(
 
   const orderer = await db.user.findUnique({
     where: { id: me },
-    select: { balance: true },
+    select: {
+      balance: true,
+      login: true,
+      name: true,
+      firstName: true,
+      lastName: true,
+      email: true,
+    },
   });
   if (!orderer || orderer.balance < amount) {
     return NextResponse.json(
       {
         error:
-          "Hisobingizda yetarli mablag' yo'q. Avval Hamyon bo'limидан hisobни to'ldiring.",
+          "Hisobingizda yetarli mablag' yo'q. Avval Hamyon bo'limidan hisobingizni to'ldiring.",
       },
       { status: 400 },
     );
@@ -129,7 +136,7 @@ export async function POST(
     senderId: me,
     body:
       `📄 Shartnoma yuborildi. Kelishilgan summa: ${amount.toLocaleString("ru-RU")} so'm ` +
-      `(hisobingizdan bloklandi, ish yakunlangач tayyorlovchiga o'tadi).` +
+      `(hisobingizdan bloklandi, ish yakunlangach tayyorlovchiga o'tadi).` +
       (note ? `\n\nTavsif: ${note}` : "") +
       `\n\nQabul qilsangiz, ish boshlanadi.`,
     system: true,
@@ -142,10 +149,23 @@ export async function POST(
     `Shartnoma yubordi: «${order.title}» — ${amount.toLocaleString("ru-RU")} so'm`,
     { orderId: id, contractId: contract.id, amount },
   );
+  const preparer = await db.user.findUnique({
+    where: { id: preparerId },
+    select: { login: true, name: true, firstName: true, lastName: true, email: true },
+  });
+
   await logToGroup(
     "contracts",
     "📄 Shartnoma yuborildi",
-    [`«${order.title}»`, `Summa: ${amount.toLocaleString("ru-RU")} so'm`],
+    [
+      `«${order.title}»`,
+      `Summa: ${amount.toLocaleString("ru-RU")} so'm`,
+      `Buyurtmachi: ${userLabel(orderer)}`,
+      `Tayyorlovchi: ${userLabel(preparer)}`,
+      note ? `Tavsif: ${note}` : "",
+      deadline ? `Muddat: ${deadline}` : "",
+      `Shartnoma ID: ${contract.id}`,
+    ].filter(Boolean),
     siteUrl(`/sardorxon/admin/orders/${id}`),
   );
 

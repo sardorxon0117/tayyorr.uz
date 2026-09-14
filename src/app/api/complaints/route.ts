@@ -4,7 +4,7 @@ import { z } from "zod";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { logActivity } from "@/lib/activity";
-import { logToGroup, siteUrl } from "@/lib/telegram-log";
+import { logToGroup, siteUrl, userLabel } from "@/lib/telegram-log";
 
 const schema = z.object({
   suspectId: z.string().optional(),
@@ -51,10 +51,30 @@ export async function POST(req: Request) {
     `Shikoyat yubordi${messageId ? " (xabar ustidan)" : orderId ? " (buyurtma bo'yicha)" : ""}`,
     { suspectId: suspectId || null, orderId: orderId || null, messageId: messageId || null },
   );
+
+  const [reporter, suspect] = await Promise.all([
+    db.user.findUnique({
+      where: { id: session.user.id },
+      select: { login: true, name: true, firstName: true, lastName: true, email: true },
+    }),
+    suspectId
+      ? db.user.findUnique({
+          where: { id: suspectId },
+          select: { login: true, name: true, firstName: true, lastName: true, email: true },
+        })
+      : Promise.resolve(null),
+  ]);
+
   await logToGroup(
     "complaints",
     "⚠️ Yangi shikoyat",
-    [body.length > 200 ? body.slice(0, 200) + "…" : body],
+    [
+      `Shikoyatchi: ${userLabel(reporter)}`,
+      suspectId ? `Kimga qarshi: ${userLabel(suspect)}` : "",
+      orderId ? `Buyurtma ID: ${orderId}` : "",
+      messageId ? `Xabar ID: ${messageId}` : "",
+      body,
+    ].filter(Boolean),
     siteUrl("/sardorxon/admin/complaints"),
   );
 

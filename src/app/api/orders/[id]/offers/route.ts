@@ -6,7 +6,7 @@ import { db } from "@/lib/db";
 import { restrictionApiError } from "@/lib/restriction";
 import { logActivity } from "@/lib/activity";
 import { sendTelegramToUser, siteUrl } from "@/lib/telegram-notify";
-import { logToGroup } from "@/lib/telegram-log";
+import { logToGroup, userLabel } from "@/lib/telegram-log";
 
 const schema = z.object({
   price: z.number().int().positive(),
@@ -64,7 +64,7 @@ export async function POST(
 
   const preparer = await db.user.findUnique({
     where: { id: session.user.id },
-    select: { name: true, firstName: true, login: true },
+    select: { name: true, firstName: true, lastName: true, login: true, email: true },
   });
   const preparerName =
     preparer?.firstName ||
@@ -86,9 +86,13 @@ export async function POST(
     "🙋 Yangi taklif",
     [
       `«${order.title}»`,
-      `Tayyorlovchi: ${preparerName}`,
+      `Tayyorlovchi: ${userLabel(preparer)}`,
+      preparer?.email ? `Email: ${preparer.email}` : "",
       `Narx: ${parsed.data.price.toLocaleString("ru-RU")} so'm`,
-    ],
+      parsed.data.message ? `Xabar: ${parsed.data.message}` : "",
+      `Buyurtma ID: ${id}`,
+      `Taklif ID: ${offer.id}`,
+    ].filter(Boolean),
     siteUrl(`/sardorxon/admin/orders/${id}`),
   );
 

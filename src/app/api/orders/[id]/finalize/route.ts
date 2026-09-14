@@ -8,7 +8,7 @@ import { deliverMessage } from "@/lib/chat-notify";
 import { getPlatformUserId, commission, COMMISSION_FINAL } from "@/lib/platform";
 import { updateOrderChannelPost } from "@/lib/telegram";
 import { logActivity } from "@/lib/activity";
-import { logToGroup, siteUrl } from "@/lib/telegram-log";
+import { logToGroup, siteUrl, userLabel } from "@/lib/telegram-log";
 
 /** Buyurtmachi ishni yakunlaydi -> eskroudan tayyorlovchiga (95%), saytga (5%). */
 export async function POST(
@@ -61,7 +61,7 @@ export async function POST(
         type: "RELEASE",
         amount: payout,
         method: "ESCROW",
-        note: `Ish yakunlandi: ${order.title} (5% komissiya ushlanди)`,
+        note: `Ish yakunlandi: ${order.title} (5% komissiya ushlandi)`,
       },
     });
     // saytga
@@ -97,10 +97,30 @@ export async function POST(
     `Ishni yakunladi: «${order.title}» — tayyorlovchiga ${payout.toLocaleString("ru-RU")} so'm`,
     { orderId: id, payout, fee },
   );
+  const [orderer, preparer] = await Promise.all([
+    db.user.findUnique({
+      where: { id: me },
+      select: { login: true, name: true, firstName: true, lastName: true, email: true },
+    }),
+    db.user.findUnique({
+      where: { id: order.preparerId },
+      select: { login: true, name: true, firstName: true, lastName: true, email: true },
+    }),
+  ]);
+
   await logToGroup(
     "completed",
     "✅ Ish yakunlandi",
-    [`«${order.title}»`, `Tayyorlovchiga: ${payout.toLocaleString("ru-RU")} so'm`],
+    [
+      `«${order.title}»`,
+      `Buyurtmachi: ${userLabel(orderer)}`,
+      `Tayyorlovchi: ${userLabel(preparer)}`,
+      `Umumiy summa: ${contract.amount.toLocaleString("ru-RU")} so'm`,
+      `Tayyorlovchiga: ${payout.toLocaleString("ru-RU")} so'm`,
+      `Sayt komissiyasi: ${fee.toLocaleString("ru-RU")} so'm`,
+      `Buyurtma ID: ${id}`,
+      `Shartnoma ID: ${contract.id}`,
+    ],
     siteUrl(`/sardorxon/admin/orders/${id}`),
   );
 

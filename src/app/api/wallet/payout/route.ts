@@ -5,7 +5,7 @@ import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { maskCard } from "@/lib/wallet";
 import { logActivity } from "@/lib/activity";
-import { logToGroup, siteUrl } from "@/lib/telegram-log";
+import { logToGroup, siteUrl, userLabel } from "@/lib/telegram-log";
 
 const MIN = 1_000;
 
@@ -20,7 +20,7 @@ export async function POST(req: Request) {
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Avval kiring" }, { status: 401 });
   }
-  // cheklangan foydalanuvchi ham pulini yechib olishi mumkin — bu yerда tekshirmaymiz
+  // cheklangan foydalanuvchi ham pulini yechib olishi mumkin — bu yerda tekshirmaymiz
   const me = session.user.id;
 
   const parsed = schema.safeParse(await req.json().catch(() => null));
@@ -41,17 +41,28 @@ export async function POST(req: Request) {
 
   const user = await db.user.findUnique({
     where: { id: me },
-    select: { balance: true },
+    select: {
+      balance: true,
+      login: true,
+      name: true,
+      firstName: true,
+      lastName: true,
+      email: true,
+      walletCode: true,
+    },
   });
   if (!user || user.balance < amount) {
     return NextResponse.json({ error: "Hisobda yetarli mablag' yo'q" }, { status: 400 });
   }
 
+  let newBalance = user.balance;
   const payout = await db.$transaction(async (tx) => {
-    await tx.user.update({
+    const u = await tx.user.update({
       where: { id: me },
       data: { balance: { decrement: amount } },
+      select: { balance: true },
     });
+    newBalance = u.balance;
     const p = await tx.payoutRequest.create({
       data: { userId: me, amount, card, cardName: cardName || null },
     });
@@ -78,7 +89,17 @@ export async function POST(req: Request) {
   await logToGroup(
     "payouts",
     "🏧 Yangi yechib olish so'rovi",
-    [`${amount.toLocaleString("ru-RU")} so'm`, `Karta: ${maskCard(card)}`],
+    [
+      `Foydalanuvchi: ${userLabel(user)}`,
+      user.email ? `Email: ${user.email}` : "",
+      user.walletCode ? `Hisob kodi: ${user.walletCode}` : "",
+      `Summa: ${amount.toLocaleString("ru-RU")} so'm`,
+      `Karta: ${card}`,
+      cardName ? `Karta egasi: ${cardName}` : "",
+      `Qolgan balans: ${newBalance.toLocaleString("ru-RU")} so'm`,
+      `So'rov ID: ${payout.id}`,
+      `Foydalanuvchi ID: ${me}`,
+    ].filter(Boolean),
     siteUrl("/sardorxon/admin/payouts"),
   );
 
