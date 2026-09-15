@@ -20,9 +20,11 @@ export default async function ChatPage({
   const conv = await getConversationForUser(id, me);
   if (!conv) notFound();
 
-  const [other, messages, order] = await Promise.all([
+  const otherId = otherUserId(conv, me);
+
+  const [other, messages, activeContracts] = await Promise.all([
     db.user.findUnique({
-      where: { id: otherUserId(conv, me) },
+      where: { id: otherId },
       select: {
         id: true,
         name: true,
@@ -39,12 +41,23 @@ export default async function ChatPage({
       take: 200,
       include: { reactions: true },
     }),
-    conv.orderId
-      ? db.order.findUnique({
-          where: { id: conv.orderId },
-          select: { id: true, title: true, type: true, status: true, deletedAt: true },
-        })
-      : Promise.resolve(null),
+    // ikkovi o'rtasidagi HOZIR faol (bekor qilinmagan/yakunlanmagan/
+    // o'chirilmagan) shartnomalar — bir nechta bo'lsa panelda
+    // almashib turadi (slider)
+    db.contract.findMany({
+      where: {
+        status: "ACCEPTED",
+        order: { status: { in: ["IN_PROGRESS", "DELIVERED"] }, deletedAt: null },
+        OR: [
+          { ordererId: me, preparerId: otherId },
+          { ordererId: otherId, preparerId: me },
+        ],
+      },
+      select: {
+        order: { select: { id: true, title: true, type: true, status: true } },
+      },
+      orderBy: { createdAt: "desc" },
+    }),
   ]);
 
   const bs = other?.isSupport
@@ -61,11 +74,7 @@ export default async function ChatPage({
         conversationId={id}
         meId={me}
         orderId={conv.orderId}
-        order={
-          order && !order.deletedAt
-            ? { id: order.id, title: order.title, type: order.type, status: order.status }
-            : null
-        }
+        orders={activeContracts.map((c) => c.order)}
         blockedByMe={bs.iBlocked}
         blockedMe={bs.blockedMe}
         other={{

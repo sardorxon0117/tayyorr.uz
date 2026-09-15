@@ -58,7 +58,9 @@ interface Props {
   conversationId: string;
   meId: string;
   orderId: string | null;
-  order?: OrderPin | null;
+  /** Ikkovi o'rtasidagi HOZIR faol loyihalar — bittadan ko'p bo'lsa
+   * panelda almashib turadi (slider). */
+  orders?: OrderPin[];
   blockedByMe?: boolean;
   blockedMe?: boolean;
   other: {
@@ -99,7 +101,7 @@ export function ChatRoom({
   conversationId,
   meId,
   orderId,
-  order = null,
+  orders = [],
   blockedByMe = false,
   blockedMe = false,
   other,
@@ -109,6 +111,17 @@ export function ChatRoom({
   const unread = useUnread();
   const unreadRef = useRef(unread);
   unreadRef.current = unread;
+  const [pinIdx, setPinIdx] = useState(0);
+  const pinnedOrder = orders.length > 0 ? orders[pinIdx % orders.length] : null;
+
+  // 2+ faol loyiha bo'lsa — bir necha soniyada avtomatik almashib turadi
+  useEffect(() => {
+    if (orders.length < 2) return;
+    const iv = setInterval(() => {
+      setPinIdx((i) => (i + 1) % orders.length);
+    }, 4000);
+    return () => clearInterval(iv);
+  }, [orders.length]);
   const [messages, setMessages] = useState<Msg[]>(
     initialMessages.filter((m) => !m.deleted),
   );
@@ -663,28 +676,42 @@ export function ChatRoom({
         </div>
       </header>
 
-      {/* ---- qadalgan buyurtma — Telegramdagi "pinned message"ga o'xshab ---- */}
-      {order && (
-        <Link
-          href={`/orders/${order.id}`}
-          className="shrink-0 border-b border-white/10 bg-[#0e0e16]/90 backdrop-blur-2xl transition hover:bg-white/[0.04]"
-        >
-          <div className="mx-auto flex max-w-3xl items-center gap-2.5 px-3 py-2 sm:px-4">
-            <span className="shrink-0 text-base">📌</span>
-            <div className="min-w-0 flex-1">
-              <div className="truncate text-sm font-medium text-white">
-                {order.title}
+      {/* ---- qadalgan loyiha(lar) — Telegramdagi "pinned message"ga o'xshab.
+          Faqat HOZIR faol (bekor qilinmagan/yakunlanmagan/o'chirilmagan)
+          loyihalar ko'rsatiladi; 2+ bo'lsa avtomatik almashib turadi. ---- */}
+      {pinnedOrder && (
+        <div className="shrink-0 border-b border-white/10 bg-[#0e0e16]/90 backdrop-blur-2xl">
+          <div className="mx-auto flex max-w-3xl items-center gap-2 px-3 py-2 sm:px-4">
+            <Link
+              href={`/orders/${pinnedOrder.id}`}
+              className="flex min-w-0 flex-1 items-center gap-2.5 transition hover:opacity-80"
+            >
+              <span className="shrink-0 text-base">📌</span>
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-sm font-medium text-white">
+                  {pinnedOrder.title}
+                </div>
+                <div className="truncate text-xs text-zinc-500">
+                  {ORDER_TYPE_LABEL[pinnedOrder.type] ?? pinnedOrder.type} ·{" "}
+                  {ORDER_STATUS_LABEL[pinnedOrder.status] ?? pinnedOrder.status}
+                </div>
               </div>
-              <div className="truncate text-xs text-zinc-500">
-                {ORDER_TYPE_LABEL[order.type] ?? order.type} ·{" "}
-                {ORDER_STATUS_LABEL[order.status] ?? order.status}
-              </div>
-            </div>
-            <span className="shrink-0 text-xs text-indigo-300">
-              Ko'rish ›
-            </span>
+              <span className="shrink-0 text-xs text-indigo-300">
+                Ko'rish ›
+              </span>
+            </Link>
+            {orders.length > 1 && (
+              <button
+                type="button"
+                onClick={() => setPinIdx((i) => (i + 1) % orders.length)}
+                className="shrink-0 rounded-full bg-white/10 px-2 py-0.5 text-[11px] font-medium text-zinc-300 transition hover:bg-white/20"
+                aria-label="Keyingi loyiha"
+              >
+                {pinIdx + 1}/{orders.length}
+              </button>
+            )}
           </div>
-        </Link>
+        </div>
       )}
 
       {/* ---- header menyusi — portal, hamma narsadan ustun, scrollga xalaqit bermaydi ---- */}
@@ -770,9 +797,9 @@ export function ChatRoom({
                           {fmtTime(m.createdAt)}
                         </div>
                       </div>
-                      {order && (
+                      {pinnedOrder && (
                         <Link
-                          href={`/orders/${order.id}`}
+                          href={`/orders/${pinnedOrder.id}`}
                           className={`block border-t px-3.5 py-2 text-center font-medium backdrop-blur-sm transition ${
                             m.mine
                               ? "border-white/20 bg-white/10 text-white hover:bg-white/20"
