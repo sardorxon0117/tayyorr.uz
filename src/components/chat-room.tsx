@@ -749,13 +749,35 @@ export function ChatRoom({
             {messages.map((m) => {
               if (m.system) {
                 return (
-                  <div key={m.key ?? m.id} className="blur-in flex justify-center">
-                    <div className="max-w-[85%] overflow-hidden rounded-lg bg-white/5 text-center text-xs text-zinc-400">
-                      <div className="px-3 py-1.5">{m.body}</div>
+                  <div
+                    key={m.key ?? m.id}
+                    className={`blur-in flex ${m.mine ? "justify-end" : "justify-start"}`}
+                  >
+                    <div
+                      className={`max-w-[86%] overflow-hidden rounded-2xl text-sm ${
+                        m.mine
+                          ? "bg-indigo-600 text-white"
+                          : "border border-white/10 bg-white/5 text-zinc-100"
+                      }`}
+                    >
+                      <div className="whitespace-pre-wrap break-words px-3.5 py-2">
+                        {m.body}
+                        <div
+                          className={`mt-0.5 text-right text-[10px] ${
+                            m.mine ? "text-indigo-200" : "text-zinc-500"
+                          }`}
+                        >
+                          {fmtTime(m.createdAt)}
+                        </div>
+                      </div>
                       {order && (
                         <Link
                           href={`/orders/${order.id}`}
-                          className="block border-t border-white/10 bg-white/[0.03] px-3 py-1.5 text-indigo-300 backdrop-blur-sm transition hover:bg-white/[0.08] hover:text-indigo-200"
+                          className={`block border-t px-3.5 py-2 text-center font-medium backdrop-blur-sm transition ${
+                            m.mine
+                              ? "border-white/20 bg-white/10 text-white hover:bg-white/20"
+                              : "border-white/10 bg-white/5 text-indigo-300 hover:bg-white/10"
+                          }`}
                         >
                           Buyurtmani ko'rish ›
                         </Link>
