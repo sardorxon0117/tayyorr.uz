@@ -96,10 +96,16 @@ export default async function OrderDetailPage({
   const isOrderer = order.ordererId === me.id;
   const isPreparer = me.role === "PREPARER";
   const isAssigned = order.preparerId === me.id;
+  const hasOffered = order.offers.some((o) => o.preparerId === me.id);
   const isParty = isOrderer || isAssigned;
 
-  // OPEN bo'lmagan / o'chirilgan buyurtma faqat ishtirokchilarga ko'rinadi
-  if (!isParty && (order.status !== "OPEN" || order.deletedAt)) notFound();
+  // OPEN bo'lmagan / o'chirilgan buyurtma — ishtirokchilarga VA taklif
+  // yuborgan (garchi tanlanmagan) tayyorlovchilarga ham ko'rinadi. Aks
+  // holda ish boshqasiga o'tgach yoki yakunlangach ular uchun butunlay
+  // yo'qolib qolib, shubha uyg'otardi.
+  if (!isParty && !hasOffered && (order.status !== "OPEN" || order.deletedAt)) {
+    notFound();
+  }
   const deleted = !!order.deletedAt;
 
   // takliflar: buyurtma egasiga hammasi (to'liq ism), tayyorlovchiga faqat o'ziniki

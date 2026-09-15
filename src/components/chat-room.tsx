@@ -47,10 +47,18 @@ interface Msg {
   file?: ChatFile | null;
 }
 
+interface OrderPin {
+  id: string;
+  title: string;
+  type: string;
+  status: string;
+}
+
 interface Props {
   conversationId: string;
   meId: string;
   orderId: string | null;
+  order?: OrderPin | null;
   blockedByMe?: boolean;
   blockedMe?: boolean;
   other: {
@@ -64,6 +72,23 @@ interface Props {
   initialMessages: Msg[];
 }
 
+const ORDER_TYPE_LABEL: Record<string, string> = {
+  PRESENTATION: "Prezentatsiya",
+  COURSE_WORK: "Kurs ishi",
+  REFERAT: "Referat",
+  ESSAY: "Esse",
+  DIPLOMA: "Diplom ishi",
+  OTHER: "Boshqa",
+};
+
+const ORDER_STATUS_LABEL: Record<string, string> = {
+  OPEN: "Ochiq",
+  IN_PROGRESS: "Jarayonda",
+  DELIVERED: "Topshirilgan",
+  DONE: "Yakunlangan",
+  CANCELLED: "Bekor qilingan",
+};
+
 function fmtTime(ms: number) {
   return smartTime(ms);
 }
@@ -74,6 +99,7 @@ export function ChatRoom({
   conversationId,
   meId,
   orderId,
+  order = null,
   blockedByMe = false,
   blockedMe = false,
   other,
@@ -637,6 +663,30 @@ export function ChatRoom({
         </div>
       </header>
 
+      {/* ---- qadalgan buyurtma — Telegramdagi "pinned message"ga o'xshab ---- */}
+      {order && (
+        <Link
+          href={`/orders/${order.id}`}
+          className="shrink-0 border-b border-white/10 bg-[#0e0e16]/90 backdrop-blur-2xl transition hover:bg-white/[0.04]"
+        >
+          <div className="mx-auto flex max-w-3xl items-center gap-2.5 px-3 py-2 sm:px-4">
+            <span className="shrink-0 text-base">📌</span>
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-sm font-medium text-white">
+                {order.title}
+              </div>
+              <div className="truncate text-xs text-zinc-500">
+                {ORDER_TYPE_LABEL[order.type] ?? order.type} ·{" "}
+                {ORDER_STATUS_LABEL[order.status] ?? order.status}
+              </div>
+            </div>
+            <span className="shrink-0 text-xs text-indigo-300">
+              Ko'rish ›
+            </span>
+          </div>
+        </Link>
+      )}
+
       {/* ---- header menyusi — portal, hamma narsadan ustun, scrollga xalaqit bermaydi ---- */}
       {hdrMenu &&
         createPortal(
@@ -700,8 +750,16 @@ export function ChatRoom({
               if (m.system) {
                 return (
                   <div key={m.key ?? m.id} className="blur-in flex justify-center">
-                    <div className="max-w-[85%] rounded-lg bg-white/5 px-3 py-1.5 text-center text-xs text-zinc-400">
-                      {m.body}
+                    <div className="max-w-[85%] overflow-hidden rounded-lg bg-white/5 text-center text-xs text-zinc-400">
+                      <div className="px-3 py-1.5">{m.body}</div>
+                      {order && (
+                        <Link
+                          href={`/orders/${order.id}`}
+                          className="block border-t border-white/10 bg-white/[0.03] px-3 py-1.5 text-indigo-300 backdrop-blur-sm transition hover:bg-white/[0.08] hover:text-indigo-200"
+                        >
+                          Buyurtmani ko'rish ›
+                        </Link>
+                      )}
                     </div>
                   </div>
                 );

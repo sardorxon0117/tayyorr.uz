@@ -20,7 +20,7 @@ export default async function ChatPage({
   const conv = await getConversationForUser(id, me);
   if (!conv) notFound();
 
-  const [other, messages] = await Promise.all([
+  const [other, messages, order] = await Promise.all([
     db.user.findUnique({
       where: { id: otherUserId(conv, me) },
       select: {
@@ -39,6 +39,12 @@ export default async function ChatPage({
       take: 200,
       include: { reactions: true },
     }),
+    conv.orderId
+      ? db.order.findUnique({
+          where: { id: conv.orderId },
+          select: { id: true, title: true, type: true, status: true, deletedAt: true },
+        })
+      : Promise.resolve(null),
   ]);
 
   const bs = other?.isSupport
@@ -55,6 +61,11 @@ export default async function ChatPage({
         conversationId={id}
         meId={me}
         orderId={conv.orderId}
+        order={
+          order && !order.deletedAt
+            ? { id: order.id, title: order.title, type: order.type, status: order.status }
+            : null
+        }
         blockedByMe={bs.iBlocked}
         blockedMe={bs.blockedMe}
         other={{
