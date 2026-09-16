@@ -8,39 +8,46 @@ import '../../../widgets/glass_card.dart';
 import '../../home/home_shell.dart';
 import '../bloc/auth_bloc.dart';
 
-class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({super.key});
+/// Google bilan birinchi marta kirgan (lekin hali rol/login tanlamagan)
+/// foydalanuvchi uchun profilni tugallash sahifasi.
+class CompleteProfileScreen extends StatefulWidget {
+  const CompleteProfileScreen({super.key});
 
   @override
-  State<RegisterScreen> createState() => _RegisterScreenState();
+  State<CompleteProfileScreen> createState() => _CompleteProfileScreenState();
 }
 
-class _RegisterScreenState extends State<RegisterScreen> {
+class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
   final _firstName = TextEditingController();
   final _lastName = TextEditingController();
   final _login = TextEditingController();
-  final _email = TextEditingController();
   final _password = TextEditingController();
   final _about = TextEditingController();
   String _role = 'ORDERER';
+  bool _acceptTerms = false;
 
   @override
   void dispose() {
-    for (final c in [_firstName, _lastName, _login, _email, _password, _about]) {
+    for (final c in [_firstName, _lastName, _login, _password, _about]) {
       c.dispose();
     }
     super.dispose();
   }
 
   void _submit() {
+    if (!_acceptTerms) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Oferta shartlariga rozilik bering")),
+      );
+      return;
+    }
     FocusScope.of(context).unfocus();
     context.read<AuthBloc>().add(
-          AuthRegisterRequested(
+          AuthOnboardingCompleted(
             role: _role,
             firstName: _firstName.text.trim(),
             lastName: _lastName.text.trim(),
             login: _login.text.trim(),
-            email: _email.text.trim(),
             password: _password.text,
             about: _about.text.trim(),
           ),
@@ -49,6 +56,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final user = context.select((AuthBloc b) => b.state.user);
     return Scaffold(
       body: AuroraBackground(
         child: SafeArea(
@@ -58,18 +66,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    IconButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      icon: const Icon(Icons.arrow_back_ios_new, size: 18),
+                    TextButton(
+                      onPressed: () =>
+                          context.read<AuthBloc>().add(const AuthLoggedOut()),
+                      child: const Text('Chiqish'),
                     ),
                   ],
                 ),
-                Text("Ro'yxatdan o'tish", style: Theme.of(context).textTheme.headlineLarge),
+                Text('Profilni tugallang',
+                    style: Theme.of(context).textTheme.headlineLarge),
                 const SizedBox(height: 4),
-                const Text(
-                  "Bir necha maydonni to'ldiring — shu bilan tamom.",
-                  style: TextStyle(color: AppColors.textMuted, fontSize: 13),
+                Text(
+                  user?.email != null
+                      ? "${user!.email} bilan kirdingiz — davom etish uchun quyidagilarni to'ldiring."
+                      : "Davom etish uchun quyidagilarni to'ldiring.",
+                  style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
                 ),
                 const SizedBox(height: 20),
                 GlassCard(
@@ -80,11 +93,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         c.status == AuthStatus.authenticated,
                     listener: (context, state) {
                       if (state.status == AuthStatus.authenticated) {
-                        // _RootGate'ning reaktiv qayta chizilishiga
-                        // tayanmaymiz (push qilingan sahifa ostida u bilan
-                        // poyga holati yuzaga kelishi mumkin) — shu o'rniga
-                        // butun navigatsiya stekini to'g'ridan-to'g'ri
-                        // HomeShell bilan almashtiramiz.
                         Navigator.of(context).pushAndRemoveUntil(
                           MaterialPageRoute(builder: (_) => const HomeShell()),
                           (route) => false,
@@ -147,13 +155,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                           const SizedBox(height: 14),
                           AppTextField(
-                            label: 'Email',
-                            controller: _email,
-                            keyboardType: TextInputType.emailAddress,
-                            autofillHints: const [AutofillHints.email],
-                          ),
-                          const SizedBox(height: 14),
-                          AppTextField(
                             label: 'Parol',
                             controller: _password,
                             obscureText: true,
@@ -165,7 +166,30 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             controller: _about,
                             maxLines: 3,
                           ),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 14),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Checkbox(
+                                value: _acceptTerms,
+                                onChanged: (v) =>
+                                    setState(() => _acceptTerms = v ?? false),
+                              ),
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.only(top: 12),
+                                  child: Text(
+                                    "Ommaviy oferta shartlariga roziman",
+                                    style: TextStyle(
+                                      color: AppColors.textSecondary,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
                           ElevatedButton(
                             onPressed: busy ? null : _submit,
                             child: busy
@@ -177,7 +201,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                       color: Colors.black54,
                                     ),
                                   )
-                                : const Text("Hisob yaratish"),
+                                : const Text("Davom etish"),
                           ),
                         ],
                       );

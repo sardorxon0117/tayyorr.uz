@@ -13,6 +13,7 @@ class UserModel {
   final String? walletCode;
   final double? rating;
   final int ratingCount;
+  final bool needsOnboarding;
 
   const UserModel({
     required this.id,
@@ -29,6 +30,7 @@ class UserModel {
     this.walletCode,
     this.rating,
     required this.ratingCount,
+    this.needsOnboarding = false,
   });
 
   bool get isPreparer => role == 'PREPARER';
@@ -58,6 +60,7 @@ class UserModel {
       walletCode: json['walletCode'] as String?,
       rating: (json['rating'] as num?)?.toDouble(),
       ratingCount: (json['ratingCount'] as num?)?.toInt() ?? 0,
+      needsOnboarding: json['needsOnboarding'] as bool? ?? false,
     );
   }
 }

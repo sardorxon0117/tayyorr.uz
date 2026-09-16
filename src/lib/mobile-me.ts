@@ -54,5 +54,6 @@ export function serializeMe(u: MeUser) {
     rating: u.ratingCount ? u.ratingSum / u.ratingCount : null,
     ratingCount: u.ratingCount,
     createdAt: u.createdAt.toISOString(),
+    needsOnboarding: !(u.role && u.login),
   };
 }

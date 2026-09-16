@@ -115,6 +115,39 @@ class _LoginScreenState extends State<LoginScreen> {
                                       )
                                     : const Text('Kirish'),
                               ),
+                              const SizedBox(height: 18),
+                              Row(
+                                children: [
+                                  const Expanded(child: Divider(color: AppColors.cardBorder)),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                                    child: Text('yoki',
+                                        style: TextStyle(color: AppColors.textMuted, fontSize: 12)),
+                                  ),
+                                  const Expanded(child: Divider(color: AppColors.cardBorder)),
+                                ],
+                              ),
+                              const SizedBox(height: 18),
+                              OutlinedButton(
+                                onPressed: busy
+                                    ? null
+                                    : () => context
+                                        .read<AuthBloc>()
+                                        .add(const AuthGoogleSignInRequested()),
+                                style: OutlinedButton.styleFrom(
+                                  side: const BorderSide(color: AppColors.cardBorder),
+                                  padding: const EdgeInsets.symmetric(vertical: 13),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const _GoogleG(),
+                                    const SizedBox(width: 10),
+                                    Text('Google bilan kirish',
+                                        style: TextStyle(color: Colors.white.withValues(alpha: 0.9))),
+                                  ],
+                                ),
+                              ),
                             ],
                           );
                         },
@@ -141,6 +174,27 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _GoogleG extends StatelessWidget {
+  const _GoogleG();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 18,
+      width: 18,
+      alignment: Alignment.center,
+      child: const Text(
+        'G',
+        style: TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.w800,
+          color: Color(0xFF4285F4),
         ),
       ),
     );

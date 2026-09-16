@@ -6,6 +6,7 @@ import 'core/theme/app_colors.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/bloc/auth_bloc.dart';
 import 'features/auth/data/auth_repository.dart';
+import 'features/auth/presentation/complete_profile_screen.dart';
 import 'features/auth/presentation/login_screen.dart';
 import 'features/home/home_shell.dart';
 import 'features/onboarding/onboarding_screen.dart';
@@ -44,6 +45,8 @@ class _RootGate extends StatelessWidget {
             return const _SplashScreen();
           case AuthStatus.authenticated:
             return const HomeShell();
+          case AuthStatus.onboarding:
+            return const CompleteProfileScreen();
           case AuthStatus.authenticating:
           case AuthStatus.unauthenticated:
             return LocalStorage.instance.hasSeenOnboarding

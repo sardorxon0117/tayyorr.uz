@@ -14,6 +14,9 @@ dependencies:
   # tarmoq
   dio: ^5.7.0
 
+  # Google bilan kirish
+  google_sign_in: ^6.2.2
+
   # holat boshqaruvi (BLoC)
   flutter_bloc: ^8.1.6
   equatable: ^2.0.5

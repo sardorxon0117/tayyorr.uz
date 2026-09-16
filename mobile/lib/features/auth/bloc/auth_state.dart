@@ -1,6 +1,14 @@
 part of 'auth_bloc.dart';
 
-enum AuthStatus { unknown, authenticating, authenticated, unauthenticated }
+enum AuthStatus {
+  unknown,
+  authenticating,
+  authenticated,
+  unauthenticated,
+  // Google bilan kirdi, lekin rol/login hali tanlanmagan — profilni
+  // tugallash sahifasi ko'rsatiladi.
+  onboarding,
+}
 
 class AuthState extends Equatable {
   const AuthState({

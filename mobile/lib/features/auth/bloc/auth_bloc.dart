@@ -13,11 +13,16 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthStarted>(_onStarted);
     on<AuthLoginRequested>(_onLogin);
     on<AuthRegisterRequested>(_onRegister);
+    on<AuthGoogleSignInRequested>(_onGoogleSignIn);
+    on<AuthOnboardingCompleted>(_onOnboardingCompleted);
     on<AuthLoggedOut>(_onLoggedOut);
     on<AuthMeRefreshRequested>(_onRefresh);
   }
 
   final AuthRepository _repo;
+
+  AuthStatus _statusFor(UserModel user) =>
+      user.needsOnboarding ? AuthStatus.onboarding : AuthStatus.authenticated;
 
   Future<void> _onStarted(AuthStarted event, Emitter<AuthState> emit) async {
     final user = await _repo.tryRestoreSession();
@@ -26,7 +31,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     // qo'llamaymiz, aks holda yangi sessiyani ustidan bosib qo'yamiz.
     if (state.status != AuthStatus.unknown) return;
     emit(user != null
-        ? state.copyWith(status: AuthStatus.authenticated, user: user)
+        ? state.copyWith(status: _statusFor(user), user: user)
         : state.copyWith(status: AuthStatus.unauthenticated));
   }
 
@@ -36,7 +41,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       final user =
           await _repo.login(login: event.login, password: event.password);
-      emit(state.copyWith(status: AuthStatus.authenticated, user: user));
+      emit(state.copyWith(status: _statusFor(user), user: user));
     } on ApiException catch (e) {
       emit(state.copyWith(
         status: AuthStatus.unauthenticated,
@@ -58,10 +63,50 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         password: event.password,
         about: event.about,
       );
-      emit(state.copyWith(status: AuthStatus.authenticated, user: user));
+      emit(state.copyWith(status: _statusFor(user), user: user));
     } on ApiException catch (e) {
       emit(state.copyWith(
         status: AuthStatus.unauthenticated,
+        error: e.message,
+      ));
+    }
+  }
+
+  Future<void> _onGoogleSignIn(
+      AuthGoogleSignInRequested event, Emitter<AuthState> emit) async {
+    emit(state.copyWith(status: AuthStatus.authenticating, clearError: true));
+    try {
+      final user = await _repo.signInWithGoogle();
+      if (user == null) {
+        // Foydalanuvchi hisob tanlashni bekor qildi — xatosiz avvalgi holatga.
+        emit(state.copyWith(status: AuthStatus.unauthenticated));
+        return;
+      }
+      emit(state.copyWith(status: _statusFor(user), user: user));
+    } on ApiException catch (e) {
+      emit(state.copyWith(
+        status: AuthStatus.unauthenticated,
+        error: e.message,
+      ));
+    }
+  }
+
+  Future<void> _onOnboardingCompleted(
+      AuthOnboardingCompleted event, Emitter<AuthState> emit) async {
+    emit(state.copyWith(status: AuthStatus.authenticating, clearError: true));
+    try {
+      final user = await _repo.completeOnboarding(
+        role: event.role,
+        firstName: event.firstName,
+        lastName: event.lastName,
+        login: event.login,
+        password: event.password,
+        about: event.about,
+      );
+      emit(state.copyWith(status: AuthStatus.authenticated, user: user));
+    } on ApiException catch (e) {
+      emit(state.copyWith(
+        status: AuthStatus.onboarding,
         error: e.message,
       ));
     }
