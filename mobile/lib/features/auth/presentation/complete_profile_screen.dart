@@ -5,7 +5,6 @@ import '../../../core/theme/app_colors.dart';
 import '../../../widgets/app_text_field.dart';
 import '../../../widgets/aurora_background.dart';
 import '../../../widgets/glass_card.dart';
-import '../../home/home_shell.dart';
 import '../bloc/auth_bloc.dart';
 
 /// Google bilan birinchi marta kirgan (lekin hali rol/login tanlamagan)
@@ -88,17 +87,10 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                 GlassCard(
                   padding: const EdgeInsets.all(20),
                   child: BlocConsumer<AuthBloc, AuthState>(
-                    listenWhen: (p, c) =>
-                        (c.error != null && c.error != p.error) ||
-                        c.status == AuthStatus.authenticated,
+                    // Navigatsiya (muvaffaqiyatli yakunlangandan keyin) endi
+                    // markazlashtirilgan — qara: app.dart'dagi BlocListener.
+                    listenWhen: (p, c) => c.error != null && c.error != p.error,
                     listener: (context, state) {
-                      if (state.status == AuthStatus.authenticated) {
-                        Navigator.of(context).pushAndRemoveUntil(
-                          MaterialPageRoute(builder: (_) => const HomeShell()),
-                          (route) => false,
-                        );
-                        return;
-                      }
                       if (state.error != null) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(

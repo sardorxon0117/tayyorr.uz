@@ -11,6 +11,11 @@ import 'features/auth/presentation/login_screen.dart';
 import 'features/home/home_shell.dart';
 import 'features/onboarding/onboarding_screen.dart';
 
+/// Butun ilova uchun bitta Navigator — bloc holati o'zgarganda (kirish,
+/// chiqish, ro'yxatdan o'tish) widget daraxtining istalgan chuqurligidan
+/// navigatsiya stekini tozalab qayta boshlash uchun ishlatiladi.
+final navigatorKey = GlobalKey<NavigatorState>();
+
 class TayyorrApp extends StatelessWidget {
   const TayyorrApp({super.key});
 
@@ -19,12 +24,30 @@ class TayyorrApp extends StatelessWidget {
     return BlocProvider(
       create: (_) => AuthBloc(AuthRepository())..add(const AuthStarted()),
       child: MaterialApp(
+        navigatorKey: navigatorKey,
         title: 'Tayyorr.uz',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.dark,
         darkTheme: AppTheme.dark,
         themeMode: ThemeMode.dark,
         home: const _RootGate(),
+        builder: (context, child) {
+          // Navigator ustidan o'ralgan — shuning uchun pushed sahifalar
+          // (Profil, Tahrirlash, Chat va h.k.) ostida qolib ketmaydi:
+          // status o'zgarishi doim butun stekni tozalab, joriy holatni
+          // ko'rsatadi (masalan "Chiqish" har doim ishlashini kafolatlaydi).
+          return BlocListener<AuthBloc, AuthState>(
+            listenWhen: (p, c) =>
+                c.status != AuthStatus.authenticating && p.status != c.status,
+            listener: (context, state) {
+              navigatorKey.currentState?.pushAndRemoveUntil(
+                MaterialPageRoute(builder: (_) => const _RootGate()),
+                (route) => false,
+              );
+            },
+            child: child ?? const SizedBox.shrink(),
+          );
+        },
       ),
     );
   }

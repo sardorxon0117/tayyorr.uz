@@ -3,32 +3,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/format.dart';
-import '../../../widgets/aurora_background.dart';
+import '../../../widgets/app_drawer.dart';
+import '../../../widgets/app_header_sliver.dart';
 import '../../../widgets/glass_card.dart';
 import '../../../widgets/user_avatar.dart';
 import '../../auth/bloc/auth_bloc.dart';
 import '../../auth/data/auth_repository.dart';
 import 'edit_profile_screen.dart';
-
-/// Profil rasmiga bosilganda ochiladigan mustaqil sahifa (orqaga tugmasi
-/// bilan) — pastki navbardagi "Profil" bo'limidan mustaqil ishlaydi.
-class ProfilePage extends StatelessWidget {
-  const ProfilePage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Profil'),
-        leading: IconButton(
-          onPressed: () => Navigator.of(context).pop(),
-          icon: const Icon(Icons.arrow_back_ios_new, size: 18),
-        ),
-      ),
-      body: const AuroraBackground(child: ProfileScreen()),
-    );
-  }
-}
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -59,133 +40,144 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: BlocBuilder<AuthBloc, AuthState>(
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      drawer: const AppDrawer(),
+      body: BlocBuilder<AuthBloc, AuthState>(
         builder: (context, state) {
           final user = state.user;
-          if (user == null) return const SizedBox.shrink();
-          return ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              GlassCard(
-                blur: false,
-                child: Row(
-                  children: [
-                    UserAvatar(imageUrl: user.image, initial: _initial(user.displayName), size: 58),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            user.displayName,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 17,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(height: 3),
-                          Text(
-                            '@${user.login ?? "—"} · ${user.roleLabel}',
-                            style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
-                          ),
-                        ],
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () => Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const EditProfileScreen()),
-                      ),
-                      icon: const Icon(Icons.edit_outlined, color: AppColors.textSecondary, size: 20),
-                    ),
-                  ],
-                ),
-              ),
-              if (user.isPreparer) ...[
-                const SizedBox(height: 10),
-                GlassCard(
-                  blur: false,
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+          return CustomScrollView(
+            slivers: [
+              const AppHeaderSliver(),
+              if (user == null)
+                const SliverToBoxAdapter(child: SizedBox.shrink())
+              else
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+                  sliver: SliverList(
+                    delegate: SliverChildListDelegate([
+                      GlassCard(
+                        blur: false,
+                        child: Row(
                           children: [
-                            Text(
-                              user.isAvailable ? 'Bo\'sh — buyurtma qabul qilyapsiz' : 'Band — ko\'rinmaysiz',
-                              style: const TextStyle(color: Colors.white, fontSize: 13.5, fontWeight: FontWeight.w600),
+                            UserAvatar(imageUrl: user.image, initial: _initial(user.displayName), size: 58),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    user.displayName,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 3),
+                                  Text(
+                                    '@${user.login ?? "—"} · ${user.roleLabel}',
+                                    style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
+                                  ),
+                                ],
+                              ),
                             ),
-                            const SizedBox(height: 2),
-                            const Text('Holatingizni bir bosishda yangilang',
-                                style: TextStyle(color: AppColors.textMuted, fontSize: 11.5)),
+                            IconButton(
+                              onPressed: () => Navigator.of(context).push(
+                                MaterialPageRoute(builder: (_) => const EditProfileScreen()),
+                              ),
+                              icon: const Icon(Icons.edit_outlined, color: AppColors.textSecondary, size: 20),
+                            ),
                           ],
                         ),
                       ),
-                      _togglingAvailability
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2.2, color: AppColors.indigo),
-                            )
-                          : Switch(
-                              value: user.isAvailable,
-                              activeThumbColor: AppColors.emerald,
-                              onChanged: (_) => _toggleAvailability(),
-                            ),
-                    ],
+                      if (user.isPreparer) ...[
+                        const SizedBox(height: 10),
+                        GlassCard(
+                          blur: false,
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      user.isAvailable ? 'Bo\'sh — buyurtma qabul qilyapsiz' : 'Band — ko\'rinmaysiz',
+                                      style: const TextStyle(color: Colors.white, fontSize: 13.5, fontWeight: FontWeight.w600),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    const Text('Holatingizni bir bosishda yangilang',
+                                        style: TextStyle(color: AppColors.textMuted, fontSize: 11.5)),
+                                  ],
+                                ),
+                              ),
+                              _togglingAvailability
+                                  ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(strokeWidth: 2.2, color: AppColors.indigo),
+                                    )
+                                  : Switch(
+                                      value: user.isAvailable,
+                                      activeThumbColor: AppColors.emerald,
+                                      onChanged: (_) => _toggleAvailability(),
+                                    ),
+                            ],
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Expanded(child: _StatCard(label: 'Balans', value: formatSom(user.balance))),
+                          if (user.isPreparer) ...[
+                            const SizedBox(width: 10),
+                            Expanded(child: _StatCard(label: 'Star', value: '${user.starBalance} ⭐')),
+                          ],
+                        ],
+                      ),
+                      if (user.isPreparer) ...[
+                        const SizedBox(height: 10),
+                        _StatCard(
+                          label: 'Reyting',
+                          value: user.rating != null
+                              ? '${user.rating!.toStringAsFixed(1)} · ${user.ratingCount} baho'
+                              : "Hali baho yo'q",
+                        ),
+                      ],
+                      if ((user.walletCode ?? '').isNotEmpty) ...[
+                        const SizedBox(height: 10),
+                        _StatCard(label: 'Hisob kodi', value: user.walletCode!),
+                      ],
+                      const SizedBox(height: 10),
+                      if ((user.about ?? '').isNotEmpty)
+                        GlassCard(
+                          blur: false,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text("O'zi haqida",
+                                  style: TextStyle(color: AppColors.textMuted, fontSize: 12)),
+                              const SizedBox(height: 6),
+                              Text(user.about!,
+                                  style: const TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.4)),
+                            ],
+                          ),
+                        ),
+                      const SizedBox(height: 24),
+                      OutlinedButton(
+                        onPressed: () => context.read<AuthBloc>().add(const AuthLoggedOut()),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.red,
+                          side: const BorderSide(color: Color(0x33F87171)),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        ),
+                        child: const Text('Chiqish'),
+                      ),
+                    ]),
                   ),
                 ),
-              ],
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  Expanded(child: _StatCard(label: 'Balans', value: formatSom(user.balance))),
-                  if (user.isPreparer) ...[
-                    const SizedBox(width: 10),
-                    Expanded(child: _StatCard(label: 'Star', value: '${user.starBalance} ⭐')),
-                  ],
-                ],
-              ),
-              if (user.isPreparer) ...[
-                const SizedBox(height: 10),
-                _StatCard(
-                  label: 'Reyting',
-                  value: user.rating != null
-                      ? '${user.rating!.toStringAsFixed(1)} · ${user.ratingCount} baho'
-                      : "Hali baho yo'q",
-                ),
-              ],
-              if ((user.walletCode ?? '').isNotEmpty) ...[
-                const SizedBox(height: 10),
-                _StatCard(label: 'Hisob kodi', value: user.walletCode!),
-              ],
-              const SizedBox(height: 10),
-              if ((user.about ?? '').isNotEmpty)
-                GlassCard(
-                  blur: false,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text("O'zi haqida",
-                          style: TextStyle(color: AppColors.textMuted, fontSize: 12)),
-                      const SizedBox(height: 6),
-                      Text(user.about!,
-                          style: const TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.4)),
-                    ],
-                  ),
-                ),
-              const SizedBox(height: 24),
-              OutlinedButton(
-                onPressed: () => context.read<AuthBloc>().add(const AuthLoggedOut()),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.red,
-                  side: const BorderSide(color: Color(0x33F87171)),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                ),
-                child: const Text('Chiqish'),
-              ),
             ],
           );
         },

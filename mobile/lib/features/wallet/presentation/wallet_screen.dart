@@ -3,10 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/format.dart';
+import '../../../widgets/app_drawer.dart';
 import '../../../widgets/app_header_sliver.dart';
 import '../../../widgets/glass_card.dart';
-import '../../auth/bloc/auth_bloc.dart';
-import '../../profile/presentation/profile_screen.dart';
 import '../cubit/wallet_cubit.dart';
 import '../data/wallet_model.dart';
 import '../data/wallet_repository.dart';
@@ -29,10 +28,9 @@ class _WalletView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = context.watch<AuthBloc>().state.user;
-
     return Scaffold(
       backgroundColor: Colors.transparent,
+      drawer: const AppDrawer(),
       body: RefreshIndicator(
         onRefresh: () => context.read<WalletCubit>().load(),
         color: AppColors.indigo,
@@ -40,11 +38,6 @@ class _WalletView extends StatelessWidget {
         child: CustomScrollView(
           slivers: [
             AppHeaderSliver(
-              avatarUrl: user?.image,
-              avatarInitial: _initial(user?.displayName ?? '?'),
-              onAvatarTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const ProfilePage()),
-              ),
               onRefresh: () => context.read<WalletCubit>().load(),
             ),
             BlocBuilder<WalletCubit, WalletState>(
@@ -112,11 +105,6 @@ class _WalletView extends StatelessWidget {
     items.sort((a, b) => b.$1.compareTo(a.$1));
     return items.map((e) => e.$2).toList();
   }
-}
-
-String _initial(String name) {
-  final clean = name.replaceFirst('@', '').trim();
-  return clean.isEmpty ? '?' : clean.substring(0, 1).toUpperCase();
 }
 
 class _BalanceCard extends StatelessWidget {

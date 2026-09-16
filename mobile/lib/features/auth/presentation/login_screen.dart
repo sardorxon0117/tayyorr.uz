@@ -6,7 +6,6 @@ import '../../../widgets/app_logo.dart';
 import '../../../widgets/app_text_field.dart';
 import '../../../widgets/aurora_background.dart';
 import '../../../widgets/glass_card.dart';
-import '../../home/home_shell.dart';
 import '../bloc/auth_bloc.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -55,17 +54,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     GlassCard(
                       padding: const EdgeInsets.all(22),
                       child: BlocConsumer<AuthBloc, AuthState>(
-                        listenWhen: (p, c) =>
-                            (c.error != null && c.error != p.error) ||
-                            c.status == AuthStatus.authenticated,
+                        // Navigatsiya (muvaffaqiyatli kirishdan keyin) endi
+                        // markazlashtirilgan — qara: app.dart'dagi
+                        // BlocListener. Bu yerda faqat xatoni ko'rsatamiz.
+                        listenWhen: (p, c) => c.error != null && c.error != p.error,
                         listener: (context, state) {
-                          if (state.status == AuthStatus.authenticated) {
-                            Navigator.of(context).pushAndRemoveUntil(
-                              MaterialPageRoute(builder: (_) => const HomeShell()),
-                              (route) => false,
-                            );
-                            return;
-                          }
                           if (state.error != null) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(

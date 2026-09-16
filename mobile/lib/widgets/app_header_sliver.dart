@@ -2,26 +2,20 @@ import 'package:flutter/material.dart';
 
 import '../core/theme/app_colors.dart';
 import 'app_logo.dart';
-import 'user_avatar.dart';
 
-/// Har bir asosiy sahifaning yuqori qismi: chapda logo, o'ngda profil
-/// rasmi — bular scroll bo'lganda ham doim ko'rinib turadi (pinned).
-/// Pastida ixtiyoriy qidirish/filtr qatori bo'lsa — u scroll bilan
-/// yig'ilib, faqat yuqori qator qoladi. Scroll paytida rang o'zgarmaydi.
+/// Har bir asosiy sahifaning yuqori qismi: chapda logo, o'ngda drawer'ni
+/// ochadigan menyu tugmasi — bular scroll bo'lganda ham doim ko'rinib
+/// turadi (pinned). Pastida ixtiyoriy qidirish/filtr/hamyon qatori bo'lsa —
+/// u scroll bilan yig'ilib, faqat yuqori qator qoladi. Scroll paytida
+/// rang o'zgarmaydi.
 class AppHeaderSliver extends StatelessWidget {
   const AppHeaderSliver({
     super.key,
-    required this.avatarUrl,
-    required this.avatarInitial,
-    this.onAvatarTap,
     this.onRefresh,
     this.bottom,
     this.bottomHeight = 80,
   });
 
-  final String? avatarUrl;
-  final String avatarInitial;
-  final VoidCallback? onAvatarTap;
   final VoidCallback? onRefresh;
   final Widget? bottom;
 
@@ -35,6 +29,7 @@ class AppHeaderSliver extends StatelessWidget {
     return SliverAppBar(
       pinned: true,
       floating: false,
+      automaticallyImplyLeading: false,
       backgroundColor: AppColors.bg,
       surfaceTintColor: Colors.transparent,
       scrolledUnderElevation: 0,
@@ -51,11 +46,11 @@ class AppHeaderSliver extends StatelessWidget {
               onPressed: onRefresh,
               icon: const Icon(Icons.refresh_rounded, size: 20, color: AppColors.textSecondary),
             ),
-          UserAvatar(
-            imageUrl: avatarUrl,
-            initial: avatarInitial,
-            size: 32,
-            onTap: onAvatarTap,
+          Builder(
+            builder: (context) => IconButton(
+              onPressed: () => Scaffold.of(context).openDrawer(),
+              icon: const Icon(Icons.menu_rounded, size: 24, color: Colors.white),
+            ),
           ),
         ],
       ),
