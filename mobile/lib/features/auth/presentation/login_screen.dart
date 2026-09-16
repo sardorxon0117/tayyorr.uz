@@ -6,6 +6,7 @@ import '../../../widgets/app_logo.dart';
 import '../../../widgets/app_text_field.dart';
 import '../../../widgets/aurora_background.dart';
 import '../../../widgets/glass_card.dart';
+import '../../../widgets/google_logo.dart';
 import '../bloc/auth_bloc.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -134,7 +135,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    const _GoogleG(),
+                                    const GoogleLogo(size: 18),
                                     const SizedBox(width: 10),
                                     Text('Google bilan kirish',
                                         style: TextStyle(color: Colors.white.withValues(alpha: 0.9))),
@@ -176,23 +177,3 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 }
 
-class _GoogleG extends StatelessWidget {
-  const _GoogleG();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 18,
-      width: 18,
-      alignment: Alignment.center,
-      child: const Text(
-        'G',
-        style: TextStyle(
-          fontSize: 15,
-          fontWeight: FontWeight.w800,
-          color: Color(0xFF4285F4),
-        ),
-      ),
-    );
-  }
-}

@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -89,23 +91,20 @@ class _DashboardViewState extends State<_DashboardView> {
       extendBody: true,
       drawer: const AppDrawer(),
       floatingActionButton: isOrderer
-          ? Padding(
-              padding: const EdgeInsets.only(bottom: 74),
-              child: _CreateOrderFab(
-                expanded: _fabExpanded,
-                onPressed: () async {
-                  setState(() => _fabExpanded = false);
-                  final created = await Navigator.of(context).push<bool>(
-                    MaterialPageRoute(builder: (_) => const CreateOrderScreen()),
+          ? _CreateOrderFab(
+              expanded: _fabExpanded,
+              onPressed: () async {
+                setState(() => _fabExpanded = false);
+                final created = await Navigator.of(context).push<bool>(
+                  MaterialPageRoute(builder: (_) => const CreateOrderScreen()),
+                );
+                if (created == true && context.mounted) {
+                  context.read<DashboardCubit>().load();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Buyurtma joylandi')),
                   );
-                  if (created == true && context.mounted) {
-                    context.read<DashboardCubit>().load();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Buyurtma joylandi')),
-                    );
-                  }
-                },
-              ),
+                }
+              },
             )
           : null,
       body: RefreshIndicator(
@@ -200,14 +199,17 @@ class _WalletMiniCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(20),
       child: Stack(
         children: [
-          // orqa fon: profil rasmi bo'lsa xiralashtirilgan holda, bo'lmasa
-          // oddiy gradient
+          // orqa fon: profil rasmi bo'lsa kuchli xiralashtirilgan (blur)
+          // holda — aniq ko'rinmaydi, faqat "izi" bo'ladi; bo'lmasa gradient
           if (hasImage)
             Positioned.fill(
-              child: Image.network(
-                imageUrl!,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const _CardGradientBg(),
+              child: ImageFiltered(
+                imageFilter: ImageFilter.blur(sigmaX: 26, sigmaY: 26, tileMode: TileMode.decal),
+                child: Image.network(
+                  imageUrl!,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => const _CardGradientBg(),
+                ),
               ),
             )
           else

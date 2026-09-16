@@ -1,12 +1,16 @@
+import 'dart:ui' show ImageFilter;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../core/theme/app_colors.dart';
 import '../core/utils/format.dart';
 import '../features/auth/bloc/auth_bloc.dart';
+import '../features/auth/data/user_model.dart';
 import '../features/home/section_cubit.dart';
 import '../features/wallet/presentation/top_up_sheet.dart';
 import 'app_logo.dart';
+import 'aurora_background.dart';
 import 'user_avatar.dart';
 
 /// Saytdagi desktop sidebar (`AppSidebar`) ko'rinishini takrorlaydi —
@@ -26,8 +30,31 @@ class AppDrawer extends StatelessWidget {
     final section = context.watch<SectionCubit>().state;
 
     return Drawer(
-      backgroundColor: AppColors.surface,
-      child: SafeArea(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      width: 300,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.horizontal(right: Radius.circular(28)),
+      ),
+      child: ClipRRect(
+        borderRadius: const BorderRadius.horizontal(right: Radius.circular(28)),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            const AuroraBackground(),
+            BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
+              child: Container(color: AppColors.surface.withValues(alpha: 0.55)),
+            ),
+            _drawerContent(context, user, isPreparer, section),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _drawerContent(BuildContext context, UserModel? user, bool isPreparer, AppSection section) {
+    return SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
           child: Column(
@@ -99,13 +126,20 @@ class AppDrawer extends StatelessWidget {
                 selected: section == AppSection.dashboard,
                 onTap: () => _go(context, AppSection.dashboard),
               ),
-              if (isPreparer)
+              if (isPreparer) ...[
                 _NavItem(
                   icon: Icons.local_offer_rounded,
                   label: 'Mening takliflarim',
                   selected: section == AppSection.offers,
                   onTap: () => _go(context, AppSection.offers),
                 ),
+                _NavItem(
+                  icon: Icons.card_giftcard_rounded,
+                  label: 'Referal',
+                  selected: section == AppSection.referral,
+                  onTap: () => _go(context, AppSection.referral),
+                ),
+              ],
               _NavItem(
                 icon: Icons.chat_bubble_rounded,
                 label: 'Xabarlar',
@@ -126,21 +160,14 @@ class AppDrawer extends StatelessWidget {
               ),
               const Spacer(),
               const Divider(color: AppColors.cardBorder, height: 1),
-              const SizedBox(height: 6),
-              _NavItem(
-                icon: Icons.logout_rounded,
-                label: 'Chiqish',
-                selected: false,
-                danger: true,
-                onTap: () {
-                  Navigator.of(context).pop();
-                  context.read<AuthBloc>().add(const AuthLoggedOut());
-                },
+              const SizedBox(height: 8),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 6),
+                child: Text('tayyorr.uz', style: TextStyle(color: AppColors.textFaint, fontSize: 11)),
               ),
             ],
           ),
         ),
-      ),
     );
   }
 }

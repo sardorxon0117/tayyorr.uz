@@ -1,3 +1,6 @@
+import 'dart:typed_data';
+
+import 'package:dio/dio.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 import '../../../core/constants.dart';
@@ -97,9 +100,30 @@ class AuthRepository {
     return UserModel.fromJson(res['user'] as Map<String, dynamic>);
   }
 
-  Future<bool> toggleAvailability() async {
-    final res = await _api.patch('/mobile/me/availability');
-    return res['isAvailable'] as bool;
+  /// Profil rasmini yuklaydi: R2'ga to'g'ridan PUT qiladi, so'ng profilni
+  /// yangi rasm bilan yangilaydi.
+  Future<UserModel> uploadAvatar({
+    required Uint8List bytes,
+    required String filename,
+    required String contentType,
+  }) async {
+    final presign = await _api.post('/mobile/upload/avatar-presign', data: {
+      'filename': filename,
+      'contentType': contentType,
+    });
+    final uploadUrl = presign['uploadUrl'] as String;
+    final avatarUrl = presign['publicUrl'] as String;
+
+    // R2'ga to'g'ridan yuklaymiz — bizning Bearer tokenimiz kerak emas,
+    // shuning uchun asosiy ApiClient emas, alohida oddiy Dio ishlatamiz.
+    await Dio().put(
+      uploadUrl,
+      data: bytes,
+      options: Options(headers: {'Content-Type': contentType}),
+    );
+
+    final res = await _api.patch('/mobile/me', data: {'avatarUrl': avatarUrl});
+    return UserModel.fromJson(res['user'] as Map<String, dynamic>);
   }
 
   Future<void> logout() async {

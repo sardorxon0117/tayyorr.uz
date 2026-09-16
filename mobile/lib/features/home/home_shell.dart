@@ -6,6 +6,7 @@ import '../dashboard/presentation/dashboard_screen.dart';
 import '../messages/presentation/messages_list_screen.dart';
 import '../offers/presentation/offers_screen.dart';
 import '../profile/presentation/profile_screen.dart';
+import '../referral/presentation/referral_screen.dart';
 import '../wallet/presentation/wallet_screen.dart';
 import 'section_cubit.dart';
 
@@ -27,6 +28,7 @@ class HomeShell extends StatelessWidget {
 const _sectionOrder = [
   AppSection.dashboard,
   AppSection.offers,
+  AppSection.referral,
   AppSection.messages,
   AppSection.wallet,
   AppSection.profile,
@@ -40,18 +42,73 @@ class _HomeShellView extends StatelessWidget {
     return BlocBuilder<SectionCubit, AppSection>(
       builder: (context, section) {
         return AuroraBackground(
-          child: IndexedStack(
-            index: _sectionOrder.indexOf(section),
-            children: const [
-              DashboardScreen(),
-              OffersScreen(),
-              MessagesListScreen(),
-              WalletScreen(),
-              ProfileScreen(),
-            ],
+          child: _SectionFade(
+            sectionKey: section,
+            child: IndexedStack(
+              index: _sectionOrder.indexOf(section),
+              children: const [
+                DashboardScreen(),
+                OffersScreen(),
+                ReferralScreen(),
+                MessagesListScreen(),
+                WalletScreen(),
+                ProfileScreen(),
+              ],
+            ),
           ),
         );
       },
+    );
+  }
+}
+
+/// Bo'lim almashganda IndexedStack'ning barcha bolalari (va ularning
+/// holati) saqlanib qoladi — faqat tashqi qatlam tez (180ms) xira bo'lib
+/// yangi bo'limga o'tadi, sekin sahifa almashinuvi his qilinmaydi.
+class _SectionFade extends StatefulWidget {
+  const _SectionFade({required this.sectionKey, required this.child});
+
+  final AppSection sectionKey;
+  final Widget child;
+
+  @override
+  State<_SectionFade> createState() => _SectionFadeState();
+}
+
+class _SectionFadeState extends State<_SectionFade> with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 180),
+      value: 1,
+    );
+  }
+
+  @override
+  void didUpdateWidget(covariant _SectionFade oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.sectionKey != widget.sectionKey) {
+      _controller
+        ..value = 0
+        ..forward();
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: CurvedAnimation(parent: _controller, curve: Curves.easeOut),
+      child: widget.child,
     );
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/format.dart';
@@ -20,21 +21,31 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final _repo = AuthRepository();
-  bool _togglingAvailability = false;
+  final _picker = ImagePicker();
+  bool _uploadingAvatar = false;
 
-  Future<void> _toggleAvailability() async {
-    setState(() => _togglingAvailability = true);
+  Future<void> _pickAvatar() async {
+    final file = await _picker.pickImage(source: ImageSource.gallery, maxWidth: 800, imageQuality: 85);
+    if (file == null) return;
+    setState(() => _uploadingAvatar = true);
     try {
-      await _repo.toggleAvailability();
+      final bytes = await file.readAsBytes();
+      final ext = file.name.contains('.') ? file.name.split('.').last.toLowerCase() : 'jpg';
+      final contentType = switch (ext) {
+        'png' => 'image/png',
+        'webp' => 'image/webp',
+        _ => 'image/jpeg',
+      };
+      await _repo.uploadAvatar(bytes: bytes, filename: file.name, contentType: contentType);
       if (mounted) context.read<AuthBloc>().add(const AuthMeRefreshRequested());
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("O'zgartirib bo'lmadi — qayta urinib ko'ring")),
+          const SnackBar(content: Text("Rasmni yuklab bo'lmadi — qayta urinib ko'ring")),
         );
       }
     } finally {
-      if (mounted) setState(() => _togglingAvailability = false);
+      if (mounted) setState(() => _uploadingAvatar = false);
     }
   }
 
@@ -60,7 +71,38 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         blur: false,
                         child: Row(
                           children: [
-                            UserAvatar(imageUrl: user.image, initial: _initial(user.displayName), size: 58),
+                            GestureDetector(
+                              onTap: _uploadingAvatar ? null : _pickAvatar,
+                              child: Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  UserAvatar(imageUrl: user.image, initial: _initial(user.displayName), size: 58),
+                                  if (_uploadingAvatar)
+                                    Container(
+                                      width: 58,
+                                      height: 58,
+                                      decoration: const BoxDecoration(shape: BoxShape.circle, color: Colors.black45),
+                                      child: const Padding(
+                                        padding: EdgeInsets.all(16),
+                                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                      ),
+                                    )
+                                  else
+                                    Positioned(
+                                      bottom: -2,
+                                      right: -2,
+                                      child: Container(
+                                        padding: const EdgeInsets.all(4),
+                                        decoration: const BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: AppColors.indigo,
+                                        ),
+                                        child: const Icon(Icons.camera_alt_rounded, size: 12, color: Colors.white),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
                             const SizedBox(width: 14),
                             Expanded(
                               child: Column(
@@ -91,41 +133,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ],
                         ),
                       ),
-                      if (user.isPreparer) ...[
-                        const SizedBox(height: 10),
-                        GlassCard(
-                          blur: false,
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      user.isAvailable ? 'Bo\'sh — buyurtma qabul qilyapsiz' : 'Band — ko\'rinmaysiz',
-                                      style: const TextStyle(color: Colors.white, fontSize: 13.5, fontWeight: FontWeight.w600),
-                                    ),
-                                    const SizedBox(height: 2),
-                                    const Text('Holatingizni bir bosishda yangilang',
-                                        style: TextStyle(color: AppColors.textMuted, fontSize: 11.5)),
-                                  ],
-                                ),
-                              ),
-                              _togglingAvailability
-                                  ? const SizedBox(
-                                      width: 20,
-                                      height: 20,
-                                      child: CircularProgressIndicator(strokeWidth: 2.2, color: AppColors.indigo),
-                                    )
-                                  : Switch(
-                                      value: user.isAvailable,
-                                      activeThumbColor: AppColors.emerald,
-                                      onChanged: (_) => _toggleAvailability(),
-                                    ),
-                            ],
-                          ),
-                        ),
-                      ],
                       const SizedBox(height: 10),
                       Row(
                         children: [

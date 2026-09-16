@@ -28,9 +28,10 @@ const patchSchema = z.object({
   firstName: z.string().min(2).max(50).optional(),
   lastName: z.string().min(2).max(50).optional(),
   about: z.string().min(5).max(1000).optional(),
+  avatarUrl: z.string().url().optional(),
 });
 
-/** Profilni tahrirlash — ism, familiya, o'zi haqida. */
+/** Profilni tahrirlash — ism, familiya, o'zi haqida, profil rasmi. */
 export async function PATCH(req: Request) {
   const auth = await requireMobileAuth(req);
   if (auth instanceof NextResponse) return auth;

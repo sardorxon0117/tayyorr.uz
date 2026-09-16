@@ -18,6 +18,10 @@ dependencies:
   google_sign_in: ^6.2.2
   # tashqi havolalarni ochish (Click to'lov sahifasi)
   url_launcher: ^6.3.1
+  # profil rasmini tanlash
+  image_picker: ^1.1.2
+  # referal havolasini ulashish
+  share_plus: ^10.1.4
 
   # holat boshqaruvi (BLoC)
   flutter_bloc: ^8.1.6
@@ -36,8 +40,16 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.14.3
 
 flutter:
   uses-material-design: true
   assets:
     - assets/logo.png
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/app_icon.png"
+  min_sdk_android: 21
+  remove_alpha_ios: true

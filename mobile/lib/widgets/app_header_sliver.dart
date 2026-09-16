@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 
 import '../core/theme/app_colors.dart';
@@ -6,8 +8,9 @@ import 'app_logo.dart';
 /// Har bir asosiy sahifaning yuqori qismi: chapda logo, o'ngda drawer'ni
 /// ochadigan menyu tugmasi — bular scroll bo'lganda ham doim ko'rinib
 /// turadi (pinned). Pastida ixtiyoriy qidirish/filtr/hamyon qatori bo'lsa —
-/// u scroll bilan yig'ilib, faqat yuqori qator qoladi. Scroll paytida
-/// rang o'zgarmaydi.
+/// u scroll bilan yig'ilib, faqat yuqori qator qoladi. Fon qattiq rang
+/// emas — orqadagi ro'yxat xira (blur) ko'rinib turadigan shisha panel,
+/// scroll paytida rangi o'zgarmaydi.
 class AppHeaderSliver extends StatelessWidget {
   const AppHeaderSliver({
     super.key,
@@ -30,13 +33,27 @@ class AppHeaderSliver extends StatelessWidget {
       pinned: true,
       floating: false,
       automaticallyImplyLeading: false,
-      backgroundColor: AppColors.bg,
+      backgroundColor: Colors.transparent,
       surfaceTintColor: Colors.transparent,
       scrolledUnderElevation: 0,
       elevation: 0,
       toolbarHeight: 56,
       expandedHeight: hasBottom ? 56 + bottomHeight + 14 : 56,
       titleSpacing: 16,
+      flexibleSpace: ClipRect(
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+          child: Container(
+            color: AppColors.bg.withValues(alpha: 0.55),
+            child: hasBottom
+                ? Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
+                    child: Align(alignment: Alignment.bottomCenter, child: bottom),
+                  )
+                : null,
+          ),
+        ),
+      ),
       title: Row(
         children: [
           const AppLogo(height: 20),
@@ -54,14 +71,6 @@ class AppHeaderSliver extends StatelessWidget {
           ),
         ],
       ),
-      flexibleSpace: hasBottom
-          ? FlexibleSpaceBar(
-              background: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
-                child: Align(alignment: Alignment.bottomCenter, child: bottom),
-              ),
-            )
-          : null,
     );
   }
 }
