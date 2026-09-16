@@ -12,6 +12,7 @@ import { LandingFaq } from "@/components/landing-faq";
 import { TelegramIcon, InstagramIcon } from "@/components/icons";
 import { SERVICES } from "@/lib/services";
 import { db } from "@/lib/db";
+import { publicUrl } from "@/lib/r2";
 
 const TELEGRAM_URL = "https://t.me/tayyorruz";
 const INSTAGRAM_URL = "https://instagram.com/tayyorr.uz";
@@ -89,6 +90,9 @@ export default async function Home() {
           </a>
           <a href="#imkoniyat" className="transition hover:text-white">
             Imkoniyatlar
+          </a>
+          <a href="#ilova" className="transition hover:text-white">
+            Ilova
           </a>
         </div>
         <div className="flex items-center gap-2">
@@ -289,6 +293,80 @@ export default async function Home() {
             title="Google bilan kirish"
             text="Parolni unutish muammosi yo'q."
           />
+        </div>
+      </section>
+
+      {/* ---------- mobil ilova ---------- */}
+      <section id="ilova" className="relative z-10 mx-auto max-w-5xl px-6 py-20">
+        <div className="lq-glass-strong blur-in relative overflow-hidden rounded-3xl p-8 sm:p-12">
+          <div
+            aria-hidden
+            className="blob"
+            style={{
+              bottom: "-8rem",
+              right: "-6rem",
+              width: "26rem",
+              height: "26rem",
+              background: "radial-gradient(circle, #7c3aed, transparent 70%)",
+              opacity: 0.3,
+            }}
+          />
+          <div className="relative grid items-center gap-10 lg:grid-cols-[1.2fr_1fr]">
+            <div>
+              <div className="text-xs font-medium uppercase tracking-[0.2em] text-indigo-400">
+                Mobil ilova
+              </div>
+              <h2 className="font-display mt-3 text-3xl font-bold tracking-tight text-white sm:text-4xl">
+                Endi cho&apos;ntagingizda ham
+              </h2>
+              <p className="mt-4 max-w-md text-zinc-400">
+                Har safar brauzer ochmasdan — tayyorr.uz ilovasi orqali
+                buyurtmalar, takliflar va xabarlarni to&apos;g&apos;ridan
+                telefoningizdan boshqaring.
+              </p>
+              <div className="mt-8 flex flex-wrap items-center gap-3">
+                <a
+                  href={publicUrl("app/tayyorr.apk")}
+                  className="group inline-flex items-center gap-3 rounded-xl bg-white px-5 py-3 text-black transition hover:bg-zinc-200"
+                >
+                  <IconAndroid />
+                  <span className="text-left leading-tight">
+                    <span className="block text-[11px] text-zinc-600">
+                      Android uchun
+                    </span>
+                    <span className="block text-sm font-semibold">
+                      APK yuklab olish
+                    </span>
+                  </span>
+                </a>
+                <div className="lq-glass inline-flex items-center gap-3 rounded-xl px-5 py-3 text-zinc-400">
+                  <IconApple />
+                  <span className="text-left leading-tight">
+                    <span className="block text-[11px] text-zinc-500">
+                      iOS uchun
+                    </span>
+                    <span className="block text-sm font-semibold">
+                      Tez orada
+                    </span>
+                  </span>
+                </div>
+              </div>
+              <p className="mt-4 text-xs text-zinc-500">
+                APK — Google Play&apos;dan tashqarida. O&apos;rnatishda
+                telefon &quot;noma&apos;lum manbadan o&apos;rnatish&quot;ni
+                so&apos;rasa, ruxsat bering.
+              </p>
+            </div>
+
+            <div className="hidden justify-self-center lg:block">
+              <div className="lq-glass flex h-64 w-48 flex-col items-center justify-center gap-3 rounded-[2rem] border border-white/10 text-center">
+                <span className="font-display text-2xl font-bold">
+                  tayyorr<span className="text-indigo-400">.uz</span>
+                </span>
+                <span className="text-xs text-zinc-500">mobil ilova</span>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -572,6 +650,20 @@ function IconLock() {
     <svg viewBox="0 0 24 24" className="h-5 w-5" {...sw}>
       <rect x="5" y="11" width="14" height="9" rx="2" />
       <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+    </svg>
+  );
+}
+function IconAndroid() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-6 w-6" fill="currentColor">
+      <path d="M6.5 8.5v6a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1v-6h-11zM5 9.5v5a.75.75 0 0 1-1.5 0v-5a.75.75 0 0 1 1.5 0zm14 0v5a.75.75 0 0 1-1.5 0v-5a.75.75 0 0 1 1.5 0zM9 17v2a1 1 0 0 0 2 0v-2H9zm4 0v2a1 1 0 0 0 2 0v-2h-2zM7.5 4.7l-1-1.4a.5.5 0 1 1 .8-.6l1 1.5a6 6 0 0 1 7.4 0l1-1.5a.5.5 0 1 1 .8.6l-1 1.4A5 5 0 0 1 19 8H5a5 5 0 0 1 2.5-3.3zM9.2 6a.7.7 0 1 0 0-1.4.7.7 0 0 0 0 1.4zm5.6 0a.7.7 0 1 0 0-1.4.7.7 0 0 0 0 1.4z" />
+    </svg>
+  );
+}
+function IconApple() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-6 w-6" fill="currentColor">
+      <path d="M16.4 12.4c0-2 1.6-3 1.7-3.1-1-1.4-2.4-1.6-3-1.6-1.3-.1-2.4.7-3.1.7-.6 0-1.6-.7-2.7-.7-1.4 0-2.7.8-3.4 2.1-1.5 2.6-.4 6.4 1 8.5.7 1 1.5 2.2 2.7 2.1 1-.1 1.5-.7 2.8-.7s1.6.7 2.7.7c1.1 0 1.9-1 2.6-2 .6-.9.9-1.7.9-1.8-.1 0-2.2-.9-2.2-3.2zM14.4 5.9c.5-.6 1-1.6.8-2.5-.8 0-1.7.5-2.3 1.2-.5.6-1 1.6-.8 2.4.9.1 1.8-.4 2.3-1.1z" />
     </svg>
   );
 }
