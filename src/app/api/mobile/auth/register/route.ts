@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 
@@ -9,6 +8,9 @@ import { logToGroup, siteUrl } from "@/lib/telegram-log";
 import { sendWelcome } from "@/lib/support-actions";
 import { TERMS_VERSION } from "@/lib/terms";
 import { ME_SELECT, serializeMe } from "@/lib/mobile-me";
+import { mobileJson } from "@/lib/mobile-cors";
+
+export { OPTIONS } from "@/lib/mobile-cors";
 
 const schema = z.object({
   role: z.enum(["ORDERER", "PREPARER"]),
@@ -36,7 +38,7 @@ const schema = z.object({
 export async function POST(req: Request) {
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json(
+    return mobileJson(
       { error: parsed.error.issues[0]?.message ?? "Ma'lumotlarni to'ldiring" },
       { status: 400 },
     );
@@ -48,10 +50,10 @@ export async function POST(req: Request) {
     db.user.findUnique({ where: { email }, select: { id: true } }),
   ]);
   if (loginClash) {
-    return NextResponse.json({ error: "Bu login band" }, { status: 409 });
+    return mobileJson({ error: "Bu login band" }, { status: 409 });
   }
   if (emailClash) {
-    return NextResponse.json({ error: "Bu email allaqachon ro'yxatdan o'tgan" }, { status: 409 });
+    return mobileJson({ error: "Bu email allaqachon ro'yxatdan o'tgan" }, { status: 409 });
   }
 
   const user = await db.user.create({
@@ -91,5 +93,5 @@ export async function POST(req: Request) {
     siteUrl(`/sardorxon/admin/users/${user.id}`),
   );
 
-  return NextResponse.json({ token, user: serializeMe(user) }, { status: 201 });
+  return mobileJson({ token, user: serializeMe(user) }, { status: 201 });
 }

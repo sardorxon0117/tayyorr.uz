@@ -3,6 +3,9 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { requireMobileAuth } from "@/lib/mobile-auth";
 import { ME_SELECT, serializeMe } from "@/lib/mobile-me";
+import { mobileJson } from "@/lib/mobile-cors";
+
+export { OPTIONS } from "@/lib/mobile-cors";
 
 /** Joriy foydalanuvchi profili (mobil ilova bosh ekrani uchun). */
 export async function GET(req: Request) {
@@ -13,7 +16,7 @@ export async function GET(req: Request) {
     where: { id: auth.userId },
     select: ME_SELECT,
   });
-  if (!user) return NextResponse.json({ error: "Topilmadi" }, { status: 404 });
+  if (!user) return mobileJson({ error: "Topilmadi" }, { status: 404 });
 
-  return NextResponse.json({ user: serializeMe(user) });
+  return mobileJson({ user: serializeMe(user) });
 }

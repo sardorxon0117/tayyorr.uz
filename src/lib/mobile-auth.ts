@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 
 import { db } from "@/lib/db";
+import { mobileJson } from "@/lib/mobile-cors";
 
 /**
  * Flutter ilovasi uchun alohida autentifikatsiya — NextAuth'ning
@@ -39,15 +40,15 @@ export async function requireMobileAuth(
   const header = req.headers.get("authorization") || "";
   const token = header.startsWith("Bearer ") ? header.slice(7) : null;
   if (!token) {
-    return NextResponse.json({ error: "Avval kiring" }, { status: 401 });
+    return mobileJson({ error: "Avval kiring" }, { status: 401 });
   }
   const userId = verifyMobileToken(token);
   if (!userId) {
-    return NextResponse.json({ error: "Sessiya eskirgan, qayta kiring" }, { status: 401 });
+    return mobileJson({ error: "Sessiya eskirgan, qayta kiring" }, { status: 401 });
   }
   const user = await db.user.findUnique({ where: { id: userId }, select: { id: true } });
   if (!user) {
-    return NextResponse.json({ error: "Hisob topilmadi" }, { status: 401 });
+    return mobileJson({ error: "Hisob topilmadi" }, { status: 401 });
   }
   return { userId };
 }

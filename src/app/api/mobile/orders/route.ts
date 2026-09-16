@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 
 import { db } from "@/lib/db";
 import { requireMobileAuth } from "@/lib/mobile-auth";
+import { mobileJson } from "@/lib/mobile-cors";
+
+export { OPTIONS } from "@/lib/mobile-cors";
 
 /** Bosh sahifa uchun buyurtmalar ro'yxati — web dashboard bilan bir xil mantiq. */
 export async function GET(req: Request) {
@@ -12,7 +15,7 @@ export async function GET(req: Request) {
     where: { id: auth.userId },
     select: { role: true },
   });
-  if (!me) return NextResponse.json({ error: "Topilmadi" }, { status: 404 });
+  if (!me) return mobileJson({ error: "Topilmadi" }, { status: 404 });
 
   const isPreparer = me.role === "PREPARER";
 
@@ -28,7 +31,7 @@ export async function GET(req: Request) {
     },
   });
 
-  return NextResponse.json({
+  return mobileJson({
     orders: orders.map((o) => ({
       id: o.id,
       title: o.title,
