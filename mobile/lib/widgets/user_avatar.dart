@@ -1,11 +1,9 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 
 import '../core/theme/app_colors.dart';
 
-/// Profil rasmi: bo'lsa — orqasida xira (blur) rangli halo bilan,
-/// bo'lmasa — sekin aylanadigan animatsiyali gradient + bosh harf.
+/// Profil rasmi: bo'lsa — oddiy dumaloq rasm, bo'lmasa — sekin
+/// aylanadigan animatsiyali gradient + bosh harf. Hech qanday soya/halo yo'q.
 class UserAvatar extends StatefulWidget {
   const UserAvatar({
     super.key,
@@ -44,72 +42,37 @@ class _UserAvatarState extends State<UserAvatar>
   @override
   Widget build(BuildContext context) {
     final hasImage = (widget.imageUrl ?? '').isNotEmpty;
-    final haloSize = widget.size + 12;
 
     return GestureDetector(
       onTap: widget.onTap,
       behavior: HitTestBehavior.opaque,
-      child: SizedBox(
-        width: haloSize,
-        height: haloSize,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            // xira rangli halo — "blur bo'lib chiroyli" effekt
-            ImageFiltered(
-              imageFilter: ImageFilter.blur(sigmaX: 9, sigmaY: 9),
-              child: AnimatedBuilder(
-                animation: _ctrl,
-                builder: (context, _) => Container(
-                  width: haloSize,
-                  height: haloSize,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: SweepGradient(
-                      transform: GradientRotation(_ctrl.value * 6.28319),
-                      colors: const [
-                        AppColors.indigo,
-                        AppColors.violet,
-                        AppColors.indigoStrong,
-                        AppColors.indigo,
-                      ],
+      child: Container(
+        width: widget.size,
+        height: widget.size,
+        padding: const EdgeInsets.all(1.4),
+        decoration: const BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: LinearGradient(colors: [AppColors.indigo, AppColors.violet]),
+        ),
+        child: ClipOval(
+          child: Container(
+            color: AppColors.surface,
+            child: hasImage
+                ? Image.network(
+                    widget.imageUrl!,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => _InitialFallback(
+                      initial: widget.initial,
+                      controller: _ctrl,
+                      size: widget.size,
                     ),
+                  )
+                : _InitialFallback(
+                    initial: widget.initial,
+                    controller: _ctrl,
+                    size: widget.size,
                   ),
-                ),
-              ),
-            ),
-            Container(
-              width: widget.size,
-              height: widget.size,
-              padding: const EdgeInsets.all(1.4),
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: LinearGradient(
-                  colors: [AppColors.indigo, AppColors.violet],
-                ),
-              ),
-              child: ClipOval(
-                child: Container(
-                  color: AppColors.surface,
-                  child: hasImage
-                      ? Image.network(
-                          widget.imageUrl!,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => _InitialFallback(
-                            initial: widget.initial,
-                            controller: _ctrl,
-                            size: widget.size,
-                          ),
-                        )
-                      : _InitialFallback(
-                          initial: widget.initial,
-                          controller: _ctrl,
-                          size: widget.size,
-                        ),
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );

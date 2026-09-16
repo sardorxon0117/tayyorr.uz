@@ -41,6 +41,10 @@ class ApiClient {
     return _unwrap(() => _dio.post(path, data: data));
   }
 
+  Future<Map<String, dynamic>> patch(String path, {Object? data}) async {
+    return _unwrap(() => _dio.patch(path, data: data));
+  }
+
   Future<Map<String, dynamic>> _unwrap(
     Future<Response> Function() call,
   ) async {

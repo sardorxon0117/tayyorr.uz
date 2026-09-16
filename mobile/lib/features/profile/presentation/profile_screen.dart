@@ -5,7 +5,10 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/format.dart';
 import '../../../widgets/aurora_background.dart';
 import '../../../widgets/glass_card.dart';
+import '../../../widgets/user_avatar.dart';
 import '../../auth/bloc/auth_bloc.dart';
+import '../../auth/data/auth_repository.dart';
+import 'edit_profile_screen.dart';
 
 /// Profil rasmiga bosilganda ochiladigan mustaqil sahifa (orqaga tugmasi
 /// bilan) — pastki navbardagi "Profil" bo'limidan mustaqil ishlaydi.
@@ -27,8 +30,32 @@ class ProfilePage extends StatelessWidget {
   }
 }
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  final _repo = AuthRepository();
+  bool _togglingAvailability = false;
+
+  Future<void> _toggleAvailability() async {
+    setState(() => _togglingAvailability = true);
+    try {
+      await _repo.toggleAvailability();
+      if (mounted) context.read<AuthBloc>().add(const AuthMeRefreshRequested());
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("O'zgartirib bo'lmadi — qayta urinib ko'ring")),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _togglingAvailability = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,18 +71,7 @@ class ProfileScreen extends StatelessWidget {
                 blur: false,
                 child: Row(
                   children: [
-                    CircleAvatar(
-                      radius: 30,
-                      backgroundColor: Colors.white.withValues(alpha: 0.06),
-                      backgroundImage:
-                          user.image != null ? NetworkImage(user.image!) : null,
-                      child: user.image == null
-                          ? Text(
-                              _initial(user.displayName),
-                              style: const TextStyle(fontSize: 22, color: Colors.white),
-                            )
-                          : null,
-                    ),
+                    UserAvatar(imageUrl: user.image, initial: _initial(user.displayName), size: 58),
                     const SizedBox(width: 14),
                     Expanded(
                       child: Column(
@@ -77,10 +93,51 @@ class ProfileScreen extends StatelessWidget {
                         ],
                       ),
                     ),
+                    IconButton(
+                      onPressed: () => Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const EditProfileScreen()),
+                      ),
+                      icon: const Icon(Icons.edit_outlined, color: AppColors.textSecondary, size: 20),
+                    ),
                   ],
                 ),
               ),
-              const SizedBox(height: 12),
+              if (user.isPreparer) ...[
+                const SizedBox(height: 10),
+                GlassCard(
+                  blur: false,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              user.isAvailable ? 'Bo\'sh — buyurtma qabul qilyapsiz' : 'Band — ko\'rinmaysiz',
+                              style: const TextStyle(color: Colors.white, fontSize: 13.5, fontWeight: FontWeight.w600),
+                            ),
+                            const SizedBox(height: 2),
+                            const Text('Holatingizni bir bosishda yangilang',
+                                style: TextStyle(color: AppColors.textMuted, fontSize: 11.5)),
+                          ],
+                        ),
+                      ),
+                      _togglingAvailability
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2.2, color: AppColors.indigo),
+                            )
+                          : Switch(
+                              value: user.isAvailable,
+                              activeThumbColor: AppColors.emerald,
+                              onChanged: (_) => _toggleAvailability(),
+                            ),
+                    ],
+                  ),
+                ),
+              ],
+              const SizedBox(height: 10),
               Row(
                 children: [
                   Expanded(child: _StatCard(label: 'Balans', value: formatSom(user.balance))),
@@ -99,7 +156,11 @@ class ProfileScreen extends StatelessWidget {
                       : "Hali baho yo'q",
                 ),
               ],
-              const SizedBox(height: 12),
+              if ((user.walletCode ?? '').isNotEmpty) ...[
+                const SizedBox(height: 10),
+                _StatCard(label: 'Hisob kodi', value: user.walletCode!),
+              ],
+              const SizedBox(height: 10),
               if ((user.about ?? '').isNotEmpty)
                 GlassCard(
                   blur: false,

@@ -7,9 +7,11 @@ import '../../../widgets/app_header_sliver.dart';
 import '../../../widgets/glass_card.dart';
 import '../../auth/bloc/auth_bloc.dart';
 import '../../profile/presentation/profile_screen.dart';
+import '../../wallet/presentation/top_up_sheet.dart';
 import '../cubit/dashboard_cubit.dart';
 import '../data/order_model.dart';
 import '../data/orders_repository.dart';
+import 'create_order_screen.dart';
 
 const _statusFilters = [
   ('ALL', 'Hammasi'),
@@ -90,13 +92,17 @@ class _DashboardViewState extends State<_DashboardView> {
               padding: const EdgeInsets.only(bottom: 74),
               child: _CreateOrderFab(
                 expanded: _fabExpanded,
-                onPressed: () {
+                onPressed: () async {
                   setState(() => _fabExpanded = false);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("Buyurtma yaratish tez orada ilova ichida qo'shiladi"),
-                    ),
+                  final created = await Navigator.of(context).push<bool>(
+                    MaterialPageRoute(builder: (_) => const CreateOrderScreen()),
                   );
+                  if (created == true && context.mounted) {
+                    context.read<DashboardCubit>().load();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Buyurtma joylandi')),
+                    );
+                  }
                 },
               ),
             )
@@ -115,9 +121,14 @@ class _DashboardViewState extends State<_DashboardView> {
                 MaterialPageRoute(builder: (_) => const ProfilePage()),
               ),
               onRefresh: () => context.read<DashboardCubit>().load(),
+              bottomHeight: user != null ? 246 : 92,
               bottom: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  if (user != null) ...[
+                    _WalletMiniCard(balance: user.balance, stars: user.starBalance),
+                    const SizedBox(height: 10),
+                  ],
                   _SearchField(controller: _searchController, onChanged: (v) => setState(() => _query = v)),
                   const SizedBox(height: 10),
                   _FilterChips(
@@ -179,6 +190,53 @@ class _DashboardViewState extends State<_DashboardView> {
 String _initial(String name) {
   final clean = name.replaceFirst('@', '').trim();
   return clean.isEmpty ? '?' : clean.substring(0, 1).toUpperCase();
+}
+
+class _WalletMiniCard extends StatelessWidget {
+  const _WalletMiniCard({required this.balance, required this.stars});
+  final int balance;
+  final int stars;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        gradient: const LinearGradient(
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+          colors: [AppColors.indigoStrong, AppColors.violet],
+        ),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(formatSom(balance),
+                    style: const TextStyle(color: Colors.white, fontSize: 15.5, fontWeight: FontWeight.w700)),
+                const SizedBox(height: 2),
+                Text('$stars ⭐ yulduz', style: const TextStyle(color: Colors.white70, fontSize: 11.5)),
+              ],
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => showTopUpSheet(context),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: Colors.black,
+              minimumSize: const Size(0, 34),
+              padding: const EdgeInsets.symmetric(horizontal: 14),
+              textStyle: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600),
+            ),
+            child: const Text("To'ldirish"),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _SearchField extends StatelessWidget {

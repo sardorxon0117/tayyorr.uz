@@ -26,29 +26,6 @@ class AuthRepository {
     return UserModel.fromJson(res['user'] as Map<String, dynamic>);
   }
 
-  Future<UserModel> register({
-    required String role,
-    required String firstName,
-    required String lastName,
-    required String login,
-    required String email,
-    required String password,
-    required String about,
-  }) async {
-    final res = await _api.post('/mobile/auth/register', data: {
-      'role': role,
-      'acceptTerms': true,
-      'firstName': firstName,
-      'lastName': lastName,
-      'login': login,
-      'email': email,
-      'password': password,
-      'about': about,
-    });
-    await _storage.saveToken(res['token'] as String);
-    return UserModel.fromJson(res['user'] as Map<String, dynamic>);
-  }
-
   /// Google orqali kirish/ro'yxatdan o'tish. Foydalanuvchi hisob tanlashni
   /// bekor qilsa `null` qaytaradi (xato emas).
   Future<UserModel?> signInWithGoogle() async {
@@ -105,6 +82,24 @@ class AuthRepository {
   Future<UserModel> refreshMe() async {
     final res = await _api.get('/mobile/me');
     return UserModel.fromJson(res['user'] as Map<String, dynamic>);
+  }
+
+  Future<UserModel> updateProfile({
+    required String firstName,
+    required String lastName,
+    required String about,
+  }) async {
+    final res = await _api.patch('/mobile/me', data: {
+      'firstName': firstName,
+      'lastName': lastName,
+      'about': about,
+    });
+    return UserModel.fromJson(res['user'] as Map<String, dynamic>);
+  }
+
+  Future<bool> toggleAvailability() async {
+    final res = await _api.patch('/mobile/me/availability');
+    return res['isAvailable'] as bool;
   }
 
   Future<void> logout() async {

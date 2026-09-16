@@ -12,7 +12,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   AuthBloc(this._repo) : super(const AuthState()) {
     on<AuthStarted>(_onStarted);
     on<AuthLoginRequested>(_onLogin);
-    on<AuthRegisterRequested>(_onRegister);
     on<AuthGoogleSignInRequested>(_onGoogleSignIn);
     on<AuthOnboardingCompleted>(_onOnboardingCompleted);
     on<AuthLoggedOut>(_onLoggedOut);
@@ -41,28 +40,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       final user =
           await _repo.login(login: event.login, password: event.password);
-      emit(state.copyWith(status: _statusFor(user), user: user));
-    } on ApiException catch (e) {
-      emit(state.copyWith(
-        status: AuthStatus.unauthenticated,
-        error: e.message,
-      ));
-    }
-  }
-
-  Future<void> _onRegister(
-      AuthRegisterRequested event, Emitter<AuthState> emit) async {
-    emit(state.copyWith(status: AuthStatus.authenticating, clearError: true));
-    try {
-      final user = await _repo.register(
-        role: event.role,
-        firstName: event.firstName,
-        lastName: event.lastName,
-        login: event.login,
-        email: event.email,
-        password: event.password,
-        about: event.about,
-      );
       emit(state.copyWith(status: _statusFor(user), user: user));
     } on ApiException catch (e) {
       emit(state.copyWith(

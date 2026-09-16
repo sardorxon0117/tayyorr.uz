@@ -8,7 +8,6 @@ import '../../../widgets/aurora_background.dart';
 import '../../../widgets/glass_card.dart';
 import '../../home/home_shell.dart';
 import '../bloc/auth_bloc.dart';
-import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -155,6 +154,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     const SizedBox(height: 18),
+                    // Saytdagi kabi — ro'yxatdan o'tish faqat Google orqali
+                    // (email tasdiqlangan bo'lishi shart, shuning uchun
+                    // alohida login/parol bilan ro'yxatdan o'tish yo'q).
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -163,10 +165,10 @@ class _LoginScreenState extends State<LoginScreen> {
                           style: TextStyle(color: AppColors.textMuted, fontSize: 13.5),
                         ),
                         TextButton(
-                          onPressed: () => Navigator.of(context).push(
-                            MaterialPageRoute(builder: (_) => const RegisterScreen()),
-                          ),
-                          child: const Text("Ro'yxatdan o'tish"),
+                          onPressed: () => context
+                              .read<AuthBloc>()
+                              .add(const AuthGoogleSignInRequested()),
+                          child: const Text("Google bilan ro'yxatdan o'tish"),
                         ),
                       ],
                     ),

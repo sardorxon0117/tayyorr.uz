@@ -1,8 +1,13 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 
 import { db } from "@/lib/db";
 import { requireMobileAuth } from "@/lib/mobile-auth";
 import { mobileJson } from "@/lib/mobile-cors";
+import { getRestriction, restrictionText } from "@/lib/restriction";
+import { postOrderToChannel } from "@/lib/telegram";
+import { logActivity } from "@/lib/activity";
+import { logToGroup, siteUrl, userLabel } from "@/lib/telegram-log";
 
 export { OPTIONS } from "@/lib/mobile-cors";
 
@@ -45,4 +50,84 @@ export async function GET(req: Request) {
       deleted: !!o.deletedAt,
     })),
   });
+}
+
+const createSchema = z.object({
+  title: z.string().min(5).max(150),
+  type: z
+    .enum(["PRESENTATION", "COURSE_WORK", "REFERAT", "ESSAY", "DIPLOMA", "OTHER"])
+    .default("OTHER"),
+  description: z.string().min(10).max(5000),
+  deadline: z.string().datetime().optional(),
+  budget: z.number().int().positive().optional(),
+});
+
+/** Yangi buyurtma yaratish — faqat buyurtma beruvchilar uchun, web bilan bir xil mantiq. */
+export async function POST(req: Request) {
+  const auth = await requireMobileAuth(req);
+  if (auth instanceof NextResponse) return auth;
+
+  const me = await db.user.findUnique({
+    where: { id: auth.userId },
+    select: { role: true },
+  });
+  if (!me) return mobileJson({ error: "Topilmadi" }, { status: 404 });
+  if (me.role !== "ORDERER") {
+    return mobileJson(
+      { error: "Faqat buyurtma beruvchilar buyurtma qo'sha oladi" },
+      { status: 403 },
+    );
+  }
+
+  const restriction = await getRestriction(auth.userId);
+  if (restriction) {
+    return mobileJson({ error: restrictionText(restriction) }, { status: 403 });
+  }
+
+  const parsed = createSchema.safeParse(await req.json().catch(() => null));
+  if (!parsed.success) {
+    return mobileJson(
+      { error: parsed.error.issues[0]?.message ?? "Noto'g'ri ma'lumot" },
+      { status: 400 },
+    );
+  }
+  const { title, type, description, deadline, budget } = parsed.data;
+
+  const order = await db.order.create({
+    data: {
+      ordererId: auth.userId,
+      title,
+      type,
+      description,
+      deadline: deadline ? new Date(deadline) : null,
+      budget,
+    },
+  });
+
+  await postOrderToChannel(order);
+  await logActivity(auth.userId, "ORDER_CREATE", `Buyurtma yaratdi: «${title}» (mobil ilova)`, {
+    orderId: order.id,
+    budget: budget ?? null,
+  });
+
+  const orderer = await db.user.findUnique({
+    where: { id: auth.userId },
+    select: { login: true, name: true, firstName: true, lastName: true, email: true },
+  });
+
+  await logToGroup(
+    "orders",
+    "📦 Yangi buyurtma (mobil ilova)",
+    [
+      `«${title}»`,
+      `Turi: ${type}`,
+      description.length > 500 ? `${description.slice(0, 500)}…` : description,
+      budget ? `Byudjet: ${budget.toLocaleString("ru-RU")} so'm` : "Byudjet: kelishiladi",
+      `Buyurtmachi: ${userLabel(orderer)}`,
+      `Buyurtma ID: ${order.id}`,
+    ].filter(Boolean),
+    siteUrl(`/sardorxon/admin/orders/${order.id}`),
+  );
+
+  return mobileJson({ order: { id: order.id } }, { status: 201 });
 }

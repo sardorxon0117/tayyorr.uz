@@ -16,6 +16,8 @@ dependencies:
 
   # Google bilan kirish
   google_sign_in: ^6.2.2
+  # tashqi havolalarni ochish (Click to'lov sahifasi)
+  url_launcher: ^6.3.1
 
   # holat boshqaruvi (BLoC)
   flutter_bloc: ^8.1.6

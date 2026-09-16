@@ -16,6 +16,7 @@ class AppHeaderSliver extends StatelessWidget {
     this.onAvatarTap,
     this.onRefresh,
     this.bottom,
+    this.bottomHeight = 80,
   });
 
   final String? avatarUrl;
@@ -23,6 +24,10 @@ class AppHeaderSliver extends StatelessWidget {
   final VoidCallback? onAvatarTap;
   final VoidCallback? onRefresh;
   final Widget? bottom;
+
+  /// `bottom` widgetining balandligi — SliverAppBar kengaygan holatining
+  /// umumiy bo'yini shu asosida hisoblanadi.
+  final double bottomHeight;
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +40,7 @@ class AppHeaderSliver extends StatelessWidget {
       scrolledUnderElevation: 0,
       elevation: 0,
       toolbarHeight: 56,
-      expandedHeight: hasBottom ? 136 : 56,
+      expandedHeight: hasBottom ? 56 + bottomHeight + 14 : 56,
       titleSpacing: 16,
       title: Row(
         children: [

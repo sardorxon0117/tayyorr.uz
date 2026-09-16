@@ -14,6 +14,7 @@ class UserModel {
   final double? rating;
   final int ratingCount;
   final bool needsOnboarding;
+  final bool isAvailable;
 
   const UserModel({
     required this.id,
@@ -31,6 +32,7 @@ class UserModel {
     this.rating,
     required this.ratingCount,
     this.needsOnboarding = false,
+    this.isAvailable = true,
   });
 
   bool get isPreparer => role == 'PREPARER';
@@ -61,6 +63,7 @@ class UserModel {
       rating: (json['rating'] as num?)?.toDouble(),
       ratingCount: (json['ratingCount'] as num?)?.toInt() ?? 0,
       needsOnboarding: json['needsOnboarding'] as bool? ?? false,
+      isAvailable: json['isAvailable'] as bool? ?? true,
     );
   }
 }

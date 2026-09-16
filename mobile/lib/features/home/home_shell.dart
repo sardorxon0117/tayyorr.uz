@@ -5,9 +5,10 @@ import '../../widgets/app_bottom_nav.dart';
 import '../../widgets/aurora_background.dart';
 import '../auth/bloc/auth_bloc.dart';
 import '../dashboard/presentation/dashboard_screen.dart';
+import '../messages/presentation/messages_list_screen.dart';
 import '../offers/presentation/offers_screen.dart';
 import '../profile/presentation/profile_screen.dart';
-import 'placeholder_tab_screen.dart';
+import '../wallet/presentation/wallet_screen.dart';
 
 class HomeShell extends StatefulWidget {
   const HomeShell({super.key});
@@ -28,8 +29,8 @@ class _HomeShellState extends State<HomeShell> {
     // "Men yuborgan takliflar" (profilga esa app bardagi rasmdan kiradi).
     final pages = [
       const DashboardScreen(),
-      const PlaceholderTabScreen(emoji: '💬', title: 'Xabarlar'),
-      const PlaceholderTabScreen(emoji: '💳', title: 'Hamyon'),
+      const MessagesListScreen(),
+      const WalletScreen(),
       isPreparer ? const OffersScreen() : const ProfileScreen(),
     ];
 

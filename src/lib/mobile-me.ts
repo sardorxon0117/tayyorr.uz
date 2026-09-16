@@ -15,6 +15,7 @@ export const ME_SELECT = {
   walletCode: true,
   ratingSum: true,
   ratingCount: true,
+  isAvailable: true,
   createdAt: true,
 } as const;
 
@@ -34,6 +35,7 @@ type MeUser = {
   walletCode: string | null;
   ratingSum: number;
   ratingCount: number;
+  isAvailable: boolean;
   createdAt: Date;
 };
 
@@ -53,6 +55,7 @@ export function serializeMe(u: MeUser) {
     walletCode: u.walletCode,
     rating: u.ratingCount ? u.ratingSum / u.ratingCount : null,
     ratingCount: u.ratingCount,
+    isAvailable: u.isAvailable,
     createdAt: u.createdAt.toISOString(),
     needsOnboarding: !(u.role && u.login),
   };
