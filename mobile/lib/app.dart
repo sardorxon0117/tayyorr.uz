@@ -19,7 +19,7 @@ class TayyorrApp extends StatelessWidget {
     return BlocProvider(
       create: (_) => AuthBloc(AuthRepository())..add(const AuthStarted()),
       child: MaterialApp(
-        title: 'tayyorr.uz',
+        title: 'Tayyorr.uz',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.dark,
         darkTheme: AppTheme.dark,

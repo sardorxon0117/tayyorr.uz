@@ -3,8 +3,29 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/format.dart';
+import '../../../widgets/aurora_background.dart';
 import '../../../widgets/glass_card.dart';
 import '../../auth/bloc/auth_bloc.dart';
+
+/// Profil rasmiga bosilganda ochiladigan mustaqil sahifa (orqaga tugmasi
+/// bilan) — pastki navbardagi "Profil" bo'limidan mustaqil ishlaydi.
+class ProfilePage extends StatelessWidget {
+  const ProfilePage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Profil'),
+        leading: IconButton(
+          onPressed: () => Navigator.of(context).pop(),
+          icon: const Icon(Icons.arrow_back_ios_new, size: 18),
+        ),
+      ),
+      body: const AuroraBackground(child: ProfileScreen()),
+    );
+  }
+}
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});

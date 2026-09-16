@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../widgets/app_logo.dart';
 import '../../../widgets/app_text_field.dart';
 import '../../../widgets/aurora_background.dart';
 import '../../../widgets/glass_card.dart';
@@ -50,7 +51,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const _Logo(),
+                    const Center(child: AppLogo(height: 30)),
                     const SizedBox(height: 28),
                     GlassCard(
                       padding: const EdgeInsets.all(22),
@@ -196,24 +197,6 @@ class _GoogleG extends StatelessWidget {
           fontWeight: FontWeight.w800,
           color: Color(0xFF4285F4),
         ),
-      ),
-    );
-  }
-}
-
-class _Logo extends StatelessWidget {
-  const _Logo();
-
-  @override
-  Widget build(BuildContext context) {
-    return RichText(
-      textAlign: TextAlign.center,
-      text: TextSpan(
-        style: Theme.of(context).textTheme.headlineLarge,
-        children: const [
-          TextSpan(text: 'tayyorr', style: TextStyle(color: Colors.white)),
-          TextSpan(text: '.uz', style: TextStyle(color: AppColors.indigo)),
-        ],
       ),
     );
   }
