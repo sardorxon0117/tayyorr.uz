@@ -54,10 +54,22 @@ class OrderDetailCubit extends Cubit<OrderDetailState> {
     }
   }
 
-  Future<bool> submitOffer({required int price, String? message}) async {
+  Future<bool> submitOffer({required int price, String? message, int? stars}) async {
     emit(state.copyWith(busy: true, error: null));
     try {
-      await _repo.submitOffer(orderId, price: price, message: message);
+      await _repo.submitOffer(orderId, price: price, message: message, stars: stars);
+      await load();
+      return true;
+    } on ApiException catch (e) {
+      emit(state.copyWith(busy: false, error: e.message));
+      return false;
+    }
+  }
+
+  Future<bool> boostOffer(int stars) async {
+    emit(state.copyWith(busy: true, error: null));
+    try {
+      await _repo.boostOffer(orderId, stars: stars);
       await load();
       return true;
     } on ApiException catch (e) {

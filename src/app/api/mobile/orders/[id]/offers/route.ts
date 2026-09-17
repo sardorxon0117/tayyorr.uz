@@ -15,9 +15,14 @@ export { OPTIONS } from "@/lib/mobile-cors";
 const schema = z.object({
   price: z.number().int().positive(),
   message: z.string().max(1000).optional(),
+  stars: z.number().int().min(MIN_OFFER_STARS).max(100_000).optional(),
 });
 
-/** Taklif yuborish — mobil v1: doim minimal star (MIN_OFFER_STARS) sarflanadi. */
+/**
+ * Taklif yuborish — web bilan bir xil mantiq: birinchi marta yuborilganda
+ * kamida MIN_OFFER_STARS star sarflanadi, tayyorlovchi xohlasa boshidanoq
+ * ko'proq ko'rsatib yuqoriroq o'rinni tanlashi mumkin.
+ */
 export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> },
@@ -51,8 +56,9 @@ export async function POST(
     where: { orderId_preparerId: { orderId: id, preparerId: auth.userId } },
   });
 
+  const initialStars = Math.max(MIN_OFFER_STARS, parsed.data.stars ?? MIN_OFFER_STARS);
   if (!existing) {
-    const spend = await useStars({ userId: auth.userId, stars: MIN_OFFER_STARS });
+    const spend = await useStars({ userId: auth.userId, stars: initialStars });
     if (!spend.ok) {
       return mobileJson({ error: spend.error }, { status: 400 });
     }
@@ -66,7 +72,7 @@ export async function POST(
       preparerId: auth.userId,
       price: parsed.data.price,
       message: parsed.data.message,
-      starsSpent: MIN_OFFER_STARS,
+      starsSpent: initialStars,
     },
   });
 
@@ -104,6 +110,7 @@ export async function POST(
       `Tayyorlovchi: ${userLabel(preparer)}`,
       `Narx: ${parsed.data.price.toLocaleString("ru-RU")} so'm`,
       parsed.data.message ? `Xabar: ${parsed.data.message}` : "",
+      !existing ? `Ariza uchun sarflandi: ${initialStars} ⭐` : `Jami star: ${offer.starsSpent} ⭐`,
     ].filter(Boolean),
     siteUrl(`/sardorxon/admin/orders/${id}`),
   );

@@ -9,11 +9,16 @@ class OrderDetailRepository {
     return OrderDetailModel.fromJson(res['order'] as Map<String, dynamic>);
   }
 
-  Future<void> submitOffer(String orderId, {required int price, String? message}) async {
+  Future<void> submitOffer(String orderId, {required int price, String? message, int? stars}) async {
     await _api.post('/mobile/orders/$orderId/offers', data: {
       'price': price,
       if (message != null && message.isNotEmpty) 'message': message,
+      if (stars != null) 'stars': stars,
     });
+  }
+
+  Future<void> boostOffer(String orderId, {required int stars}) async {
+    await _api.post('/mobile/orders/$orderId/offers/boost', data: {'stars': stars});
   }
 
   Future<void> respondToOffer(String offerId, {required bool accept}) async {

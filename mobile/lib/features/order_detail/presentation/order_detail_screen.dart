@@ -239,6 +239,12 @@ class _Body extends StatelessWidget {
             _OfferTile(offer: myOffer, canRespond: false, busy: state.busy),
           ],
 
+          // --- preparer (not orderer): navbat (star bo'yicha o'rinlar) ---
+          if (isPreparerRole && !isOrderer && order.queue.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            _QueueSection(queue: order.queue, orderOpen: order.status == 'OPEN'),
+          ],
+
           // --- orderer: offers list ---
           if (isOrderer && order.offers.isNotEmpty) ...[
             const SizedBox(height: 20),
@@ -304,8 +310,10 @@ class _OfferForm extends StatefulWidget {
 }
 
 class _OfferFormState extends State<_OfferForm> {
+  static const _minStars = 2;
   final _price = TextEditingController();
   final _message = TextEditingController();
+  int _stars = _minStars;
 
   @override
   void dispose() {
@@ -323,35 +331,195 @@ class _OfferFormState extends State<_OfferForm> {
         children: [
           const Text('Taklif yuborish', style: TextStyle(color: Colors.white, fontSize: 14.5, fontWeight: FontWeight.w700)),
           const SizedBox(height: 2),
-          const Text('2 ⭐ sarflanadi (navbatdagi boshlang\'ich o\'rin uchun)',
-              style: TextStyle(color: AppColors.textMuted, fontSize: 11.5)),
+          const Text("Navbatdagi o'rningiz sarflagan star miqdoriga bog'liq — ko'proq sarflasangiz yuqoriroqda turasiz.",
+              style: TextStyle(color: AppColors.textMuted, fontSize: 11.5, height: 1.35)),
           const SizedBox(height: 12),
           AppTextField(label: "Narx, so'm", controller: _price, keyboardType: TextInputType.number),
           const SizedBox(height: 10),
           AppTextField(label: 'Xabar (ixtiyoriy)', controller: _message, maxLines: 3),
+          const SizedBox(height: 10),
+          const Text('Sarflanadigan star', style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              _StarStepButton(
+                icon: Icons.remove_rounded,
+                onTap: _stars > _minStars ? () => setState(() => _stars--) : null,
+              ),
+              Expanded(
+                child: Center(
+                  child: Text('$_stars ⭐', style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w700)),
+                ),
+              ),
+              _StarStepButton(icon: Icons.add_rounded, onTap: () => setState(() => _stars++)),
+            ],
+          ),
           const SizedBox(height: 12),
-          ElevatedButton(
-            onPressed: () async {
-              final price = int.tryParse(_price.text.trim());
-              if (price == null || price <= 0) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Narxni to'g'ri kiriting")),
-                );
-                return;
-              }
-              final ok = await context
-                  .read<OrderDetailCubit>()
-                  .submitOffer(price: price, message: _message.text.trim());
-              if (ok && context.mounted) {
-                context.read<AuthBloc>().add(const AuthMeRefreshRequested());
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Taklif yuborildi')),
-                );
-              }
-            },
-            child: const Text('Yuborish'),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () async {
+                final price = int.tryParse(_price.text.trim());
+                if (price == null || price <= 0) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Narxni to'g'ri kiriting")),
+                  );
+                  return;
+                }
+                final ok = await context
+                    .read<OrderDetailCubit>()
+                    .submitOffer(price: price, message: _message.text.trim(), stars: _stars);
+                if (ok && context.mounted) {
+                  context.read<AuthBloc>().add(const AuthMeRefreshRequested());
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Taklif yuborildi')),
+                  );
+                }
+              },
+              child: const Text('Yuborish'),
+            ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _StarStepButton extends StatelessWidget {
+  const _StarStepButton({required this.icon, required this.onTap});
+  final IconData icon;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 34,
+        height: 34,
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: onTap == null ? 0.03 : 0.06),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: AppColors.cardBorder),
+        ),
+        child: Icon(icon, size: 17, color: onTap == null ? AppColors.textFaint : Colors.white),
+      ),
+    );
+  }
+}
+
+class _QueueSection extends StatelessWidget {
+  const _QueueSection({required this.queue, required this.orderOpen});
+  final List<OfferQueueEntry> queue;
+  final bool orderOpen;
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassCard(
+      blur: false,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Navbat', style: TextStyle(color: Colors.white, fontSize: 14.5, fontWeight: FontWeight.w700)),
+          const SizedBox(height: 2),
+          const Text("Kim ko'proq star sarflagan bo'lsa, shuncha yuqorida turadi.",
+              style: TextStyle(color: AppColors.textMuted, fontSize: 11.5)),
+          const SizedBox(height: 12),
+          ...queue.map((q) => Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 24,
+                      height: 24,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: q.mine ? AppColors.indigo.withValues(alpha: 0.25) : Colors.white.withValues(alpha: 0.05),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text('${q.position}',
+                          style: TextStyle(color: q.mine ? Colors.white : AppColors.textMuted, fontSize: 11, fontWeight: FontWeight.w700)),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        q.mine ? '${q.maskedName} (siz)' : q.maskedName,
+                        style: TextStyle(
+                          color: q.mine ? Colors.white : AppColors.textSecondary,
+                          fontSize: 13,
+                          fontWeight: q.mine ? FontWeight.w700 : FontWeight.w500,
+                          letterSpacing: q.hiddenLen > 0 ? 1 : 0,
+                        ),
+                      ),
+                    ),
+                    Text('${q.starsSpent} ⭐', style: const TextStyle(color: AppColors.amber, fontSize: 12.5, fontWeight: FontWeight.w600)),
+                  ],
+                ),
+              )),
+          if (orderOpen && queue.any((q) => q.mine)) ...[
+            const SizedBox(height: 6),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () => _showBoostSheet(context),
+                icon: const Icon(Icons.rocket_launch_rounded, size: 16),
+                label: const Text("Yuqoriga chiqish uchun star qo'shish"),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  void _showBoostSheet(BuildContext context) {
+    final cubit = context.read<OrderDetailCubit>();
+    int stars = 2;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (sheetContext, setSheetState) => Container(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
+          decoration: const BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            border: Border(top: BorderSide(color: AppColors.cardBorder)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Text("Qo'shimcha star", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
+              const SizedBox(height: 14),
+              Row(
+                children: [
+                  _StarStepButton(icon: Icons.remove_rounded, onTap: stars > 1 ? () => setSheetState(() => stars--) : null),
+                  Expanded(
+                    child: Center(
+                      child: Text('$stars ⭐', style: const TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w700)),
+                    ),
+                  ),
+                  _StarStepButton(icon: Icons.add_rounded, onTap: () => setSheetState(() => stars++)),
+                ],
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    Navigator.of(sheetContext).pop();
+                    final ok = await cubit.boostOffer(stars);
+                    if (ok && context.mounted) {
+                      context.read<AuthBloc>().add(const AuthMeRefreshRequested());
+                    }
+                  },
+                  child: const Text("Qo'shish"),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -411,6 +579,8 @@ class _OfferTile extends StatelessWidget {
           Row(
             children: [
               _OfferStatusBadge(status: offer.status),
+              const SizedBox(width: 8),
+              Text('${offer.starsSpent} ⭐', style: const TextStyle(color: AppColors.amber, fontSize: 11.5, fontWeight: FontWeight.w600)),
               const Spacer(),
               if (canRespond) ...[
                 TextButton(

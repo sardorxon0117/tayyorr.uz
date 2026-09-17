@@ -10,6 +10,7 @@ import { logActivity } from "@/lib/activity";
 import { refundOfferStars } from "@/lib/stars";
 import { logToGroup, siteUrl } from "@/lib/telegram-log";
 import { softDeleteOrder } from "@/lib/order-delete";
+import { maskName } from "@/lib/mask-name";
 
 export { OPTIONS } from "@/lib/mobile-cors";
 
@@ -42,21 +43,43 @@ export async function GET(
             },
           },
         },
-        orderBy: { createdAt: "asc" },
+        // navbat: ko'proq star sarflagan yuqorida, teng bo'lsa birinchi
+        // yuborgan yuqorida — web bilan bir xil.
+        orderBy: [{ starsSpent: "desc" }, { createdAt: "asc" }],
       },
     },
   });
   if (!order) return mobileJson({ error: "Topilmadi" }, { status: 404 });
 
-  const isParty = order.ordererId === auth.userId || order.preparerId === auth.userId;
-  if (!isParty && (order.status !== "OPEN" || order.deletedAt)) {
+  const isOrderer = order.ordererId === auth.userId;
+  const isParty = isOrderer || order.preparerId === auth.userId;
+  const hasOffered = order.offers.some((o) => o.preparerId === auth.userId);
+  if (!isParty && !hasOffered && (order.status !== "OPEN" || order.deletedAt)) {
     return mobileJson({ error: "Topilmadi" }, { status: 404 });
   }
 
-  const offers =
-    order.ordererId === auth.userId
-      ? order.offers
-      : order.offers.filter((o) => o.preparerId === auth.userId);
+  const offers = isOrderer ? order.offers : order.offers.filter((o) => o.preparerId === auth.userId);
+
+  // navbat: boshqa tayyorlovchilarga o'rin/star ko'rinadi, lekin ism
+  // serverda qisman yashiriladi (haqiqiy ism mijozga umuman yuborilmaydi)
+  let queue: Array<{
+    position: number;
+    mine: boolean;
+    starsSpent: number;
+    visible: string;
+    hiddenLen: number;
+  }> = [];
+  if (!isOrderer) {
+    const me = await db.user.findUnique({ where: { id: auth.userId }, select: { role: true } });
+    if (me?.role === "PREPARER") {
+      queue = order.offers.map((o, i) => {
+        const mine = o.preparerId === auth.userId;
+        const displayName = o.preparer.name ?? o.preparer.login ?? "Tayyorlovchi";
+        const masked = mine ? { visible: displayName, hiddenLen: 0 } : maskName(displayName, 0.2);
+        return { position: i + 1, mine, starsSpent: o.starsSpent, ...masked };
+      });
+    }
+  }
 
   return mobileJson({
     order: {
@@ -71,11 +94,13 @@ export async function GET(
       createdAt: order.createdAt.toISOString(),
       orderer: order.orderer,
       preparer: order.preparer,
+      queue,
       offers: offers.map((o) => ({
         id: o.id,
         price: o.price,
         message: o.message,
         status: o.status,
+        starsSpent: o.starsSpent,
         createdAt: o.createdAt.toISOString(),
         preparer: {
           id: o.preparer.id,
