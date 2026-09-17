@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -116,16 +114,13 @@ class _DashboardViewState extends State<_DashboardView> {
           slivers: [
             AppHeaderSliver(
               onRefresh: () => context.read<DashboardCubit>().load(),
+              heroImageUrl: user?.image,
               bottomHeight: user != null ? 228 : 92,
               bottom: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   if (user != null) ...[
-                    _WalletMiniCard(
-                      balance: user.balance,
-                      stars: user.starBalance,
-                      imageUrl: user.image,
-                    ),
+                    _WalletMiniCard(balance: user.balance, stars: user.starBalance),
                     const SizedBox(height: 10),
                   ],
                   _SearchField(controller: _searchController, onChanged: (v) => setState(() => _query = v)),
@@ -187,106 +182,56 @@ class _DashboardViewState extends State<_DashboardView> {
 }
 
 class _WalletMiniCard extends StatelessWidget {
-  const _WalletMiniCard({required this.balance, required this.stars, this.imageUrl});
+  const _WalletMiniCard({required this.balance, required this.stars});
   final int balance;
   final int stars;
-  final String? imageUrl;
 
   @override
   Widget build(BuildContext context) {
-    final hasImage = (imageUrl ?? '').isNotEmpty;
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(20),
-      child: Stack(
+    return Container(
+      padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        color: Colors.white.withValues(alpha: 0.08),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.14)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          // orqa fon: profil rasmi bo'lsa kuchli xiralashtirilgan (blur)
-          // holda — aniq ko'rinmaydi, faqat "izi" bo'ladi; bo'lmasa gradient
-          if (hasImage)
-            Positioned.fill(
-              child: ImageFiltered(
-                imageFilter: ImageFilter.blur(sigmaX: 26, sigmaY: 26, tileMode: TileMode.decal),
-                child: Image.network(
-                  imageUrl!,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => const _CardGradientBg(),
-                ),
-              ),
-            )
-          else
-            const Positioned.fill(child: _CardGradientBg()),
-          Positioned.fill(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.black.withValues(alpha: hasImage ? 0.35 : 0.05),
-                    Colors.black.withValues(alpha: hasImage ? 0.78 : 0.35),
-                  ],
-                ),
-              ),
-            ),
+          const Text('Balans', style: TextStyle(color: Colors.white70, fontSize: 12)),
+          const SizedBox(height: 4),
+          Text(
+            formatSom(balance),
+            style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w800),
           ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text('Balans', style: TextStyle(color: Colors.white70, fontSize: 12)),
-                const SizedBox(height: 4),
-                Text(
-                  formatSom(balance),
-                  style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w800),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.14),
+                  borderRadius: BorderRadius.circular(99),
                 ),
-                const SizedBox(height: 14),
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.14),
-                        borderRadius: BorderRadius.circular(99),
-                      ),
-                      child: Text('$stars ⭐ yulduz',
-                          style: const TextStyle(color: Colors.white, fontSize: 12.5, fontWeight: FontWeight.w600)),
-                    ),
-                    const Spacer(),
-                    ElevatedButton(
-                      onPressed: () => showTopUpSheet(context),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: Colors.black,
-                        minimumSize: const Size(0, 36),
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        textStyle: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600),
-                      ),
-                      child: const Text("To'ldirish"),
-                    ),
-                  ],
+                child: Text('$stars ⭐ yulduz',
+                    style: const TextStyle(color: Colors.white, fontSize: 12.5, fontWeight: FontWeight.w600)),
+              ),
+              const Spacer(),
+              ElevatedButton(
+                onPressed: () => showTopUpSheet(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: Colors.black,
+                  minimumSize: const Size(0, 36),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  textStyle: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600),
                 ),
-              ],
-            ),
+                child: const Text("To'ldirish"),
+              ),
+            ],
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _CardGradientBg extends StatelessWidget {
-  const _CardGradientBg();
-
-  @override
-  Widget build(BuildContext context) {
-    return const DecoratedBox(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [AppColors.indigoStrong, AppColors.violet],
-        ),
       ),
     );
   }

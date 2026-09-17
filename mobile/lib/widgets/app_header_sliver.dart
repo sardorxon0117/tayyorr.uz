@@ -9,18 +9,21 @@ import 'app_logo.dart';
 /// ochadigan menyu tugmasi — bular scroll bo'lganda ham doim ko'rinib
 /// turadi (pinned). Pastida ixtiyoriy qidirish/filtr/hamyon qatori bo'lsa —
 /// u scroll bilan yig'ilib, faqat yuqori qator qoladi. Fon qattiq rang
-/// emas — orqadagi ro'yxat xira (blur) ko'rinib turadigan shisha panel,
-/// scroll paytida rangi o'zgarmaydi.
+/// emas — shisha (blur) panel; `heroImageUrl` berilsa, butun app barning
+/// orqa foni sifatida o'sha rasm xiralashtirilgan holda ko'rinadi (faqat
+/// "izi" — aniq emas).
 class AppHeaderSliver extends StatelessWidget {
   const AppHeaderSliver({
     super.key,
     this.onRefresh,
     this.bottom,
     this.bottomHeight = 80,
+    this.heroImageUrl,
   });
 
   final VoidCallback? onRefresh;
   final Widget? bottom;
+  final String? heroImageUrl;
 
   /// `bottom` widgetining balandligi — SliverAppBar kengaygan holatining
   /// umumiy bo'yini shu asosida hisoblanadi.
@@ -29,6 +32,7 @@ class AppHeaderSliver extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasBottom = bottom != null;
+    final hasHero = (heroImageUrl ?? '').isNotEmpty;
     return SliverAppBar(
       pinned: true,
       floating: false,
@@ -41,17 +45,28 @@ class AppHeaderSliver extends StatelessWidget {
       expandedHeight: hasBottom ? 56 + bottomHeight + 14 : 56,
       titleSpacing: 16,
       flexibleSpace: ClipRect(
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-          child: Container(
-            color: AppColors.bg.withValues(alpha: 0.55),
-            child: hasBottom
-                ? Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
-                    child: Align(alignment: Alignment.bottomCenter, child: bottom),
-                  )
-                : null,
-          ),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            if (hasHero)
+              Image.network(
+                heroImageUrl!,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Container(color: AppColors.bg),
+              ),
+            BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: hasHero ? 16 : 12, sigmaY: hasHero ? 16 : 12),
+              child: Container(
+                color: AppColors.bg.withValues(alpha: hasHero ? 0.38 : 0.3),
+                child: hasBottom
+                    ? Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
+                        child: Align(alignment: Alignment.bottomCenter, child: bottom),
+                      )
+                    : null,
+              ),
+            ),
+          ],
         ),
       ),
       title: Row(
