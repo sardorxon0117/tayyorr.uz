@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../widgets/aurora_background.dart';
+import '../auth/bloc/auth_bloc.dart';
 import '../dashboard/presentation/dashboard_screen.dart';
 import '../messages/presentation/messages_list_screen.dart';
 import '../offers/presentation/offers_screen.dart';
@@ -34,8 +35,34 @@ const _sectionOrder = [
   AppSection.profile,
 ];
 
-class _HomeShellView extends StatelessWidget {
+class _HomeShellView extends StatefulWidget {
   const _HomeShellView();
+
+  @override
+  State<_HomeShellView> createState() => _HomeShellViewState();
+}
+
+class _HomeShellViewState extends State<_HomeShellView> with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Foydalanuvchi tashqi brauzerda to'lov qilib qaytganda (Click) —
+    // balansni darhol yangilaymiz.
+    if (state == AppLifecycleState.resumed) {
+      context.read<AuthBloc>().add(const AuthMeRefreshRequested());
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

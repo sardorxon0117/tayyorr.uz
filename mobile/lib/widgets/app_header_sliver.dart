@@ -8,11 +8,10 @@ import 'app_logo.dart';
 /// Har bir asosiy sahifaning yuqori qismi: chapda logo, o'ngda drawer'ni
 /// ochadigan menyu tugmasi — bular scroll bo'lganda ham doim ko'rinib
 /// turadi (pinned). Pastida ixtiyoriy qidirish/filtr/hamyon qatori bo'lsa —
-/// u scroll bilan yig'ilib, faqat yuqori qator qoladi. Fon qattiq rang
-/// emas — shisha (blur) panel; `heroImageUrl` berilsa, faqat KENGAYGAN
-/// (expanded) holatda o'sha rasm xiralashtirilgan fon sifatida ko'rinadi —
-/// scroll bilan kichrayib pinned holatga o'tganda rasm so'nib, faqat
-/// tiniq (blur) panel qoladi.
+/// u scroll bilan yig'ilib, faqat yuqori qator qoladi. `heroImageUrl`
+/// berilsa, faqat KENGAYGAN holatda o'sha rasm xira fon sifatida ko'rinadi;
+/// to'liq kichraygan (pinned) holatda esa hech qanday rang qolmaydi —
+/// faqat shaffof, xira (blur) panel, logo va drawer tugmasi bilan.
 class AppHeaderSliver extends StatelessWidget {
   const AppHeaderSliver({
     super.key,
@@ -49,8 +48,7 @@ class AppHeaderSliver extends StatelessWidget {
         child: Builder(
           builder: (context) {
             // Kengaygan/pinned oralig'idagi progress (1 = to'liq kengaygan,
-            // 0 = pinned/kichraygan) — rasmni faqat kengaygan holatda
-            // ko'rsatish uchun.
+            // 0 = pinned/to'liq kichraygan).
             final settings = context.dependOnInheritedWidgetOfExactType<FlexibleSpaceBarSettings>();
             double t = 1;
             if (settings != null && settings.maxExtent > settings.minExtent) {
@@ -61,26 +59,28 @@ class AppHeaderSliver extends StatelessWidget {
             return Stack(
               fit: StackFit.expand,
               children: [
-                if (hasHero)
+                if (hasHero && t > 0)
                   Opacity(
                     opacity: t,
                     child: Image.network(
                       heroImageUrl!,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(color: AppColors.bg),
+                      errorBuilder: (_, __, ___) => const SizedBox.shrink(),
                     ),
                   ),
                 BackdropFilter(
-                  filter: ImageFilter.blur(
-                    sigmaX: hasHero ? 16 * t + 10 : 12,
-                    sigmaY: hasHero ? 16 * t + 10 : 12,
-                  ),
+                  filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
                   child: Container(
-                    color: AppColors.bg.withValues(alpha: hasHero ? 0.38 * t + 0.3 : 0.3),
+                    // t=0 (to'liq pinned) bo'lganda rang butunlay yo'qoladi —
+                    // faqat shaffof blur qoladi.
+                    color: AppColors.bg.withValues(alpha: (hasHero ? 0.4 : 0.32) * t),
                     child: hasBottom
                         ? Padding(
                             padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
-                            child: Align(alignment: Alignment.bottomCenter, child: bottom),
+                            child: Align(
+                              alignment: Alignment.bottomCenter,
+                              child: Opacity(opacity: t, child: bottom),
+                            ),
                           )
                         : null,
                   ),

@@ -6,15 +6,16 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../core/theme/app_colors.dart';
 import '../core/utils/format.dart';
 import '../features/auth/bloc/auth_bloc.dart';
-import '../features/auth/data/user_model.dart';
 import '../features/home/section_cubit.dart';
 import '../features/wallet/presentation/top_up_sheet.dart';
 import 'app_logo.dart';
-import 'aurora_background.dart';
 import 'user_avatar.dart';
 
-/// Saytdagi desktop sidebar (`AppSidebar`) ko'rinishini takrorlaydi —
-/// har bir bo'limdan hamburger ikonkasi orqali ochiladi.
+const _bannerHeight = 132.0;
+const _avatarSize = 76.0;
+
+/// Yopishtirilgan "cover photo" + ustma-ust chiquvchi avatar ko'rinishidagi
+/// drawer — saytdagi oddiy sidebar'dan farqli, o'zgacha dizayn.
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key});
 
@@ -28,9 +29,10 @@ class AppDrawer extends StatelessWidget {
     final user = context.watch<AuthBloc>().state.user;
     final isPreparer = user?.isPreparer ?? false;
     final section = context.watch<SectionCubit>().state;
+    final hasPhoto = (user?.image ?? '').isNotEmpty;
 
     return Drawer(
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.surface,
       elevation: 0,
       width: 300,
       shape: const RoundedRectangleBorder(
@@ -38,136 +40,198 @@ class AppDrawer extends StatelessWidget {
       ),
       child: ClipRRect(
         borderRadius: const BorderRadius.horizontal(right: Radius.circular(28)),
-        child: Stack(
-          fit: StackFit.expand,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const AuroraBackground(),
-            BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
-              child: Container(color: AppColors.surface.withValues(alpha: 0.55)),
-            ),
-            _drawerContent(context, user, isPreparer, section),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _drawerContent(BuildContext context, UserModel? user, bool isPreparer, AppSection section) {
-    return SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 6, vertical: 8),
-                child: AppLogo(height: 20),
+            SizedBox(
+              height: _bannerHeight + _avatarSize / 2,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  SizedBox(
+                    height: _bannerHeight,
+                    width: double.infinity,
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        if (hasPhoto)
+                          ImageFiltered(
+                            imageFilter: ImageFilter.blur(sigmaX: 22, sigmaY: 22, tileMode: TileMode.decal),
+                            child: Image.network(
+                              user!.image!,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => const _BannerGradient(),
+                            ),
+                          )
+                        else
+                          const _BannerGradient(),
+                        DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.black.withValues(alpha: 0.15),
+                                AppColors.surface,
+                              ],
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          top: 10,
+                          left: 14,
+                          child: AppLogo(height: 18),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    child: Center(
+                      child: UserAvatar(
+                        imageUrl: user?.image,
+                        initial: _initial(user?.displayName ?? '?'),
+                        size: _avatarSize,
+                        onTap: () => _go(context, AppSection.profile),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 10),
-              if (user != null)
-                _Tile(
-                  onTap: () => _go(context, AppSection.profile),
-                  selected: section == AppSection.profile,
+            ),
+            if (user != null) ...[
+              const SizedBox(height: 8),
+              Text(user.displayName,
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w700)),
+              const SizedBox(height: 2),
+              Text(user.roleLabel,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: AppColors.textMuted, fontSize: 12)),
+              const SizedBox(height: 14),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: GestureDetector(
+                  onTap: () => _go(context, AppSection.wallet),
                   child: Row(
                     children: [
-                      UserAvatar(imageUrl: user.image, initial: _initial(user.displayName), size: 40),
-                      const SizedBox(width: 12),
                       Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(user.displayName,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(color: Colors.white, fontSize: 13.5, fontWeight: FontWeight.w600)),
-                            Text(user.roleLabel,
-                                style: const TextStyle(color: AppColors.textMuted, fontSize: 11.5)),
-                          ],
+                        child: _Pill(
+                          icon: Icons.account_balance_wallet_rounded,
+                          label: formatSom(user.balance),
+                          color: AppColors.indigo,
                         ),
                       ),
-                    ],
-                  ),
-                ),
-              if (user != null) ...[
-                const SizedBox(height: 8),
-                _Tile(
-                  onTap: () => _go(context, AppSection.wallet),
-                  selected: section == AppSection.wallet,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('Balans', style: TextStyle(color: AppColors.textMuted, fontSize: 11)),
-                      const SizedBox(height: 2),
-                      Text(formatSom(user.balance),
-                          style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
                       if (isPreparer) ...[
-                        const SizedBox(height: 3),
-                        Text('${user.starBalance} ⭐',
-                            style: const TextStyle(color: AppColors.amber, fontSize: 13, fontWeight: FontWeight.w600)),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: _Pill(icon: Icons.star_rounded, label: '${user.starBalance}', color: AppColors.amber),
+                        ),
                       ],
-                      const SizedBox(height: 6),
+                      const SizedBox(width: 8),
                       GestureDetector(
                         onTap: () {
                           Navigator.of(context).pop();
                           showTopUpSheet(context);
                         },
-                        child: const Text("Hisobni to'ldirish →",
-                            style: TextStyle(color: AppColors.indigo, fontSize: 12, fontWeight: FontWeight.w600)),
+                        child: Container(
+                          padding: const EdgeInsets.all(9),
+                          decoration: BoxDecoration(
+                            color: AppColors.indigo.withValues(alpha: 0.18),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(Icons.add_rounded, size: 16, color: Colors.white),
+                        ),
                       ),
                     ],
                   ),
                 ),
-              ],
-              const SizedBox(height: 14),
-              _NavItem(
-                icon: Icons.home_rounded,
-                label: 'Bosh sahifa',
-                selected: section == AppSection.dashboard,
-                onTap: () => _go(context, AppSection.dashboard),
-              ),
-              if (isPreparer) ...[
-                _NavItem(
-                  icon: Icons.local_offer_rounded,
-                  label: 'Mening takliflarim',
-                  selected: section == AppSection.offers,
-                  onTap: () => _go(context, AppSection.offers),
-                ),
-                _NavItem(
-                  icon: Icons.card_giftcard_rounded,
-                  label: 'Referal',
-                  selected: section == AppSection.referral,
-                  onTap: () => _go(context, AppSection.referral),
-                ),
-              ],
-              _NavItem(
-                icon: Icons.chat_bubble_rounded,
-                label: 'Xabarlar',
-                selected: section == AppSection.messages,
-                onTap: () => _go(context, AppSection.messages),
-              ),
-              _NavItem(
-                icon: Icons.account_balance_wallet_rounded,
-                label: 'Hamyon',
-                selected: section == AppSection.wallet,
-                onTap: () => _go(context, AppSection.wallet),
-              ),
-              _NavItem(
-                icon: Icons.person_rounded,
-                label: 'Profil',
-                selected: section == AppSection.profile,
-                onTap: () => _go(context, AppSection.profile),
-              ),
-              const Spacer(),
-              const Divider(color: AppColors.cardBorder, height: 1),
-              const SizedBox(height: 8),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 6),
-                child: Text('tayyorr.uz', style: TextStyle(color: AppColors.textFaint, fontSize: 11)),
               ),
             ],
-          ),
+            const SizedBox(height: 16),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _NavItem(
+                      icon: Icons.home_rounded,
+                      color: AppColors.indigo,
+                      label: 'Bosh sahifa',
+                      selected: section == AppSection.dashboard,
+                      onTap: () => _go(context, AppSection.dashboard),
+                    ),
+                    if (isPreparer) ...[
+                      _NavItem(
+                        icon: Icons.local_offer_rounded,
+                        color: AppColors.violet,
+                        label: 'Mening takliflarim',
+                        selected: section == AppSection.offers,
+                        onTap: () => _go(context, AppSection.offers),
+                      ),
+                      _NavItem(
+                        icon: Icons.card_giftcard_rounded,
+                        color: AppColors.emerald,
+                        label: 'Referal',
+                        selected: section == AppSection.referral,
+                        onTap: () => _go(context, AppSection.referral),
+                      ),
+                    ],
+                    _NavItem(
+                      icon: Icons.chat_bubble_rounded,
+                      color: AppColors.amber,
+                      label: 'Xabarlar',
+                      selected: section == AppSection.messages,
+                      onTap: () => _go(context, AppSection.messages),
+                    ),
+                    _NavItem(
+                      icon: Icons.account_balance_wallet_rounded,
+                      color: AppColors.indigoStrong,
+                      label: 'Hamyon',
+                      selected: section == AppSection.wallet,
+                      onTap: () => _go(context, AppSection.wallet),
+                    ),
+                    _NavItem(
+                      icon: Icons.person_rounded,
+                      color: AppColors.red,
+                      label: 'Profil',
+                      selected: section == AppSection.profile,
+                      onTap: () => _go(context, AppSection.profile),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const Divider(color: AppColors.cardBorder, height: 1),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+              child: Text('tayyorr.uz', style: TextStyle(color: AppColors.textFaint, fontSize: 11)),
+            ),
+          ],
         ),
+      ),
+    );
+  }
+}
+
+class _BannerGradient extends StatelessWidget {
+  const _BannerGradient();
+
+  @override
+  Widget build(BuildContext context) {
+    return const DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [AppColors.indigoStrong, AppColors.violet],
+        ),
+      ),
     );
   }
 }
@@ -177,24 +241,34 @@ String _initial(String name) {
   return clean.isEmpty ? '?' : clean.substring(0, 1).toUpperCase();
 }
 
-class _Tile extends StatelessWidget {
-  const _Tile({required this.child, required this.onTap, required this.selected});
-  final Widget child;
-  final VoidCallback onTap;
-  final bool selected;
+class _Pill extends StatelessWidget {
+  const _Pill({required this.icon, required this.label, required this.color});
+  final IconData icon;
+  final String label;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: selected ? AppColors.indigo.withValues(alpha: 0.12) : Colors.white.withValues(alpha: 0.03),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: selected ? AppColors.indigo.withValues(alpha: 0.4) : AppColors.cardBorder),
-        ),
-        child: child,
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 13, color: color),
+          const SizedBox(width: 5),
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(color: color, fontSize: 11.5, fontWeight: FontWeight.w700),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -203,36 +277,51 @@ class _Tile extends StatelessWidget {
 class _NavItem extends StatelessWidget {
   const _NavItem({
     required this.icon,
+    required this.color,
     required this.label,
     required this.selected,
     required this.onTap,
-    this.danger = false,
   });
 
   final IconData icon;
+  final Color color;
   final String label;
   final bool selected;
-  final bool danger;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final color = danger ? AppColors.red : (selected ? Colors.white : AppColors.textSecondary);
     return InkWell(
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(14),
       onTap: onTap,
       child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 2),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 11),
+        margin: const EdgeInsets.symmetric(vertical: 3),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         decoration: BoxDecoration(
-          color: selected ? AppColors.indigo.withValues(alpha: 0.15) : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
+          color: selected ? Colors.white.withValues(alpha: 0.06) : Colors.transparent,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: selected ? AppColors.cardBorder : Colors.transparent),
         ),
         child: Row(
           children: [
-            Icon(icon, size: 19, color: color),
+            Container(
+              width: 34,
+              height: 34,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: selected ? 0.28 : 0.15),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, size: 17, color: selected ? Colors.white : color),
+            ),
             const SizedBox(width: 12),
-            Text(label, style: TextStyle(color: color, fontSize: 13.5, fontWeight: selected ? FontWeight.w700 : FontWeight.w500)),
+            Text(
+              label,
+              style: TextStyle(
+                color: selected ? Colors.white : AppColors.textSecondary,
+                fontSize: 13.5,
+                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+              ),
+            ),
           ],
         ),
       ),

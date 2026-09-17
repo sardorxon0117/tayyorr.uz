@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/format.dart';
 import '../../../widgets/app_text_field.dart';
+import '../../auth/bloc/auth_bloc.dart';
 import '../data/wallet_repository.dart';
 
 const _starPrice = 2000;
@@ -51,7 +53,10 @@ class _BuyStarsSheetState extends State<_BuyStarsSheet> {
     });
     try {
       await _repo.buyStars(n);
-      if (mounted) Navigator.of(context).pop(true);
+      if (mounted) {
+        context.read<AuthBloc>().add(const AuthMeRefreshRequested());
+        Navigator.of(context).pop(true);
+      }
     } on ApiException catch (e) {
       setState(() => _error = e.message);
     } finally {

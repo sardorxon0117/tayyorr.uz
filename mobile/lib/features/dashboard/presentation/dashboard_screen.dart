@@ -356,13 +356,23 @@ class _DashboardViewState extends State<_DashboardView> {
                     ),
                   );
                 }
-                return SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 110),
-                  sliver: SliverList.separated(
-                    itemCount: filtered.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 10),
-                    itemBuilder: (context, i) => _OrderCard(order: filtered[i]),
-                  ),
+                return SliverMainAxisGroup(
+                  slivers: [
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 110),
+                      sliver: SliverList.separated(
+                        itemCount: filtered.length,
+                        separatorBuilder: (_, __) => const SizedBox(height: 10),
+                        itemBuilder: (context, i) => _OrderCard(order: filtered[i]),
+                      ),
+                    ),
+                    // ro'yxat qisqa bo'lsa ham (masalan 1ta buyurtma) app bar
+                    // to'liq kichrayguncha scroll qilib bo'lishi uchun
+                    // minimal bo'sh joy qoldiramiz.
+                    SliverToBoxAdapter(
+                      child: SizedBox(height: MediaQuery.of(context).size.height * 0.7),
+                    ),
+                  ],
                 );
               },
             ),

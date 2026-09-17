@@ -320,6 +320,7 @@ class _OfferFormState extends State<_OfferForm> {
                   .read<OrderDetailCubit>()
                   .submitOffer(price: price, message: _message.text.trim());
               if (ok && context.mounted) {
+                context.read<AuthBloc>().add(const AuthMeRefreshRequested());
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Taklif yuborildi')),
                 );
