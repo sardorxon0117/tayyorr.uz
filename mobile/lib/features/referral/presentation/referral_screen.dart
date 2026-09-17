@@ -8,6 +8,7 @@ import '../../../core/utils/format.dart';
 import '../../../widgets/app_drawer.dart';
 import '../../../widgets/app_header_sliver.dart';
 import '../../../widgets/glass_card.dart';
+import '../../../widgets/skeleton.dart';
 import '../../auth/bloc/auth_bloc.dart';
 import '../cubit/referral_cubit.dart';
 import '../data/referral_model.dart';
@@ -138,11 +139,12 @@ class _ReferralViewState extends State<_ReferralView> {
                               style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w700)),
                           const SizedBox(height: 10),
                           if (state.status == ReferralStatus.loading && referred.isEmpty)
-                            const Center(
-                              child: Padding(
-                                padding: EdgeInsets.symmetric(vertical: 30),
-                                child: CircularProgressIndicator(color: AppColors.indigo),
-                              ),
+                            const Column(
+                              children: [
+                                SRow(withAvatar: false),
+                                SizedBox(height: 10),
+                                SRow(withAvatar: false),
+                              ],
                             )
                           else if (referred.isEmpty)
                             const Padding(

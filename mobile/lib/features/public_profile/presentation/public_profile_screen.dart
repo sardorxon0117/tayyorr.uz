@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../widgets/aurora_background.dart';
 import '../../../widgets/glass_card.dart';
+import '../../../widgets/skeleton.dart';
 import '../../../widgets/user_avatar.dart';
 import '../../auth/bloc/auth_bloc.dart';
 import '../../dashboard/data/order_model.dart';
@@ -53,7 +54,43 @@ class _PublicProfileView extends StatelessWidget {
                 child: BlocBuilder<PublicProfileCubit, PublicProfileState>(
                   builder: (context, state) {
                     if (state.status == PublicProfileStatus.loading) {
-                      return const Center(child: CircularProgressIndicator(color: AppColors.indigo));
+                      return ListView(
+                        padding: const EdgeInsets.fromLTRB(16, 4, 16, 32),
+                        children: [
+                          Row(
+                            children: [
+                              const SCircle(size: 76),
+                              const SizedBox(width: 14),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: const [
+                                  SBar(width: 130, height: 16),
+                                  SizedBox(height: 8),
+                                  SBar(width: 100, height: 11),
+                                ],
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          GlassCard(
+                            blur: false,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: const [
+                                SBar(height: 11),
+                                SizedBox(height: 8),
+                                SBar(width: 180, height: 11),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          const SBar(width: 160, height: 16),
+                          const SizedBox(height: 10),
+                          const SCard(),
+                          const SizedBox(height: 10),
+                          const SCard(),
+                        ],
+                      );
                     }
                     if (state.status == PublicProfileStatus.failure || state.profile == null) {
                       return Center(

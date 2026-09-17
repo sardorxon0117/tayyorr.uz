@@ -6,6 +6,7 @@ import '../../../core/utils/format.dart';
 import '../../../widgets/app_drawer.dart';
 import '../../../widgets/app_header_sliver.dart';
 import '../../../widgets/glass_card.dart';
+import '../../../widgets/skeleton.dart';
 import '../../order_detail/presentation/order_detail_screen.dart';
 import '../cubit/offers_cubit.dart';
 import '../data/offer_model.dart';
@@ -43,8 +44,15 @@ class _OffersView extends StatelessWidget {
             BlocBuilder<OffersCubit, OffersState>(
               builder: (context, state) {
                 if (state.status == OffersStatus.loading && state.offers.isEmpty) {
-                  return const SliverFillRemaining(
-                    child: Center(child: CircularProgressIndicator(color: AppColors.indigo)),
+                  return SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+                    sliver: SliverList.list(children: const [
+                      SCard(),
+                      SizedBox(height: 10),
+                      SCard(),
+                      SizedBox(height: 10),
+                      SCard(),
+                    ]),
                   );
                 }
                 if (state.status == OffersStatus.failure && state.offers.isEmpty) {

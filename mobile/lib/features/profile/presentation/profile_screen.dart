@@ -9,6 +9,7 @@ import '../../../widgets/app_header_sliver.dart';
 import '../../../widgets/confirm_dialog.dart';
 import '../../../widgets/danger_button.dart';
 import '../../../widgets/glass_card.dart';
+import '../../../widgets/skeleton.dart';
 import '../../../widgets/user_avatar.dart';
 import '../../auth/bloc/auth_bloc.dart';
 import '../../auth/data/auth_repository.dart';
@@ -63,7 +64,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
             slivers: [
               const AppHeaderSliver(),
               if (user == null)
-                const SliverToBoxAdapter(child: SizedBox.shrink())
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+                  sliver: SliverList.list(children: [
+                    GlassCard(
+                      blur: false,
+                      child: Row(
+                        children: [
+                          const SCircle(size: 58),
+                          const SizedBox(width: 14),
+                          SBar(width: MediaQuery.of(context).size.width * 0.35, height: 17),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    const Row(children: [
+                      Expanded(child: SBlock(height: 68)),
+                      SizedBox(width: 10),
+                      Expanded(child: SBlock(height: 68)),
+                    ]),
+                  ]),
+                )
               else
                 SliverPadding(
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),

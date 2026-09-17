@@ -5,6 +5,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/format.dart';
 import '../../../widgets/app_drawer.dart';
 import '../../../widgets/app_header_sliver.dart';
+import '../../../widgets/skeleton.dart';
 import '../../../widgets/user_avatar.dart';
 import '../cubit/conversations_cubit.dart';
 import '../data/message_model.dart';
@@ -41,8 +42,17 @@ class _MessagesListView extends StatelessWidget {
             BlocBuilder<ConversationsCubit, ConversationsState>(
               builder: (context, state) {
                 if (state.status == ConversationsStatus.loading && state.conversations.isEmpty) {
-                  return const SliverFillRemaining(
-                    child: Center(child: CircularProgressIndicator(color: AppColors.indigo)),
+                  return SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+                    sliver: SliverList.list(children: const [
+                      SRow(),
+                      SizedBox(height: 10),
+                      SRow(),
+                      SizedBox(height: 10),
+                      SRow(),
+                      SizedBox(height: 10),
+                      SRow(),
+                    ]),
                   );
                 }
                 if (state.status == ConversationsStatus.failure && state.conversations.isEmpty) {

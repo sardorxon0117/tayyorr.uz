@@ -6,6 +6,7 @@ import '../../../core/utils/format.dart';
 import '../../../widgets/app_drawer.dart';
 import '../../../widgets/app_header_sliver.dart';
 import '../../../widgets/glass_card.dart';
+import '../../../widgets/skeleton.dart';
 import '../../auth/bloc/auth_bloc.dart';
 import '../cubit/wallet_cubit.dart';
 import '../data/wallet_model.dart';
@@ -44,8 +45,23 @@ class _WalletView extends StatelessWidget {
             BlocBuilder<WalletCubit, WalletState>(
               builder: (context, state) {
                 if (state.status == WalletStatus.loading && state.wallet == null) {
-                  return const SliverFillRemaining(
-                    child: Center(child: CircularProgressIndicator(color: AppColors.indigo)),
+                  return SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+                    sliver: SliverList.list(children: const [
+                      SBlock(height: 128),
+                      SizedBox(height: 10),
+                      SBlock(height: 96),
+                      SizedBox(height: 10),
+                      SBlock(height: 160),
+                      SizedBox(height: 16),
+                      SBar(width: 130, height: 18),
+                      SizedBox(height: 10),
+                      SRow(withAvatar: false),
+                      SizedBox(height: 10),
+                      SRow(withAvatar: false),
+                      SizedBox(height: 10),
+                      SRow(withAvatar: false),
+                    ]),
                   );
                 }
                 if (state.status == WalletStatus.failure && state.wallet == null) {

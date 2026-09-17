@@ -8,6 +8,7 @@ import '../../../widgets/aurora_background.dart';
 import '../../../widgets/confirm_dialog.dart';
 import '../../../widgets/danger_button.dart';
 import '../../../widgets/glass_card.dart';
+import '../../../widgets/skeleton.dart';
 import '../../../widgets/user_avatar.dart';
 import '../../auth/bloc/auth_bloc.dart';
 import '../../auth/data/user_model.dart';
@@ -83,7 +84,50 @@ class _Body extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (state.status == OrderDetailStatus.loading && state.order == null) {
-      return const Center(child: CircularProgressIndicator(color: AppColors.indigo));
+      return ListView(
+        padding: const EdgeInsets.fromLTRB(16, 4, 16, 32),
+        children: [
+          GlassCard(
+            blur: false,
+            child: Row(
+              children: [
+                const SCircle(size: 44),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SBar(width: MediaQuery.of(context).size.width * 0.3, height: 14),
+                      const SizedBox(height: 6),
+                      const SBar(width: 80, height: 11),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          const SBar(width: 90, height: 11),
+          const SizedBox(height: 10),
+          SBar(width: MediaQuery.of(context).size.width * 0.6, height: 22),
+          const SizedBox(height: 14),
+          const SBlock(height: 110),
+          const SizedBox(height: 16),
+          GlassCard(
+            blur: false,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: const [
+                SBar(width: 120, height: 13),
+                SizedBox(height: 12),
+                SBar(height: 42, borderRadius: 12),
+                SizedBox(height: 10),
+                SBar(height: 80, borderRadius: 12),
+              ],
+            ),
+          ),
+        ],
+      );
     }
     if (state.status == OrderDetailStatus.failure && state.order == null) {
       return Center(child: Text(state.error ?? 'Xatolik', style: const TextStyle(color: AppColors.textMuted)));

@@ -10,6 +10,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../widgets/app_text_field.dart';
 import '../../../widgets/aurora_background.dart';
 import '../../../widgets/confirm_dialog.dart';
+import '../../../widgets/skeleton.dart';
 import '../../../widgets/user_avatar.dart';
 import '../../dashboard/data/order_model.dart';
 import '../../order_detail/presentation/order_detail_screen.dart';
@@ -131,7 +132,22 @@ class _ChatViewState extends State<_ChatView> {
                   Expanded(
                     child: Builder(builder: (context) {
                       if (state.status == ChatStatus.loading && state.messages.isEmpty) {
-                        return const Center(child: CircularProgressIndicator(color: AppColors.indigo));
+                        return Padding(
+                          padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+                          child: Column(
+                            children: const [
+                              SBubble(widthFraction: 0.4),
+                              SizedBox(height: 10),
+                              SBubble(widthFraction: 0.5, mine: true),
+                              SizedBox(height: 10),
+                              SBubble(widthFraction: 0.6),
+                              SizedBox(height: 10),
+                              SBubble(widthFraction: 0.4, mine: true),
+                              SizedBox(height: 10),
+                              SBubble(widthFraction: 0.35),
+                            ],
+                          ),
+                        );
                       }
                       if (state.status == ChatStatus.failure && state.messages.isEmpty) {
                         return Center(

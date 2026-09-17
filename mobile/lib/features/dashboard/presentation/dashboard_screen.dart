@@ -6,6 +6,7 @@ import '../../../core/utils/format.dart';
 import '../../../widgets/app_drawer.dart';
 import '../../../widgets/app_header_sliver.dart';
 import '../../../widgets/glass_card.dart';
+import '../../../widgets/skeleton.dart';
 import '../../auth/bloc/auth_bloc.dart';
 import '../../order_detail/presentation/order_detail_screen.dart';
 import '../../wallet/presentation/top_up_sheet.dart';
@@ -326,8 +327,15 @@ class _DashboardViewState extends State<_DashboardView> {
             BlocBuilder<DashboardCubit, DashboardState>(
               builder: (context, state) {
                 if (state.status == DashboardStatus.loading && state.orders.isEmpty) {
-                  return const SliverFillRemaining(
-                    child: Center(child: CircularProgressIndicator(color: AppColors.indigo)),
+                  return SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+                    sliver: SliverList.list(children: const [
+                      SCard(),
+                      SizedBox(height: 10),
+                      SCard(),
+                      SizedBox(height: 10),
+                      SCard(),
+                    ]),
                   );
                 }
                 if (state.status == DashboardStatus.failure && state.orders.isEmpty) {
