@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -16,6 +17,10 @@ class ChatState extends Equatable {
     this.messages = const [],
     this.error,
     this.sending = false,
+    this.blockedMe = false,
+    this.blockedByMe = false,
+    this.activeContracts = const [],
+    this.replyTo,
   });
 
   final ChatStatus status;
@@ -23,6 +28,10 @@ class ChatState extends Equatable {
   final List<ChatMessageModel> messages;
   final String? error;
   final bool sending;
+  final bool blockedMe;
+  final bool blockedByMe;
+  final List<ChatContractOrderRef> activeContracts;
+  final ChatMessageModel? replyTo;
 
   ChatState copyWith({
     ChatStatus? status,
@@ -30,6 +39,11 @@ class ChatState extends Equatable {
     List<ChatMessageModel>? messages,
     String? error,
     bool? sending,
+    bool? blockedMe,
+    bool? blockedByMe,
+    List<ChatContractOrderRef>? activeContracts,
+    ChatMessageModel? replyTo,
+    bool clearReply = false,
   }) {
     return ChatState(
       status: status ?? this.status,
@@ -37,11 +51,16 @@ class ChatState extends Equatable {
       messages: messages ?? this.messages,
       error: error,
       sending: sending ?? this.sending,
+      blockedMe: blockedMe ?? this.blockedMe,
+      blockedByMe: blockedByMe ?? this.blockedByMe,
+      activeContracts: activeContracts ?? this.activeContracts,
+      replyTo: clearReply ? null : (replyTo ?? this.replyTo),
     );
   }
 
   @override
-  List<Object?> get props => [status, other?.id, messages.length, error, sending];
+  List<Object?> get props =>
+      [status, other?.id, messages.length, error, sending, blockedMe, blockedByMe, activeContracts.length, replyTo?.id];
 }
 
 class ChatCubit extends Cubit<ChatState> {
@@ -54,8 +73,15 @@ class ChatCubit extends Cubit<ChatState> {
   Future<void> load() async {
     emit(state.copyWith(status: ChatStatus.loading));
     try {
-      final (other, messages) = await _repo.fetchConversation(conversationId);
-      emit(state.copyWith(status: ChatStatus.success, other: other, messages: messages));
+      final data = await _repo.fetchConversation(conversationId);
+      emit(state.copyWith(
+        status: ChatStatus.success,
+        other: data.other,
+        messages: data.messages,
+        blockedMe: data.blockedMe,
+        blockedByMe: data.blockedByMe,
+        activeContracts: data.activeContracts,
+      ));
       unawaited(_repo.markRead(conversationId).catchError((_) {}));
       _startPolling();
     } on ApiException catch (e) {
@@ -69,20 +95,25 @@ class ChatCubit extends Cubit<ChatState> {
   }
 
   Future<void> _poll() async {
-    if (state.messages.isEmpty) return;
-    final since = state.messages.map((m) => m.updatedAt).reduce((a, b) => a > b ? a : b);
     try {
-      final (_, fresh) = await _repo.fetchConversation(conversationId, since: since);
-      if (fresh.isEmpty) return;
+      final since = state.messages.isEmpty
+          ? null
+          : state.messages.map((m) => m.updatedAt).reduce((a, b) => a > b ? a : b);
+      final data = await _repo.fetchConversation(conversationId, since: since);
       final merged = Map<String, ChatMessageModel>.fromEntries(
         state.messages.map((m) => MapEntry(m.id, m)),
       );
-      for (final m in fresh) {
+      for (final m in data.messages) {
         merged[m.id] = m;
       }
       final list = merged.values.toList()..sort((a, b) => a.createdAt.compareTo(b.createdAt));
-      emit(state.copyWith(messages: list));
-      if (fresh.any((m) => !m.mine)) {
+      emit(state.copyWith(
+        messages: list,
+        blockedMe: data.blockedMe,
+        blockedByMe: data.blockedByMe,
+        activeContracts: data.activeContracts,
+      ));
+      if (data.messages.any((m) => !m.mine)) {
         unawaited(_repo.markRead(conversationId).catchError((_) {}));
       }
     } catch (_) {
@@ -90,15 +121,130 @@ class ChatCubit extends Cubit<ChatState> {
     }
   }
 
+  void setReplyTo(ChatMessageModel? message) {
+    if (message == null) {
+      emit(state.copyWith(clearReply: true));
+    } else {
+      emit(state.copyWith(replyTo: message));
+    }
+  }
+
   Future<void> send(String body) async {
     final text = body.trim();
     if (text.isEmpty) return;
-    emit(state.copyWith(sending: true, error: null));
+    final replyId = state.replyTo?.id;
+    emit(state.copyWith(sending: true, error: null, clearReply: true));
     try {
-      final msg = await _repo.sendMessage(conversationId, text);
+      final msg = await _repo.sendMessage(conversationId, body: text, replyToId: replyId);
       emit(state.copyWith(sending: false, messages: [...state.messages, msg]));
     } on ApiException catch (e) {
       emit(state.copyWith(sending: false, error: e.message));
+    }
+  }
+
+  Future<void> sendFile({required Uint8List bytes, required String filename, required String contentType}) async {
+    final replyId = state.replyTo?.id;
+    emit(state.copyWith(sending: true, error: null, clearReply: true));
+    try {
+      final msg = await _repo.sendFile(
+        conversationId,
+        bytes: bytes,
+        filename: filename,
+        contentType: contentType,
+        replyToId: replyId,
+      );
+      emit(state.copyWith(sending: false, messages: [...state.messages, msg]));
+    } on ApiException catch (e) {
+      emit(state.copyWith(sending: false, error: e.message));
+    }
+  }
+
+  Future<void> editMessage(String msgId, String body) async {
+    try {
+      final updated = await _repo.editMessage(conversationId, msgId, body);
+      emit(state.copyWith(messages: [
+        for (final m in state.messages) if (m.id == msgId) updated else m,
+      ]));
+    } on ApiException catch (e) {
+      emit(state.copyWith(error: e.message));
+    }
+  }
+
+  Future<void> deleteMessage(String msgId) async {
+    try {
+      await _repo.deleteMessage(conversationId, msgId);
+      await load();
+    } on ApiException catch (e) {
+      emit(state.copyWith(error: e.message));
+    }
+  }
+
+  Future<void> react(String msgId, String? value) async {
+    // optimistik yangilash
+    final prevMessages = state.messages;
+    emit(state.copyWith(messages: [
+      for (final m in state.messages)
+        if (m.id == msgId)
+          ChatMessageModel(
+            id: m.id,
+            senderId: m.senderId,
+            body: m.body,
+            system: m.system,
+            createdAt: m.createdAt,
+            updatedAt: m.updatedAt,
+            mine: m.mine,
+            edited: m.edited,
+            deleted: m.deleted,
+            replyTo: m.replyTo,
+            reactions: ReactionSummary(
+              like: value == 'LIKE'
+                  ? m.reactions.like + (m.reactions.mine == 'LIKE' ? 0 : 1)
+                  : m.reactions.like - (m.reactions.mine == 'LIKE' ? 1 : 0),
+              dislike: value == 'DISLIKE'
+                  ? m.reactions.dislike + (m.reactions.mine == 'DISLIKE' ? 0 : 1)
+                  : m.reactions.dislike - (m.reactions.mine == 'DISLIKE' ? 1 : 0),
+              mine: value,
+            ),
+            file: m.file,
+          )
+        else
+          m,
+    ]));
+    try {
+      await _repo.react(conversationId, msgId, value);
+    } catch (_) {
+      emit(state.copyWith(messages: prevMessages));
+    }
+  }
+
+  Future<bool> toggleBlock() async {
+    try {
+      await _repo.block(conversationId, block: !state.blockedByMe);
+      emit(state.copyWith(blockedByMe: !state.blockedByMe));
+      return true;
+    } on ApiException catch (e) {
+      emit(state.copyWith(error: e.message));
+      return false;
+    }
+  }
+
+  Future<bool> deleteConversation() async {
+    try {
+      await _repo.deleteConversation(conversationId);
+      return true;
+    } on ApiException catch (e) {
+      emit(state.copyWith(error: e.message));
+      return false;
+    }
+  }
+
+  Future<bool> report(String body, {String? messageId}) async {
+    try {
+      await _repo.report(suspectId: state.other?.id, messageId: messageId, body: body);
+      return true;
+    } on ApiException catch (e) {
+      emit(state.copyWith(error: e.message));
+      return false;
     }
   }
 

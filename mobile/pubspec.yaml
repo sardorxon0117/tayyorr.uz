@@ -20,6 +20,8 @@ dependencies:
   url_launcher: ^6.3.1
   # profil rasmini tanlash
   image_picker: ^1.1.2
+  # chatda fayl biriktirish (rasm, hujjat, arxiv va h.k.)
+  file_picker: ^8.1.6
   # referal havolasini ulashish
   share_plus: ^10.1.4
 

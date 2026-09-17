@@ -1,3 +1,62 @@
+class ReplyPreviewModel {
+  final String id;
+  final String authorId;
+  final String text;
+  final bool deleted;
+
+  const ReplyPreviewModel({
+    required this.id,
+    required this.authorId,
+    required this.text,
+    required this.deleted,
+  });
+
+  factory ReplyPreviewModel.fromJson(Map<String, dynamic> json) {
+    return ReplyPreviewModel(
+      id: json['id'] as String,
+      authorId: json['authorId'] as String,
+      text: json['text'] as String,
+      deleted: json['deleted'] as bool? ?? false,
+    );
+  }
+}
+
+class ReactionSummary {
+  final int like;
+  final int dislike;
+  final String? mine; // 'LIKE' | 'DISLIKE' | null
+
+  const ReactionSummary({required this.like, required this.dislike, this.mine});
+
+  factory ReactionSummary.fromJson(Map<String, dynamic> json) {
+    return ReactionSummary(
+      like: (json['like'] as num?)?.toInt() ?? 0,
+      dislike: (json['dislike'] as num?)?.toInt() ?? 0,
+      mine: json['mine'] as String?,
+    );
+  }
+}
+
+class ChatFileModel {
+  final String name;
+  final String type;
+  final int size;
+  final String url;
+
+  const ChatFileModel({required this.name, required this.type, required this.size, required this.url});
+
+  bool get isImage => type.startsWith('image/');
+
+  factory ChatFileModel.fromJson(Map<String, dynamic> json) {
+    return ChatFileModel(
+      name: json['name'] as String,
+      type: json['type'] as String,
+      size: (json['size'] as num).toInt(),
+      url: json['url'] as String,
+    );
+  }
+}
+
 class ChatMessageModel {
   final String id;
   final String senderId;
@@ -6,7 +65,11 @@ class ChatMessageModel {
   final int createdAt; // epoch ms
   final int updatedAt; // epoch ms
   final bool mine;
+  final bool edited;
   final bool deleted;
+  final ReplyPreviewModel? replyTo;
+  final ReactionSummary reactions;
+  final ChatFileModel? file;
 
   const ChatMessageModel({
     required this.id,
@@ -16,7 +79,11 @@ class ChatMessageModel {
     required this.createdAt,
     required this.updatedAt,
     required this.mine,
+    required this.edited,
     required this.deleted,
+    this.replyTo,
+    required this.reactions,
+    this.file,
   });
 
   DateTime get createdAtDate => DateTime.fromMillisecondsSinceEpoch(createdAt);
@@ -30,7 +97,13 @@ class ChatMessageModel {
       createdAt: (json['createdAt'] as num).toInt(),
       updatedAt: (json['updatedAt'] as num).toInt(),
       mine: json['mine'] as bool? ?? false,
+      edited: json['edited'] as bool? ?? false,
       deleted: json['deleted'] as bool? ?? false,
+      replyTo: json['replyTo'] != null ? ReplyPreviewModel.fromJson(json['replyTo'] as Map<String, dynamic>) : null,
+      reactions: json['reactions'] != null
+          ? ReactionSummary.fromJson(json['reactions'] as Map<String, dynamic>)
+          : const ReactionSummary(like: 0, dislike: 0),
+      file: json['file'] != null ? ChatFileModel.fromJson(json['file'] as Map<String, dynamic>) : null,
     );
   }
 }
@@ -41,6 +114,7 @@ class ChatOtherUser {
   final String? login;
   final String? image;
   final bool isSupport;
+  final DateTime? lastSeenAt;
 
   const ChatOtherUser({
     required this.id,
@@ -48,6 +122,7 @@ class ChatOtherUser {
     this.login,
     this.image,
     required this.isSupport,
+    this.lastSeenAt,
   });
 
   factory ChatOtherUser.fromJson(Map<String, dynamic> json) {
@@ -57,8 +132,43 @@ class ChatOtherUser {
       login: json['login'] as String?,
       image: json['image'] as String?,
       isSupport: json['isSupport'] as bool? ?? false,
+      lastSeenAt: json['lastSeenAt'] != null ? DateTime.parse(json['lastSeenAt'] as String) : null,
     );
   }
+}
+
+class ChatContractOrderRef {
+  final String id;
+  final String title;
+  final String type;
+  final String status;
+
+  const ChatContractOrderRef({required this.id, required this.title, required this.type, required this.status});
+
+  factory ChatContractOrderRef.fromJson(Map<String, dynamic> json) {
+    return ChatContractOrderRef(
+      id: json['id'] as String,
+      title: json['title'] as String,
+      type: json['type'] as String,
+      status: json['status'] as String,
+    );
+  }
+}
+
+class ChatConversationData {
+  final ChatOtherUser? other;
+  final List<ChatMessageModel> messages;
+  final bool blockedMe;
+  final bool blockedByMe;
+  final List<ChatContractOrderRef> activeContracts;
+
+  const ChatConversationData({
+    this.other,
+    required this.messages,
+    this.blockedMe = false,
+    this.blockedByMe = false,
+    this.activeContracts = const [],
+  });
 }
 
 class ConversationModel {

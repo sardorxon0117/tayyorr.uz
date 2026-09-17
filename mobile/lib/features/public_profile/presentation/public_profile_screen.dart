@@ -5,7 +5,11 @@ import '../../../core/theme/app_colors.dart';
 import '../../../widgets/aurora_background.dart';
 import '../../../widgets/glass_card.dart';
 import '../../../widgets/user_avatar.dart';
+import '../../auth/bloc/auth_bloc.dart';
 import '../../dashboard/data/order_model.dart';
+import '../../messages/data/message_model.dart';
+import '../../messages/data/messages_repository.dart';
+import '../../messages/presentation/chat_screen.dart';
 import '../cubit/public_profile_cubit.dart';
 import '../data/public_profile_model.dart';
 import '../data/public_profile_repository.dart';
@@ -111,6 +115,17 @@ class _PublicProfileView extends StatelessWidget {
                             ),
                           ],
                         ),
+                        if (context.read<AuthBloc>().state.user?.id != p.id) ...[
+                          const SizedBox(height: 14),
+                          SizedBox(
+                            width: double.infinity,
+                            child: OutlinedButton.icon(
+                              onPressed: () => _openChat(context, p),
+                              icon: const Icon(Icons.chat_bubble_outline_rounded, size: 17),
+                              label: const Text('Xabar yozish'),
+                            ),
+                          ),
+                        ],
                         const SizedBox(height: 16),
                         GlassCard(
                           blur: false,
@@ -158,6 +173,23 @@ class _PublicProfileView extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+Future<void> _openChat(BuildContext context, PublicProfileModel p) async {
+  final navigator = Navigator.of(context);
+  final messenger = ScaffoldMessenger.of(context);
+  try {
+    final convId = await MessagesRepository().startConversation(p.id);
+    if (!context.mounted) return;
+    navigator.push(MaterialPageRoute(
+      builder: (_) => ChatScreen(
+        conversationId: convId,
+        other: ChatOtherUser(id: p.id, name: p.displayName, login: p.login, image: p.image, isSupport: false),
+      ),
+    ));
+  } catch (_) {
+    messenger.showSnackBar(const SnackBar(content: Text("Suhbat ochilmadi — qayta urinib ko'ring")));
   }
 }
 

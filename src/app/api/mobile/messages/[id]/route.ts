@@ -17,7 +17,7 @@ import { getSupportUserId } from "@/lib/support";
 
 export { OPTIONS } from "@/lib/mobile-cors";
 
-/** Bitta suhbat: boshqa foydalanuvchi + xabarlar (matn xabarlar, mobil v1). */
+/** Bitta suhbat: boshqa foydalanuvchi + xabarlar + faol shartnoma(lar) — web bilan bir xil. */
 export async function GET(
   req: Request,
   { params }: { params: Promise<{ id: string }> },
@@ -44,28 +44,67 @@ export async function GET(
   });
 
   const otherId = otherUserId(conv, me);
-  const other = await db.user.findUnique({
-    where: { id: otherId },
-    select: { id: true, name: true, login: true, avatarUrl: true, image: true, isSupport: true },
-  });
+  const [other, bs, activeContracts] = await Promise.all([
+    db.user.findUnique({
+      where: { id: otherId },
+      select: {
+        id: true,
+        name: true,
+        login: true,
+        avatarUrl: true,
+        image: true,
+        isSupport: true,
+        lastSeenAt: true,
+      },
+    }),
+    blockState(me, otherId),
+    db.contract.findMany({
+      where: {
+        status: "ACCEPTED",
+        order: { status: { in: ["IN_PROGRESS", "DELIVERED"] }, deletedAt: null },
+        OR: [
+          { ordererId: me, preparerId: otherId },
+          { ordererId: otherId, preparerId: me },
+        ],
+      },
+      select: {
+        order: { select: { id: true, title: true, type: true, status: true } },
+      },
+      orderBy: { createdAt: "desc" },
+    }),
+  ]);
+  const hidden = bs.blockedMe && !other?.isSupport;
 
   const messages = await toClientMessages(rows, me);
 
   return mobileJson({
-    conversation: { id: conv.id },
+    conversation: { id: conv.id, orderId: conv.orderId },
+    blockedMe: bs.blockedMe,
+    blockedByMe: bs.iBlocked,
     other: other && {
       id: other.id,
       name: other.name ?? other.login ?? "Foydalanuvchi",
       login: other.login,
-      image: other.avatarUrl ?? other.image ?? null,
+      image: hidden ? null : (other.avatarUrl ?? other.image ?? null),
       isSupport: other.isSupport,
+      lastSeenAt: hidden || !other.lastSeenAt ? null : other.lastSeenAt.toISOString(),
     },
+    activeContracts: activeContracts.map((c) => c.order),
     messages,
   });
 }
 
 const sendSchema = z.object({
-  body: z.string().trim().min(1).max(8000),
+  body: z.string().trim().max(8000).optional(),
+  replyToId: z.string().optional(),
+  file: z
+    .object({
+      key: z.string().min(1),
+      name: z.string().min(1).max(300),
+      type: z.string().min(1).max(200),
+      size: z.number().int().nonnegative(),
+    })
+    .optional(),
 });
 
 export async function POST(
@@ -81,8 +120,8 @@ export async function POST(
   if (!conv) return mobileJson({ error: "Suhbat topilmadi" }, { status: 404 });
 
   const parsed = sendSchema.safeParse(await req.json().catch(() => null));
-  if (!parsed.success) {
-    return mobileJson({ error: "Xabar bo'sh bo'lmasin" }, { status: 400 });
+  if (!parsed.success || (!parsed.data.body && !parsed.data.file)) {
+    return mobileJson({ error: "Xabar yoki fayl bo'lishi kerak" }, { status: 400 });
   }
 
   const supportId = await getSupportUserId();
@@ -109,9 +148,34 @@ export async function POST(
   const msg = await createMessage({
     conversationId: id,
     senderId: me,
-    body: parsed.data.body,
+    body: parsed.data.body ?? "",
+    replyToId: parsed.data.replyToId ?? null,
+    file: parsed.data.file ?? null,
   });
   await deliverMessage(msg);
 
   return mobileJson({ message: await toClientMessage(msg, me) }, { status: 201 });
+}
+
+/** Foydalanuvchi suhbatni ikki tomondan o'chiradi (adminda saqlanadi) — web bilan bir xil. */
+export async function DELETE(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const auth = await requireMobileAuth(req);
+  if (auth instanceof NextResponse) return auth;
+  const { id } = await params;
+  const me = auth.userId;
+
+  const conv = await getConversationForUser(id, me);
+  if (!conv) return mobileJson({ error: "Suhbat topilmadi" }, { status: 404 });
+
+  const otherId = otherUserId(conv, me);
+  const other = await db.user.findUnique({ where: { id: otherId }, select: { isSupport: true } });
+  if (other?.isSupport) {
+    return mobileJson({ error: "«tayyorr.uz support» suhbatini o'chirib bo'lmaydi" }, { status: 400 });
+  }
+
+  await db.conversation.update({ where: { id }, data: { deletedByUsersAt: new Date() } });
+  return mobileJson({ ok: true });
 }
