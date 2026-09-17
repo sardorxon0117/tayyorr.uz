@@ -12,6 +12,7 @@ import '../../../widgets/user_avatar.dart';
 import '../../auth/bloc/auth_bloc.dart';
 import '../../auth/data/user_model.dart';
 import '../../dashboard/data/order_model.dart';
+import '../../public_profile/presentation/public_profile_screen.dart';
 import '../cubit/order_detail_cubit.dart';
 import '../data/order_detail_model.dart';
 import '../data/order_detail_repository.dart';
@@ -150,46 +151,10 @@ class _Body extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          GlassCard(
-            blur: false,
-            child: Row(
-              children: [
-                UserAvatar(imageUrl: order.orderer.image, initial: _initial(order.orderer.displayName), size: 40),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(order.orderer.displayName,
-                          style: const TextStyle(color: Colors.white, fontSize: 13.5, fontWeight: FontWeight.w600)),
-                      const Text('Buyurtmachi', style: TextStyle(color: AppColors.textMuted, fontSize: 11.5)),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
+          _PartyTile(party: order.orderer, roleLabel: 'Buyurtmachi'),
           if (order.preparer != null) ...[
             const SizedBox(height: 10),
-            GlassCard(
-              blur: false,
-              child: Row(
-                children: [
-                  UserAvatar(imageUrl: order.preparer!.image, initial: _initial(order.preparer!.displayName), size: 40),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(order.preparer!.displayName,
-                            style: const TextStyle(color: Colors.white, fontSize: 13.5, fontWeight: FontWeight.w600)),
-                        const Text('Tayyorlovchi', style: TextStyle(color: AppColors.textMuted, fontSize: 11.5)),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            _PartyTile(party: order.preparer!, roleLabel: 'Tayyorlovchi'),
           ],
 
           // --- status action buttons ---
@@ -295,6 +260,41 @@ class _Body extends StatelessWidget {
   }
 }
 
+class _PartyTile extends StatelessWidget {
+  const _PartyTile({required this.party, required this.roleLabel});
+  final OrderPartyModel party;
+  final String roleLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => PublicProfileScreen(userId: party.id)),
+      ),
+      child: GlassCard(
+        blur: false,
+        child: Row(
+          children: [
+            UserAvatar(imageUrl: party.image, initial: _initial(party.displayName), size: 40),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(party.displayName,
+                      style: const TextStyle(color: Colors.white, fontSize: 13.5, fontWeight: FontWeight.w600)),
+                  Text(roleLabel, style: const TextStyle(color: AppColors.textMuted, fontSize: 11.5)),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right_rounded, color: AppColors.textFaint, size: 20),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _OfferForm extends StatefulWidget {
   const _OfferForm({required this.orderId});
   final String orderId;
@@ -372,20 +372,33 @@ class _OfferTile extends StatelessWidget {
         children: [
           Row(
             children: [
-              UserAvatar(imageUrl: offer.preparer.image, initial: _initial(offer.preparer.displayName), size: 34),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              GestureDetector(
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => PublicProfileScreen(userId: offer.preparer.id)),
+                ),
+                child: Row(
                   children: [
-                    Text(offer.preparer.displayName,
-                        style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600)),
-                    if (offer.preparerRatingCount > 0)
-                      Text('${offer.preparerRating!.toStringAsFixed(1)} ⭐ · ${offer.preparerRatingCount} baho',
-                          style: const TextStyle(color: AppColors.textMuted, fontSize: 11)),
+                    UserAvatar(imageUrl: offer.preparer.image, initial: _initial(offer.preparer.displayName), size: 34),
+                    const SizedBox(width: 10),
+                    SizedBox(
+                      width: 140,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(offer.preparer.displayName,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600)),
+                          if (offer.preparerRatingCount > 0)
+                            Text('${offer.preparerRating!.toStringAsFixed(1)} ⭐ · ${offer.preparerRatingCount} baho',
+                                style: const TextStyle(color: AppColors.textMuted, fontSize: 11)),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),
+              const Spacer(),
               Text(formatSom(offer.price),
                   style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700)),
             ],
