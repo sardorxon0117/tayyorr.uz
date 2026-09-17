@@ -13,4 +13,16 @@ class WalletRepository {
     final res = await _api.post('/mobile/wallet/topup', data: {'amount': amount});
     return res['payUrl'] as String;
   }
+
+  Future<void> buyStars(int stars) async {
+    await _api.post('/mobile/wallet/buy-stars', data: {'stars': stars});
+  }
+
+  Future<void> payout({required int amount, required String card, String? cardName}) async {
+    await _api.post('/mobile/wallet/payout', data: {
+      'amount': amount,
+      'card': card,
+      if (cardName != null && cardName.isNotEmpty) 'cardName': cardName,
+    });
+  }
 }

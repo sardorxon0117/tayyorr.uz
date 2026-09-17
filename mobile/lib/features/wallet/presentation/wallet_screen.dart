@@ -6,10 +6,13 @@ import '../../../core/utils/format.dart';
 import '../../../widgets/app_drawer.dart';
 import '../../../widgets/app_header_sliver.dart';
 import '../../../widgets/glass_card.dart';
+import '../../auth/bloc/auth_bloc.dart';
 import '../cubit/wallet_cubit.dart';
 import '../data/wallet_model.dart';
 import '../data/wallet_repository.dart';
+import 'buy_stars_sheet.dart';
 import 'top_up_sheet.dart';
+import 'withdraw_sheet.dart';
 
 class WalletScreen extends StatelessWidget {
   const WalletScreen({super.key});
@@ -56,12 +59,41 @@ class _WalletView extends StatelessWidget {
                 }
                 final wallet = state.wallet;
                 if (wallet == null) return const SliverToBoxAdapter(child: SizedBox.shrink());
+                final isPreparer = context.select((AuthBloc b) => b.state.user?.isPreparer ?? false);
 
                 return SliverPadding(
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
                   sliver: SliverList(
                     delegate: SliverChildListDelegate([
                       _BalanceCard(wallet: wallet),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: () async {
+                                final ok = await showWithdrawSheet(context, balance: wallet.balance);
+                                if (ok == true && context.mounted) context.read<WalletCubit>().load();
+                              },
+                              style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.cardBorder)),
+                              child: const Text("Yechib olish"),
+                            ),
+                          ),
+                          if (isPreparer) ...[
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: () async {
+                                  final ok = await showBuyStarsSheet(context);
+                                  if (ok == true && context.mounted) context.read<WalletCubit>().load();
+                                },
+                                style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.cardBorder)),
+                                child: const Text('⭐ Sotib olish'),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
                       const SizedBox(height: 12),
                       Row(
                         children: [
@@ -172,6 +204,55 @@ class _MiniStat extends StatelessWidget {
   }
 }
 
+void _showReceipt(BuildContext context, {required String title, required List<(String, String)> rows}) {
+  showModalBottomSheet(
+    context: context,
+    backgroundColor: Colors.transparent,
+    builder: (_) => Container(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+      decoration: const BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        border: Border(top: BorderSide(color: AppColors.cardBorder)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Center(
+            child: Container(
+              width: 36,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 16),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(99),
+              ),
+            ),
+          ),
+          Text(title, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
+          const SizedBox(height: 14),
+          ...rows.map((r) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      width: 110,
+                      child: Text(r.$1, style: const TextStyle(color: AppColors.textMuted, fontSize: 12.5)),
+                    ),
+                    Expanded(
+                      child: Text(r.$2, style: const TextStyle(color: Colors.white, fontSize: 13)),
+                    ),
+                  ],
+                ),
+              )),
+        ],
+      ),
+    ),
+  );
+}
+
 class _TxnTile extends StatelessWidget {
   const _TxnTile({required this.txn});
   final WalletTransactionModel txn;
@@ -182,7 +263,19 @@ class _TxnTile extends StatelessWidget {
     final color = txn.status == 'PENDING'
         ? AppColors.amber
         : (isOut ? AppColors.red : AppColors.emerald);
-    return GlassCard(
+    return GestureDetector(
+      onTap: () => _showReceipt(
+        context,
+        title: kTxnTypeLabel[txn.type] ?? txn.type,
+        rows: [
+          ('Summa', '${isOut ? '-' : '+'}${formatSom(txn.amount)}'),
+          ('Holat', txn.status == 'PENDING' ? 'Kutilmoqda' : 'Bajarildi'),
+          ('Usul', txn.method),
+          if ((txn.note ?? '').isNotEmpty) ('Izoh', txn.note!),
+          ('Sana', '${txn.createdAt.day}.${txn.createdAt.month}.${txn.createdAt.year} ${txn.createdAt.hour.toString().padLeft(2, '0')}:${txn.createdAt.minute.toString().padLeft(2, '0')}'),
+        ],
+      ),
+      child: GlassCard(
       blur: false,
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       child: Row(
@@ -207,6 +300,7 @@ class _TxnTile extends StatelessWidget {
           ),
         ],
       ),
+      ),
     );
   }
 }
@@ -217,25 +311,36 @@ class _PayoutTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GlassCard(
-      blur: false,
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(kPayoutStatusLabel[payout.status] ?? payout.status,
-                    style: const TextStyle(color: Colors.white, fontSize: 13.5, fontWeight: FontWeight.w600)),
-                const SizedBox(height: 2),
-                Text(timeAgo(payout.createdAt), style: const TextStyle(color: AppColors.textFaint, fontSize: 11.5)),
-              ],
-            ),
-          ),
-          Text('-${formatSom(payout.amount)}',
-              style: const TextStyle(color: AppColors.red, fontSize: 13.5, fontWeight: FontWeight.w700)),
+    return GestureDetector(
+      onTap: () => _showReceipt(
+        context,
+        title: 'Kartaga yechish',
+        rows: [
+          ('Summa', '-${formatSom(payout.amount)}'),
+          ('Holat', kPayoutStatusLabel[payout.status] ?? payout.status),
+          ('Sana', '${payout.createdAt.day}.${payout.createdAt.month}.${payout.createdAt.year} ${payout.createdAt.hour.toString().padLeft(2, '0')}:${payout.createdAt.minute.toString().padLeft(2, '0')}'),
         ],
+      ),
+      child: GlassCard(
+        blur: false,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(kPayoutStatusLabel[payout.status] ?? payout.status,
+                      style: const TextStyle(color: Colors.white, fontSize: 13.5, fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 2),
+                  Text(timeAgo(payout.createdAt), style: const TextStyle(color: AppColors.textFaint, fontSize: 11.5)),
+                ],
+              ),
+            ),
+            Text('-${formatSom(payout.amount)}',
+                style: const TextStyle(color: AppColors.red, fontSize: 13.5, fontWeight: FontWeight.w700)),
+          ],
+        ),
       ),
     );
   }
