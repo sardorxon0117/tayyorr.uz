@@ -80,9 +80,9 @@ class _WithdrawSheetState extends State<_WithdrawSheet> {
       padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       child: Container(
         padding: const EdgeInsets.fromLTRB(20, 14, 20, 28),
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: AppColors.surface,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           border: Border(top: BorderSide(color: AppColors.cardBorder)),
         ),
         child: SingleChildScrollView(
@@ -101,8 +101,8 @@ class _WithdrawSheetState extends State<_WithdrawSheet> {
                 ),
               ),
               const SizedBox(height: 16),
-              const Text('Kartaga yechib olish',
-                  style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w700)),
+              Text('Kartaga yechib olish',
+                  style: TextStyle(color: AppColors.textPrimary, fontSize: 17, fontWeight: FontWeight.w700)),
               const SizedBox(height: 4),
               Text(
                 "Mablag' darhol hisobdan yechiladi. Mavjud: ${formatSom(widget.balance)}.",

@@ -100,7 +100,7 @@ class AppHeaderSliver extends StatelessWidget {
           Builder(
             builder: (context) => IconButton(
               onPressed: () => Scaffold.of(context).openDrawer(),
-              icon: const Icon(Icons.menu_rounded, size: 24, color: Colors.white),
+              icon: Icon(Icons.menu_rounded, size: 24, color: AppColors.textPrimary),
             ),
           ),
         ],

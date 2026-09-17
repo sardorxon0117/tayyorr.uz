@@ -9,6 +9,7 @@ import '../features/auth/bloc/auth_bloc.dart';
 import '../features/home/section_cubit.dart';
 import '../features/wallet/presentation/top_up_sheet.dart';
 import 'app_logo.dart';
+import 'theme_toggle.dart';
 import 'user_avatar.dart';
 
 const _bannerHeight = 132.0;
@@ -107,7 +108,7 @@ class AppDrawer extends StatelessWidget {
                   textAlign: TextAlign.center,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w700)),
+                  style: TextStyle(color: AppColors.textPrimary, fontSize: 15, fontWeight: FontWeight.w700)),
               const SizedBox(height: 2),
               Text(user.roleLabel,
                   textAlign: TextAlign.center,
@@ -207,10 +208,10 @@ class AppDrawer extends StatelessWidget {
                 ),
               ),
             ),
-            const Divider(color: AppColors.cardBorder, height: 1),
+            Divider(color: AppColors.cardBorder, height: 1),
             const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-              child: Text('tayyorr.uz', style: TextStyle(color: AppColors.textFaint, fontSize: 11)),
+              padding: EdgeInsets.fromLTRB(14, 10, 14, 10),
+              child: ThemeToggle(),
             ),
           ],
         ),
@@ -298,7 +299,7 @@ class _NavItem extends StatelessWidget {
         margin: const EdgeInsets.symmetric(vertical: 3),
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         decoration: BoxDecoration(
-          color: selected ? Colors.white.withValues(alpha: 0.06) : Colors.transparent,
+          color: selected ? AppColors.indigo.withValues(alpha: 0.1) : Colors.transparent,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(color: selected ? AppColors.cardBorder : Colors.transparent),
         ),
@@ -317,7 +318,7 @@ class _NavItem extends StatelessWidget {
             Text(
               label,
               style: TextStyle(
-                color: selected ? Colors.white : AppColors.textSecondary,
+                color: selected ? AppColors.textPrimary : AppColors.textSecondary,
                 fontSize: 13.5,
                 fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
               ),

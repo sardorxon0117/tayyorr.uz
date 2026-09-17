@@ -251,7 +251,7 @@ class _ChatHeader extends StatelessWidget {
                       Text(other.name,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w700)),
+                          style: TextStyle(color: AppColors.textPrimary, fontSize: 15, fontWeight: FontWeight.w700)),
                       if (other.isSupport)
                         const Text("Qo'llab-quvvatlash", style: TextStyle(color: AppColors.emerald, fontSize: 11.5))
                       else
@@ -266,15 +266,15 @@ class _ChatHeader extends StatelessWidget {
           ),
           if (!other.isSupport)
             PopupMenuButton<String>(
-              icon: const Icon(Icons.more_vert_rounded, color: AppColors.textSecondary),
+              icon: Icon(Icons.more_vert_rounded, color: AppColors.textSecondary),
               color: AppColors.surface,
               onSelected: (value) => _onMenuSelect(context, value),
               itemBuilder: (context) => [
-                const PopupMenuItem(value: 'report', child: Text('Shikoyat qilish', style: TextStyle(color: Colors.white))),
+                PopupMenuItem(value: 'report', child: Text('Shikoyat qilish', style: TextStyle(color: AppColors.textPrimary))),
                 PopupMenuItem(
                   value: 'block',
                   child: Text(blockedByMe ? 'Blokdan chiqarish' : 'Bloklash',
-                      style: const TextStyle(color: Colors.white)),
+                      style: TextStyle(color: AppColors.textPrimary)),
                 ),
                 const PopupMenuItem(value: 'delete', child: Text("Suhbatni o'chirish", style: TextStyle(color: AppColors.red))),
               ],
@@ -320,16 +320,16 @@ Future<void> _showReportDialog(BuildContext context, {String? messageId}) async 
       padding: EdgeInsets.only(bottom: MediaQuery.of(sheetContext).viewInsets.bottom),
       child: Container(
         padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: AppColors.surface,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           border: Border(top: BorderSide(color: AppColors.cardBorder)),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text('Shikoyat qilish', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
+            Text('Shikoyat qilish', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w700)),
             const SizedBox(height: 4),
             const Text('Nima sodir bo\'lganini yozing (kamida 10 belgi).',
                 style: TextStyle(color: AppColors.textMuted, fontSize: 12.5)),
@@ -400,7 +400,7 @@ class _PinnedContractCard extends StatelessWidget {
                         Text(order.title,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w700)),
+                            style: TextStyle(color: AppColors.textPrimary, fontSize: 13, fontWeight: FontWeight.w700)),
                         Text(
                           '${kOrderTypeLabel[order.type] ?? order.type} · ${kOrderStatusLabel[order.status] ?? order.status}'
                           '${total > 1 ? " · ${index + 1}/$total" : ""}',
@@ -414,7 +414,7 @@ class _PinnedContractCard extends StatelessWidget {
                       onPressed: onCycle,
                       icon: const Icon(Icons.swap_horiz_rounded, size: 18, color: AppColors.textMuted),
                     ),
-                  const Icon(Icons.chevron_right_rounded, color: AppColors.textFaint, size: 18),
+                  Icon(Icons.chevron_right_rounded, color: AppColors.textFaint, size: 18),
                 ],
               ),
             ),
@@ -435,7 +435,7 @@ class _ReplyBanner extends StatelessWidget {
       margin: const EdgeInsets.fromLTRB(12, 0, 12, 6),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: AppColors.tint(0.05),
         borderRadius: BorderRadius.circular(12),
         border: const Border(left: BorderSide(color: AppColors.indigo, width: 3)),
       ),
@@ -457,7 +457,7 @@ class _ReplyBanner extends StatelessWidget {
           ),
           IconButton(
             onPressed: () => context.read<ChatCubit>().setReplyTo(null),
-            icon: const Icon(Icons.close_rounded, size: 18, color: AppColors.textFaint),
+            icon: Icon(Icons.close_rounded, size: 18, color: AppColors.textFaint),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
           ),
@@ -481,9 +481,9 @@ class _MessageBubble extends StatelessWidget {
       backgroundColor: Colors.transparent,
       builder: (sheetContext) => Container(
         padding: const EdgeInsets.symmetric(vertical: 10),
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: AppColors.surface,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           border: Border(top: BorderSide(color: AppColors.cardBorder)),
         ),
         child: Column(
@@ -514,10 +514,10 @@ class _MessageBubble extends StatelessWidget {
                 ],
               ),
             ),
-            const Divider(color: AppColors.cardBorder, height: 1),
+            Divider(color: AppColors.cardBorder, height: 1),
             ListTile(
-              leading: const Icon(Icons.reply_rounded, color: AppColors.textSecondary),
-              title: const Text('Javob berish', style: TextStyle(color: Colors.white)),
+              leading: Icon(Icons.reply_rounded, color: AppColors.textSecondary),
+              title: Text('Javob berish', style: TextStyle(color: AppColors.textPrimary)),
               onTap: () {
                 Navigator.of(sheetContext).pop();
                 cubit.setReplyTo(message);
@@ -525,8 +525,8 @@ class _MessageBubble extends StatelessWidget {
             ),
             if (message.mine) ...[
               ListTile(
-                leading: const Icon(Icons.edit_outlined, color: AppColors.textSecondary),
-                title: const Text('Tahrirlash', style: TextStyle(color: Colors.white)),
+                leading: Icon(Icons.edit_outlined, color: AppColors.textSecondary),
+                title: Text('Tahrirlash', style: TextStyle(color: AppColors.textPrimary)),
                 onTap: () {
                   Navigator.of(sheetContext).pop();
                   _showEditSheet(context, cubit, message);
@@ -569,16 +569,16 @@ class _MessageBubble extends StatelessWidget {
         padding: EdgeInsets.only(bottom: MediaQuery.of(sheetContext).viewInsets.bottom),
         child: Container(
           padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             color: AppColors.surface,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
             border: Border(top: BorderSide(color: AppColors.cardBorder)),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text('Xabarni tahrirlash', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
+              Text('Xabarni tahrirlash', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w700)),
               const SizedBox(height: 14),
               AppTextField(label: 'Xabar', controller: controller, maxLines: 4),
               const SizedBox(height: 16),
@@ -604,6 +604,10 @@ class _MessageBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final mine = message.mine;
+    // "Mening" pufakcham har doim indigo fon + oq matn (rejimdan qat'i
+    // nazar). Boshqasiniki esa sahifa foniga mos xira qatlam — shuning
+    // uchun matn rangi rejimga qarab moslashishi kerak.
+    final bubbleTextColor = mine ? Colors.white : AppColors.textPrimary;
 
     if (message.system) {
       return Align(
@@ -613,7 +617,7 @@ class _MessageBubble extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 10),
           constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.8),
           decoration: BoxDecoration(
-            color: mine ? AppColors.indigo.withValues(alpha: 0.85) : Colors.white.withValues(alpha: 0.06),
+            color: mine ? AppColors.indigo.withValues(alpha: 0.85) : AppColors.tint(0.06),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: AppColors.cardBorder),
           ),
@@ -621,16 +625,16 @@ class _MessageBubble extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(message.body, style: const TextStyle(color: Colors.white, fontSize: 13.5, height: 1.4)),
+              Text(message.body, style: TextStyle(color: bubbleTextColor, fontSize: 13.5, height: 1.4)),
               if (hasActiveContract && pinnedOrderId != null) ...[
                 const SizedBox(height: 8),
-                const Divider(color: Colors.white24, height: 1),
+                Divider(color: mine ? Colors.white24 : AppColors.cardBorder, height: 1),
                 const SizedBox(height: 8),
                 GestureDetector(
                   onTap: () => Navigator.of(context)
                       .push(MaterialPageRoute(builder: (_) => OrderDetailScreen(orderId: pinnedOrderId!))),
-                  child: const Text('Buyurtmani ko\'rish ›',
-                      style: TextStyle(color: Colors.white, fontSize: 12.5, fontWeight: FontWeight.w700)),
+                  child: Text('Buyurtmani ko\'rish ›',
+                      style: TextStyle(color: bubbleTextColor, fontSize: 12.5, fontWeight: FontWeight.w700)),
                 ),
               ],
             ],
@@ -651,7 +655,7 @@ class _MessageBubble extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 9),
               constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.74),
               decoration: BoxDecoration(
-                color: mine ? AppColors.indigo : Colors.white.withValues(alpha: 0.06),
+                color: mine ? AppColors.indigo : AppColors.tint(0.06),
                 borderRadius: BorderRadius.only(
                   topLeft: const Radius.circular(16),
                   topRight: const Radius.circular(16),
@@ -667,21 +671,21 @@ class _MessageBubble extends StatelessWidget {
                   if (message.file != null) _FileAttachment(file: message.file!),
                   if (!message.deleted && message.body.isNotEmpty) ...[
                     if (message.file != null) const SizedBox(height: 6),
-                    Text(message.body, style: const TextStyle(color: Colors.white, fontSize: 14, height: 1.35)),
+                    Text(message.body, style: TextStyle(color: bubbleTextColor, fontSize: 14, height: 1.35)),
                   ],
                   if (message.deleted)
-                    const Text("o'chirilgan xabar",
-                        style: TextStyle(color: Colors.white54, fontStyle: FontStyle.italic, fontSize: 14)),
+                    Text("o'chirilgan xabar",
+                        style: TextStyle(color: bubbleTextColor.withValues(alpha: 0.6), fontStyle: FontStyle.italic, fontSize: 14)),
                   const SizedBox(height: 3),
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       if (message.edited && !message.deleted) ...[
                         Text('tahrirlangan · ',
-                            style: TextStyle(color: Colors.white.withValues(alpha: 0.45), fontSize: 9.5)),
+                            style: TextStyle(color: bubbleTextColor.withValues(alpha: 0.55), fontSize: 9.5)),
                       ],
                       Text(_time(message.createdAtDate),
-                          style: TextStyle(color: Colors.white.withValues(alpha: 0.55), fontSize: 10)),
+                          style: TextStyle(color: bubbleTextColor.withValues(alpha: 0.65), fontSize: 10)),
                     ],
                   ),
                 ],
@@ -757,7 +761,9 @@ class _FileAttachment extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         decoration: BoxDecoration(
-          color: Colors.black.withValues(alpha: 0.18),
+          // Rangi qanday bo'lishidan qat'i nazar o'qiladigan bo'lishi uchun
+          // yorug' rejimda qattiqroq qora parda ishlatiladi.
+          color: Colors.black.withValues(alpha: AppColors.isLight ? 0.55 : 0.18),
           borderRadius: BorderRadius.circular(10),
         ),
         child: Row(
@@ -789,7 +795,7 @@ class _ReactionButton extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: active ? AppColors.indigo.withValues(alpha: 0.2) : Colors.white.withValues(alpha: 0.05),
+          color: active ? AppColors.indigo.withValues(alpha: 0.2) : AppColors.tint(0.05),
           shape: BoxShape.circle,
         ),
         child: Icon(icon, size: 22, color: active ? AppColors.indigo : AppColors.textSecondary),
@@ -808,11 +814,11 @@ class _ReactionCountPill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.06),
+        color: AppColors.tint(0.06),
         borderRadius: BorderRadius.circular(99),
         border: Border.all(color: AppColors.cardBorder),
       ),
-      child: Text('$icon $count', style: const TextStyle(color: AppColors.textSecondary, fontSize: 11)),
+      child: Text('$icon $count', style: TextStyle(color: AppColors.textSecondary, fontSize: 11)),
     );
   }
 }
@@ -839,7 +845,7 @@ class _Composer extends StatelessWidget {
                 width: 42,
                 height: 42,
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.05),
+                  color: AppColors.tint(0.05),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: AppColors.cardBorder),
                 ),
@@ -850,7 +856,7 @@ class _Composer extends StatelessWidget {
                       )
                     : IconButton(
                         onPressed: onAttach,
-                        icon: const Icon(Icons.attach_file_rounded, size: 20, color: AppColors.textSecondary),
+                        icon: Icon(Icons.attach_file_rounded, size: 20, color: AppColors.textSecondary),
                       ),
               ),
             ),
@@ -865,7 +871,7 @@ class _Composer extends StatelessWidget {
                   constraints: const BoxConstraints(maxHeight: 120),
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.05),
+                    color: AppColors.tint(0.05),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(color: AppColors.cardBorder),
                   ),
@@ -874,7 +880,7 @@ class _Composer extends StatelessWidget {
                     minLines: 1,
                     maxLines: 5,
                     textCapitalization: TextCapitalization.sentences,
-                    style: const TextStyle(color: Colors.white, fontSize: 14),
+                    style: TextStyle(color: AppColors.textPrimary, fontSize: 14),
                     decoration: const InputDecoration(
                       isDense: true,
                       border: InputBorder.none,

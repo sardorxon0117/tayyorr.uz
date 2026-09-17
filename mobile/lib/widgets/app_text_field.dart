@@ -36,7 +36,7 @@ class _AppTextFieldState extends State<AppTextField> {
       children: [
         Text(
           widget.label,
-          style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+          style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
         ),
         const SizedBox(height: 6),
         TextField(
@@ -46,7 +46,7 @@ class _AppTextFieldState extends State<AppTextField> {
           textInputAction: widget.textInputAction,
           maxLines: widget.obscureText ? 1 : widget.maxLines,
           autofillHints: widget.autofillHints,
-          style: const TextStyle(color: Colors.white, fontSize: 15),
+          style: TextStyle(color: AppColors.textPrimary, fontSize: 15),
           decoration: widget.obscureText
               ? InputDecoration(
                   suffixIcon: IconButton(

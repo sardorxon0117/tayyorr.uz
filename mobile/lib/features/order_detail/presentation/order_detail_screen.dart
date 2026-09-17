@@ -60,8 +60,8 @@ class _OrderDetailView extends StatelessWidget {
                           onPressed: () => Navigator.of(context).pop(),
                           icon: const Icon(Icons.arrow_back_ios_new, size: 18),
                         ),
-                        const Text('Buyurtma',
-                            style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
+                        Text('Buyurtma',
+                            style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w700)),
                       ],
                     ),
                   ),
@@ -165,14 +165,14 @@ class _Body extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Text(order.title,
-                          style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700)),
+                          style: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.w700)),
                     ),
                     _StatusBadge(status: order.status),
                   ],
                 ),
                 const SizedBox(height: 8),
                 Text(order.description,
-                    style: const TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.45)),
+                    style: TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.45)),
                 const SizedBox(height: 14),
                 Wrap(
                   spacing: 14,
@@ -302,7 +302,7 @@ class _Body extends StatelessWidget {
                 color: AppColors.textFaint.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Text("O'chirilgan — faqat sizga ko'rinadi",
+              child: Text("O'chirilgan — faqat sizga ko'rinadi",
                   style: TextStyle(color: AppColors.textFaint, fontSize: 12)),
             ),
           ],
@@ -314,7 +314,7 @@ class _Body extends StatelessWidget {
           ],
           if (myOffer != null) ...[
             const SizedBox(height: 16),
-            const Text('Sizning taklifingiz', style: TextStyle(color: Colors.white, fontSize: 14.5, fontWeight: FontWeight.w700)),
+            Text('Sizning taklifingiz', style: TextStyle(color: AppColors.textPrimary, fontSize: 14.5, fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
             _OfferTile(offer: myOffer, canRespond: false, busy: state.busy),
           ],
@@ -329,7 +329,7 @@ class _Body extends StatelessWidget {
           if (isOrderer && order.offers.isNotEmpty) ...[
             const SizedBox(height: 20),
             Text('Takliflar (${order.offers.length})',
-                style: const TextStyle(color: Colors.white, fontSize: 14.5, fontWeight: FontWeight.w700)),
+                style: TextStyle(color: AppColors.textPrimary, fontSize: 14.5, fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
             ...order.offers.map((o) => Padding(
                   padding: const EdgeInsets.only(bottom: 8),
@@ -369,12 +369,12 @@ class _PartyTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(party.displayName,
-                      style: const TextStyle(color: Colors.white, fontSize: 13.5, fontWeight: FontWeight.w600)),
+                      style: TextStyle(color: AppColors.textPrimary, fontSize: 13.5, fontWeight: FontWeight.w600)),
                   Text(roleLabel, style: const TextStyle(color: AppColors.textMuted, fontSize: 11.5)),
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right_rounded, color: AppColors.textFaint, size: 20),
+            Icon(Icons.chevron_right_rounded, color: AppColors.textFaint, size: 20),
           ],
         ),
       ),
@@ -402,7 +402,7 @@ class _ContractCard extends StatelessWidget {
               const Icon(Icons.description_rounded, size: 17, color: AppColors.indigo),
               const SizedBox(width: 8),
               Text(isSent ? 'Shartnoma yuborilgan' : 'Faol shartnoma',
-                  style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700)),
+                  style: TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w700)),
               const Spacer(),
               Text(formatSom(contract.amount),
                   style: const TextStyle(color: AppColors.amber, fontSize: 14, fontWeight: FontWeight.w700)),
@@ -410,7 +410,7 @@ class _ContractCard extends StatelessWidget {
           ),
           if ((contract.note ?? '').isNotEmpty) ...[
             const SizedBox(height: 8),
-            Text(contract.note!, style: const TextStyle(color: AppColors.textSecondary, fontSize: 13, height: 1.4)),
+            Text(contract.note!, style: TextStyle(color: AppColors.textSecondary, fontSize: 13, height: 1.4)),
           ],
           if (contract.deadline != null) ...[
             const SizedBox(height: 6),
@@ -499,7 +499,7 @@ class _ReviewCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Text('Baho', style: TextStyle(color: Colors.white, fontSize: 13.5, fontWeight: FontWeight.w700)),
+              Text('Baho', style: TextStyle(color: AppColors.textPrimary, fontSize: 13.5, fontWeight: FontWeight.w700)),
               const SizedBox(width: 8),
               Row(
                 children: List.generate(
@@ -537,16 +537,16 @@ Future<void> _showReviewSheet(BuildContext context, {required String orderId}) a
         padding: EdgeInsets.only(bottom: MediaQuery.of(sheetContext).viewInsets.bottom),
         child: Container(
           padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             color: AppColors.surface,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
             border: Border(top: BorderSide(color: AppColors.cardBorder)),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text('Tayyorlovchiga baho bering', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
+              Text('Tayyorlovchiga baho bering', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w700)),
               const SizedBox(height: 14),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -610,7 +610,7 @@ class _OfferFormState extends State<_OfferForm> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Taklif yuborish', style: TextStyle(color: Colors.white, fontSize: 14.5, fontWeight: FontWeight.w700)),
+          Text('Taklif yuborish', style: TextStyle(color: AppColors.textPrimary, fontSize: 14.5, fontWeight: FontWeight.w700)),
           const SizedBox(height: 2),
           const Text("Navbatdagi o'rningiz sarflagan star miqdoriga bog'liq — ko'proq sarflasangiz yuqoriroqda turasiz.",
               style: TextStyle(color: AppColors.textMuted, fontSize: 11.5, height: 1.35)),
@@ -619,7 +619,7 @@ class _OfferFormState extends State<_OfferForm> {
           const SizedBox(height: 10),
           AppTextField(label: 'Xabar (ixtiyoriy)', controller: _message, maxLines: 3),
           const SizedBox(height: 10),
-          const Text('Sarflanadigan star', style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+          Text('Sarflanadigan star', style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
           const SizedBox(height: 6),
           Row(
             children: [
@@ -629,7 +629,7 @@ class _OfferFormState extends State<_OfferForm> {
               ),
               Expanded(
                 child: Center(
-                  child: Text('$_stars ⭐', style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w700)),
+                  child: Text('$_stars ⭐', style: TextStyle(color: AppColors.textPrimary, fontSize: 15, fontWeight: FontWeight.w700)),
                 ),
               ),
               _StarStepButton(icon: Icons.add_rounded, onTap: () => setState(() => _stars++)),
@@ -701,7 +701,7 @@ class _QueueSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Navbat', style: TextStyle(color: Colors.white, fontSize: 14.5, fontWeight: FontWeight.w700)),
+          Text('Navbat', style: TextStyle(color: AppColors.textPrimary, fontSize: 14.5, fontWeight: FontWeight.w700)),
           const SizedBox(height: 2),
           const Text("Kim ko'proq star sarflagan bo'lsa, shuncha yuqorida turadi.",
               style: TextStyle(color: AppColors.textMuted, fontSize: 11.5)),
@@ -715,7 +715,7 @@ class _QueueSection extends StatelessWidget {
                       height: 24,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: q.mine ? AppColors.indigo.withValues(alpha: 0.25) : Colors.white.withValues(alpha: 0.05),
+                        color: q.mine ? AppColors.indigo.withValues(alpha: 0.25) : AppColors.tint(0.05),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text('${q.position}',
@@ -762,23 +762,23 @@ class _QueueSection extends StatelessWidget {
       builder: (sheetContext) => StatefulBuilder(
         builder: (sheetContext, setSheetState) => Container(
           padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             color: AppColors.surface,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
             border: Border(top: BorderSide(color: AppColors.cardBorder)),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text("Qo'shimcha star", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
+              Text("Qo'shimcha star", style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w700)),
               const SizedBox(height: 14),
               Row(
                 children: [
                   _StarStepButton(icon: Icons.remove_rounded, onTap: stars > 1 ? () => setSheetState(() => stars--) : null),
                   Expanded(
                     child: Center(
-                      child: Text('$stars ⭐', style: const TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w700)),
+                      child: Text('$stars ⭐', style: TextStyle(color: AppColors.textPrimary, fontSize: 17, fontWeight: FontWeight.w700)),
                     ),
                   ),
                   _StarStepButton(icon: Icons.add_rounded, onTap: () => setSheetState(() => stars++)),
@@ -824,16 +824,16 @@ Future<void> _showSendContractSheet(
         padding: EdgeInsets.only(bottom: MediaQuery.of(sheetContext).viewInsets.bottom),
         child: Container(
           padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             color: AppColors.surface,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
             border: Border(top: BorderSide(color: AppColors.cardBorder)),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text('Shartnoma yuborish', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
+              Text('Shartnoma yuborish', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w700)),
               const SizedBox(height: 4),
               const Text(
                 "Summa hisobingizdan bloklanadi, ish yakunlangach tayyorlovchiga o'tadi.",
@@ -857,7 +857,7 @@ Future<void> _showSendContractSheet(
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.04),
+                    color: AppColors.tint(0.04),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: AppColors.cardBorder),
                   ),
@@ -938,7 +938,7 @@ class _OfferTile extends StatelessWidget {
                           Text(offer.preparer.displayName,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600)),
+                              style: TextStyle(color: AppColors.textPrimary, fontSize: 13, fontWeight: FontWeight.w600)),
                           if (offer.preparerRatingCount > 0)
                             Text('${offer.preparerRating!.toStringAsFixed(1)} ⭐ · ${offer.preparerRatingCount} baho',
                                 style: const TextStyle(color: AppColors.textMuted, fontSize: 11)),
@@ -950,12 +950,12 @@ class _OfferTile extends StatelessWidget {
               ),
               const Spacer(),
               Text(formatSom(offer.price),
-                  style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700)),
+                  style: TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w700)),
             ],
           ),
           if ((offer.message ?? '').isNotEmpty) ...[
             const SizedBox(height: 8),
-            Text(offer.message!, style: const TextStyle(color: AppColors.textSecondary, fontSize: 13, height: 1.4)),
+            Text(offer.message!, style: TextStyle(color: AppColors.textSecondary, fontSize: 13, height: 1.4)),
           ],
           const SizedBox(height: 8),
           Row(

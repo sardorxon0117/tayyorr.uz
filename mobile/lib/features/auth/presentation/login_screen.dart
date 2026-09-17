@@ -112,13 +112,13 @@ class _LoginScreenState extends State<LoginScreen> {
                               const SizedBox(height: 18),
                               Row(
                                 children: [
-                                  const Expanded(child: Divider(color: AppColors.cardBorder)),
+                                  Expanded(child: Divider(color: AppColors.cardBorder)),
                                   Padding(
                                     padding: const EdgeInsets.symmetric(horizontal: 10),
                                     child: Text('yoki',
                                         style: TextStyle(color: AppColors.textMuted, fontSize: 12)),
                                   ),
-                                  const Expanded(child: Divider(color: AppColors.cardBorder)),
+                                  Expanded(child: Divider(color: AppColors.cardBorder)),
                                 ],
                               ),
                               const SizedBox(height: 18),
@@ -129,7 +129,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                         .read<AuthBloc>()
                                         .add(const AuthGoogleSignInRequested()),
                                 style: OutlinedButton.styleFrom(
-                                  side: const BorderSide(color: AppColors.cardBorder),
+                                  side: BorderSide(color: AppColors.cardBorder),
                                   padding: const EdgeInsets.symmetric(vertical: 13),
                                 ),
                                 child: Row(

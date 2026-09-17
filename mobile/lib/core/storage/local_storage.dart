@@ -10,6 +10,7 @@ class LocalStorage {
   static const _tokenKey = 'auth_token';
   static const _flagsBox = 'flags';
   static const _seenOnboardingKey = 'seen_onboarding';
+  static const _themeKey = 'theme';
 
   final _secure = const FlutterSecureStorage();
   Box? _box;
@@ -25,4 +26,9 @@ class LocalStorage {
 
   bool get hasSeenOnboarding => _box?.get(_seenOnboardingKey, defaultValue: false) as bool;
   Future<void> setSeenOnboarding() => _box!.put(_seenOnboardingKey, true);
+
+  /// Ilova ochilishida serverdan javob kutmasdan darhol to'g'ri mavzuni
+  /// ko'rsatish uchun — oxirgi bilingan qiymat mahalliy keshda saqlanadi.
+  String? get cachedTheme => _box?.get(_themeKey) as String?;
+  Future<void> setCachedTheme(String theme) => _box!.put(_themeKey, theme);
 }

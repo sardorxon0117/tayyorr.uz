@@ -105,7 +105,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          const Text('Kim sifatida?',
+                          Text('Kim sifatida?',
                               style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
                           const SizedBox(height: 8),
                           Row(
@@ -226,7 +226,7 @@ class _RoleChip extends StatelessWidget {
         decoration: BoxDecoration(
           color: selected
               ? AppColors.indigo.withValues(alpha: 0.2)
-              : Colors.white.withValues(alpha: 0.04),
+              : AppColors.tint(0.04),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: selected ? AppColors.indigo : AppColors.cardBorder,

@@ -17,6 +17,7 @@ export const ME_SELECT = {
   ratingCount: true,
   isAvailable: true,
   createdAt: true,
+  theme: true,
 } as const;
 
 type MeUser = {
@@ -37,6 +38,7 @@ type MeUser = {
   ratingCount: number;
   isAvailable: boolean;
   createdAt: Date;
+  theme: string | null;
 };
 
 export function serializeMe(u: MeUser) {
@@ -57,6 +59,7 @@ export function serializeMe(u: MeUser) {
     ratingCount: u.ratingCount,
     isAvailable: u.isAvailable,
     createdAt: u.createdAt.toISOString(),
+    theme: u.theme === "light" ? "light" : "dark",
     needsOnboarding: !(u.role && u.login),
   };
 }

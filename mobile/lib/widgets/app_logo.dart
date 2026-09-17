@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
-/// Saytdagi haqiqiy "tayyorr.uz" logotipi (oq versiya, qorong'u fon uchun).
+import '../core/theme/app_colors.dart';
+
+/// Saytdagi haqiqiy "tayyorr.uz" logotipi. Asset oq rangda chizilgan —
+/// yorug' rejimda o'qilishi uchun matn rangiga moslab bo'yaladi.
 class AppLogo extends StatelessWidget {
   const AppLogo({super.key, this.height = 22});
 
@@ -13,6 +16,8 @@ class AppLogo extends StatelessWidget {
       height: height,
       fit: BoxFit.contain,
       filterQuality: FilterQuality.high,
+      color: AppColors.textPrimary,
+      colorBlendMode: BlendMode.srcIn,
     );
   }
 }

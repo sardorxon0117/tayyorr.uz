@@ -69,7 +69,7 @@ class _ReferralViewState extends State<_ReferralView> {
               sliver: SliverList(
                 delegate: SliverChildListDelegate([
                   Text("Do'stlaringizni taklif qiling",
-                      style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700)),
+                      style: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.w700)),
                   const SizedBox(height: 4),
                   const Text(
                     "Havolangiz orqali ro'yxatdan o'tgan har bir yangi foydalanuvchi uchun sizga 1 ⭐ beriladi.",
@@ -86,13 +86,13 @@ class _ReferralViewState extends State<_ReferralView> {
                             width: double.infinity,
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                             decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.05),
+                              color: AppColors.tint(0.05),
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(color: AppColors.cardBorder),
                             ),
                             child: Text(
                               _link(user.id),
-                              style: const TextStyle(color: AppColors.textSecondary, fontSize: 12.5),
+                              style: TextStyle(color: AppColors.textSecondary, fontSize: 12.5),
                             ),
                           ),
                           const SizedBox(height: 12),
@@ -104,7 +104,7 @@ class _ReferralViewState extends State<_ReferralView> {
                                   icon: Icon(_copied ? Icons.check_rounded : Icons.copy_rounded, size: 16),
                                   label: Text(_copied ? 'Nusxalandi' : 'Nusxalash'),
                                   style: OutlinedButton.styleFrom(
-                                    side: const BorderSide(color: AppColors.cardBorder),
+                                    side: BorderSide(color: AppColors.cardBorder),
                                     padding: const EdgeInsets.symmetric(vertical: 12),
                                   ),
                                 ),
@@ -136,7 +136,7 @@ class _ReferralViewState extends State<_ReferralView> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text('Siz taklif qilganlar (${referred.length})',
-                              style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w700)),
+                              style: TextStyle(color: AppColors.textPrimary, fontSize: 15, fontWeight: FontWeight.w700)),
                           const SizedBox(height: 10),
                           if (state.status == ReferralStatus.loading && referred.isEmpty)
                             const Column(
@@ -167,11 +167,11 @@ class _ReferralViewState extends State<_ReferralView> {
                                             '${r.name ?? "—"} @${r.login ?? "—"}',
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
-                                            style: const TextStyle(color: Colors.white, fontSize: 13),
+                                            style: TextStyle(color: AppColors.textPrimary, fontSize: 13),
                                           ),
                                         ),
                                         Text(timeAgo(r.createdAt),
-                                            style: const TextStyle(color: AppColors.textFaint, fontSize: 11)),
+                                            style: TextStyle(color: AppColors.textFaint, fontSize: 11)),
                                         const SizedBox(width: 8),
                                         Container(
                                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),

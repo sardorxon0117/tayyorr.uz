@@ -15,7 +15,7 @@ Future<bool?> confirmDialog(
     context: context,
     builder: (_) => AlertDialog(
       backgroundColor: AppColors.surface,
-      title: Text(title, style: const TextStyle(color: Colors.white)),
+      title: Text(title, style: TextStyle(color: AppColors.textPrimary)),
       content: Text(message, style: const TextStyle(color: AppColors.textMuted)),
       actions: [
         TextButton(onPressed: () => Navigator.pop(context, false), child: Text(cancelLabel)),

@@ -89,7 +89,7 @@ class _WalletView extends StatelessWidget {
                                 final ok = await showWithdrawSheet(context, balance: wallet.balance);
                                 if (ok == true && context.mounted) context.read<WalletCubit>().load();
                               },
-                              style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.cardBorder)),
+                              style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.cardBorder)),
                               child: const Text("Yechib olish"),
                             ),
                           ),
@@ -101,7 +101,7 @@ class _WalletView extends StatelessWidget {
                                   final ok = await showBuyStarsSheet(context);
                                   if (ok == true && context.mounted) context.read<WalletCubit>().load();
                                 },
-                                style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.cardBorder)),
+                                style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.cardBorder)),
                                 child: const Text('⭐ Sotib olish'),
                               ),
                             ),
@@ -117,8 +117,8 @@ class _WalletView extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 20),
-                      const Text('Tarix',
-                          style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w700)),
+                      Text('Tarix',
+                          style: TextStyle(color: AppColors.textPrimary, fontSize: 15, fontWeight: FontWeight.w700)),
                       const SizedBox(height: 10),
                       if (wallet.transactions.isEmpty && wallet.payouts.isEmpty)
                         const Padding(
@@ -176,7 +176,7 @@ class _BalanceCard extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             formatSom(wallet.balance),
-            style: const TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.w800),
+            style: TextStyle(color: AppColors.textPrimary, fontSize: 26, fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 16),
           SizedBox(
@@ -211,7 +211,7 @@ class _MiniStat extends StatelessWidget {
           Text(label, style: const TextStyle(color: AppColors.textMuted, fontSize: 12)),
           const SizedBox(height: 4),
           Text(value,
-              style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w700)),
+              style: TextStyle(color: AppColors.textPrimary, fontSize: 15, fontWeight: FontWeight.w700)),
         ],
       ),
     );
@@ -224,9 +224,9 @@ void _showReceipt(BuildContext context, {required String title, required List<(S
     backgroundColor: Colors.transparent,
     builder: (_) => Container(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         border: Border(top: BorderSide(color: AppColors.cardBorder)),
       ),
       child: Column(
@@ -244,7 +244,7 @@ void _showReceipt(BuildContext context, {required String title, required List<(S
               ),
             ),
           ),
-          Text(title, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
+          Text(title, style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w700)),
           const SizedBox(height: 14),
           ...rows.map((r) => Padding(
                 padding: const EdgeInsets.symmetric(vertical: 6),
@@ -256,7 +256,7 @@ void _showReceipt(BuildContext context, {required String title, required List<(S
                       child: Text(r.$1, style: const TextStyle(color: AppColors.textMuted, fontSize: 12.5)),
                     ),
                     Expanded(
-                      child: Text(r.$2, style: const TextStyle(color: Colors.white, fontSize: 13)),
+                      child: Text(r.$2, style: TextStyle(color: AppColors.textPrimary, fontSize: 13)),
                     ),
                   ],
                 ),
@@ -299,11 +299,11 @@ class _TxnTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(kTxnTypeLabel[txn.type] ?? txn.type,
-                    style: const TextStyle(color: Colors.white, fontSize: 13.5, fontWeight: FontWeight.w600)),
+                    style: TextStyle(color: AppColors.textPrimary, fontSize: 13.5, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 2),
                 Text(
                   '${timeAgo(txn.createdAt)}${txn.status == 'PENDING' ? " · kutilmoqda" : ""}',
-                  style: const TextStyle(color: AppColors.textFaint, fontSize: 11.5),
+                  style: TextStyle(color: AppColors.textFaint, fontSize: 11.5),
                 ),
               ],
             ),
@@ -345,9 +345,9 @@ class _PayoutTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(kPayoutStatusLabel[payout.status] ?? payout.status,
-                      style: const TextStyle(color: Colors.white, fontSize: 13.5, fontWeight: FontWeight.w600)),
+                      style: TextStyle(color: AppColors.textPrimary, fontSize: 13.5, fontWeight: FontWeight.w600)),
                   const SizedBox(height: 2),
-                  Text(timeAgo(payout.createdAt), style: const TextStyle(color: AppColors.textFaint, fontSize: 11.5)),
+                  Text(timeAgo(payout.createdAt), style: TextStyle(color: AppColors.textFaint, fontSize: 11.5)),
                 ],
               ),
             ),

@@ -177,7 +177,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                const Text('Hisob sozlamalari', style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w700)),
+                Text('Hisob sozlamalari', style: TextStyle(color: AppColors.textPrimary, fontSize: 15, fontWeight: FontWeight.w700)),
                 const SizedBox(height: 4),
                 const Text('Username va parolni bu yerdan o\'zgartirishingiz mumkin.',
                     style: TextStyle(color: AppColors.textMuted, fontSize: 12.5)),
@@ -193,7 +193,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       const SizedBox(height: 10),
                       AppTextField(label: 'Yangi parol (tasdiqlash)', controller: _newPassword2, obscureText: true),
                       const SizedBox(height: 4),
-                      const Text("Eski parolni kiritish shart emas.",
+                      Text("Eski parolni kiritish shart emas.",
                           style: TextStyle(color: AppColors.textFaint, fontSize: 11.5)),
                       if (_accountError != null) ...[
                         const SizedBox(height: 12),

@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/network/api_exception.dart';
+import '../../../core/theme/theme_controller.dart';
 import '../data/auth_repository.dart';
 import '../data/user_model.dart';
 
@@ -23,15 +24,22 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   AuthStatus _statusFor(UserModel user) =>
       user.needsOnboarding ? AuthStatus.onboarding : AuthStatus.authenticated;
 
+  /// Har safar serverdan foydalanuvchi kelganda — yorug'/qorong'i rejimni
+  /// shu hisobda saqlangan qiymat bilan sinxronlaydi.
+  void _syncTheme(UserModel user) => ThemeController.instance.syncFromServer(user.theme);
+
   Future<void> _onStarted(AuthStarted event, Emitter<AuthState> emit) async {
     final user = await _repo.tryRestoreSession();
     // Shu orada foydalanuvchi allaqachon kirgan/ro'yxatdan o'tgan bo'lishi
     // mumkin (sekin tokenni o'qish tugaguncha) — bu holda eski natijani
     // qo'llamaymiz, aks holda yangi sessiyani ustidan bosib qo'yamiz.
     if (state.status != AuthStatus.unknown) return;
-    emit(user != null
-        ? state.copyWith(status: _statusFor(user), user: user)
-        : state.copyWith(status: AuthStatus.unauthenticated));
+    if (user != null) {
+      _syncTheme(user);
+      emit(state.copyWith(status: _statusFor(user), user: user));
+    } else {
+      emit(state.copyWith(status: AuthStatus.unauthenticated));
+    }
   }
 
   Future<void> _onLogin(
@@ -40,6 +48,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       final user =
           await _repo.login(login: event.login, password: event.password);
+      _syncTheme(user);
       emit(state.copyWith(status: _statusFor(user), user: user));
     } on ApiException catch (e) {
       emit(state.copyWith(
@@ -59,6 +68,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         emit(state.copyWith(status: AuthStatus.unauthenticated));
         return;
       }
+      _syncTheme(user);
       emit(state.copyWith(status: _statusFor(user), user: user));
     } on ApiException catch (e) {
       emit(state.copyWith(
@@ -80,6 +90,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         password: event.password,
         about: event.about,
       );
+      _syncTheme(user);
       emit(state.copyWith(status: AuthStatus.authenticated, user: user));
     } on ApiException catch (e) {
       emit(state.copyWith(
@@ -99,6 +110,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       AuthMeRefreshRequested event, Emitter<AuthState> emit) async {
     try {
       final user = await _repo.refreshMe();
+      _syncTheme(user);
       emit(state.copyWith(user: user));
     } catch (_) {
       // jim — vaqtinchalik tarmoq xatosi bo'lishi mumkin, sessiyani uzmaymiz

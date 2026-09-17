@@ -133,9 +133,9 @@ class _DashboardViewState extends State<_DashboardView> {
               padding: EdgeInsets.only(bottom: MediaQuery.of(sheetContext).viewInsets.bottom),
               child: Container(
                 padding: const EdgeInsets.fromLTRB(18, 16, 18, 24),
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   color: AppColors.surface,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
                   border: Border(top: BorderSide(color: AppColors.cardBorder)),
                 ),
                 child: Column(
@@ -153,7 +153,7 @@ class _DashboardViewState extends State<_DashboardView> {
                         ),
                       ),
                     ),
-                    const Text('Ish turi', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700)),
+                    Text('Ish turi', style: TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w700)),
                     const SizedBox(height: 10),
                     Wrap(
                       spacing: 8,
@@ -170,7 +170,7 @@ class _DashboardViewState extends State<_DashboardView> {
                       }).toList(),
                     ),
                     const SizedBox(height: 18),
-                    const Text('Takliflar soni', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700)),
+                    Text('Takliflar soni', style: TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w700)),
                     const SizedBox(height: 10),
                     Wrap(
                       spacing: 8,
@@ -187,7 +187,7 @@ class _DashboardViewState extends State<_DashboardView> {
                       }).toList(),
                     ),
                     const SizedBox(height: 18),
-                    const Text('Saralash', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700)),
+                    Text('Saralash', style: TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w700)),
                     const SizedBox(height: 10),
                     Wrap(
                       spacing: 8,
@@ -216,7 +216,7 @@ class _DashboardViewState extends State<_DashboardView> {
                               buckets = {};
                               sort = _SortKey.newest;
                             }),
-                            style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.cardBorder)),
+                            style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.cardBorder)),
                             child: const Text('Tozalash'),
                           ),
                         ),
@@ -307,7 +307,7 @@ class _DashboardViewState extends State<_DashboardView> {
                           decoration: BoxDecoration(
                             color: _hasExtraFilters
                                 ? AppColors.indigo.withValues(alpha: 0.25)
-                                : Colors.white.withValues(alpha: 0.05),
+                                : AppColors.tint(0.05),
                             borderRadius: BorderRadius.circular(13),
                             border: Border.all(color: _hasExtraFilters ? AppColors.indigo : AppColors.cardBorder),
                           ),
@@ -456,14 +456,14 @@ class _SearchField extends StatelessWidget {
     return Container(
       height: 42,
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: AppColors.tint(0.05),
         borderRadius: BorderRadius.circular(13),
         border: Border.all(color: AppColors.cardBorder),
       ),
       child: TextField(
         controller: controller,
         onChanged: onChanged,
-        style: const TextStyle(color: Colors.white, fontSize: 13.5),
+        style: TextStyle(color: AppColors.textPrimary, fontSize: 13.5),
         decoration: InputDecoration(
           isDense: true,
           border: InputBorder.none,
@@ -500,7 +500,7 @@ class _FilterChips extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 12),
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: selected ? AppColors.indigo.withValues(alpha: 0.22) : Colors.white.withValues(alpha: 0.05),
+                color: selected ? AppColors.indigo.withValues(alpha: 0.22) : AppColors.tint(0.05),
                 borderRadius: BorderRadius.circular(99),
                 border: Border.all(color: selected ? AppColors.indigo : AppColors.cardBorder),
               ),
@@ -605,8 +605,8 @@ class _OrderCard extends StatelessWidget {
                   order.title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
                     fontWeight: FontWeight.w600,
                     fontSize: 15.5,
                   ),
@@ -620,7 +620,7 @@ class _OrderCard extends StatelessWidget {
                     color: AppColors.textFaint.withValues(alpha: 0.14),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Text("O'chirilgan", style: TextStyle(color: AppColors.textFaint, fontSize: 10.5)),
+                  child: Text("O'chirilgan", style: TextStyle(color: AppColors.textFaint, fontSize: 10.5)),
                 ),
               _StatusBadge(status: order.status),
             ],
@@ -630,7 +630,7 @@ class _OrderCard extends StatelessWidget {
             order.description,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(color: AppColors.textSecondary, fontSize: 13, height: 1.4),
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 13, height: 1.4),
           ),
           const SizedBox(height: 10),
           Row(
@@ -639,7 +639,7 @@ class _OrderCard extends StatelessWidget {
                 kOrderTypeLabel[order.type] ?? order.type,
                 style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
               ),
-              const Text(' · ', style: TextStyle(color: AppColors.textFaint)),
+              Text(' · ', style: TextStyle(color: AppColors.textFaint)),
               Text(
                 order.budget != null ? formatSom(order.budget!) : 'Kelishiladi',
                 style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
@@ -647,7 +647,7 @@ class _OrderCard extends StatelessWidget {
               const Spacer(),
               Text(
                 timeAgo(order.createdAt),
-                style: const TextStyle(color: AppColors.textFaint, fontSize: 11.5),
+                style: TextStyle(color: AppColors.textFaint, fontSize: 11.5),
               ),
             ],
           ),
@@ -673,7 +673,7 @@ class _SheetChip extends StatelessWidget {
         duration: const Duration(milliseconds: 160),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
         decoration: BoxDecoration(
-          color: selected ? AppColors.indigo.withValues(alpha: 0.22) : Colors.white.withValues(alpha: 0.05),
+          color: selected ? AppColors.indigo.withValues(alpha: 0.22) : AppColors.tint(0.05),
           borderRadius: BorderRadius.circular(10),
           border: Border.all(color: selected ? AppColors.indigo : AppColors.cardBorder),
         ),

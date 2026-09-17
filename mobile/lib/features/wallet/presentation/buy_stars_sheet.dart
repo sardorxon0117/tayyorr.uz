@@ -71,9 +71,9 @@ class _BuyStarsSheetState extends State<_BuyStarsSheet> {
       padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       child: Container(
         padding: const EdgeInsets.fromLTRB(20, 14, 20, 28),
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: AppColors.surface,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           border: Border(top: BorderSide(color: AppColors.cardBorder)),
         ),
         child: Column(
@@ -91,8 +91,8 @@ class _BuyStarsSheetState extends State<_BuyStarsSheet> {
               ),
             ),
             const SizedBox(height: 16),
-            const Text('⭐ Yulduz sotib olish',
-                style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w700)),
+            Text('⭐ Yulduz sotib olish',
+                style: TextStyle(color: AppColors.textPrimary, fontSize: 17, fontWeight: FontWeight.w700)),
             const SizedBox(height: 4),
             const Text(
               "Buyurtmaga taklif yuborish va navbatda yuqoriga chiqish uchun kerak. 1 ⭐ = 2 000 so'm, hamyon balansingizdan yechiladi.",
@@ -108,11 +108,11 @@ class _BuyStarsSheetState extends State<_BuyStarsSheet> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.05),
+                      color: AppColors.tint(0.05),
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(color: AppColors.cardBorder),
                     ),
-                    child: Text('$q ⭐', style: const TextStyle(color: Colors.white, fontSize: 12.5)),
+                    child: Text('$q ⭐', style: TextStyle(color: AppColors.textPrimary, fontSize: 12.5)),
                   ),
                 );
               }).toList(),

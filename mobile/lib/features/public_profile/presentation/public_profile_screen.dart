@@ -46,7 +46,7 @@ class _PublicProfileView extends StatelessWidget {
                       onPressed: () => Navigator.of(context).pop(),
                       icon: const Icon(Icons.arrow_back_ios_new, size: 18),
                     ),
-                    const Text('Profil', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
+                    Text('Profil', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w700)),
                   ],
                 ),
               ),
@@ -111,7 +111,7 @@ class _PublicProfileView extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(p.displayName,
-                                      style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700)),
+                                      style: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.w700)),
                                   const SizedBox(height: 3),
                                   Text(
                                     '@${p.login ?? "—"} · ${p.role == "PREPARER" ? "Tayyorlovchi" : p.role == "ORDERER" ? "Buyurtma beruvchi" : "—"}',
@@ -140,10 +140,10 @@ class _PublicProfileView extends StatelessWidget {
                                         _Stars(value: p.rating ?? 0),
                                         const SizedBox(width: 6),
                                         Text(p.ratingCount > 0 ? p.rating!.toStringAsFixed(1) : '—',
-                                            style: const TextStyle(color: Colors.white, fontSize: 13)),
+                                            style: TextStyle(color: AppColors.textPrimary, fontSize: 13)),
                                         const SizedBox(width: 4),
                                         Text('(${p.ratingCount} baho)',
-                                            style: const TextStyle(color: AppColors.textFaint, fontSize: 11.5)),
+                                            style: TextStyle(color: AppColors.textFaint, fontSize: 11.5)),
                                       ],
                                     ),
                                   ],
@@ -170,16 +170,16 @@ class _PublicProfileView extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               _InfoRow(label: 'Email', value: p.email?.display ?? '—', blurred: p.email != null && !p.email!.full),
-                              const Divider(color: AppColors.cardBorder, height: 20),
+                              Divider(color: AppColors.cardBorder, height: 20),
                               _InfoRow(label: "Ro'yxatdan o'tgan", value: _shortDate(p.createdAt)),
-                              const Divider(color: AppColors.cardBorder, height: 20),
+                              Divider(color: AppColors.cardBorder, height: 20),
                               _InfoRow(
                                 label: p.isPreparer ? 'Olingan ishlar' : 'Berilgan buyurtmalar',
                                 value: '${p.isPreparer ? p.ordersTaken : p.ordersCreated}',
                               ),
                               if ((p.about ?? '').isNotEmpty) ...[
                                 const SizedBox(height: 12),
-                                Text(p.about!, style: const TextStyle(color: AppColors.textSecondary, fontSize: 13.5, height: 1.4)),
+                                Text(p.about!, style: TextStyle(color: AppColors.textSecondary, fontSize: 13.5, height: 1.4)),
                               ],
                             ],
                           ),
@@ -187,7 +187,7 @@ class _PublicProfileView extends StatelessWidget {
                         const SizedBox(height: 20),
                         Text(
                           '${p.isPreparer ? "Bajarilgan ishlar" : "Berilgan buyurtmalar"} (${p.doneOrders.length})',
-                          style: const TextStyle(color: Colors.white, fontSize: 14.5, fontWeight: FontWeight.w700),
+                          style: TextStyle(color: AppColors.textPrimary, fontSize: 14.5, fontWeight: FontWeight.w700),
                         ),
                         const SizedBox(height: 10),
                         if (p.doneOrders.isEmpty)
@@ -281,12 +281,12 @@ class _DoneOrderTile extends StatelessWidget {
                     Text(order.title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(color: Colors.white, fontSize: 13.5, fontWeight: FontWeight.w600)),
+                        style: TextStyle(color: AppColors.textPrimary, fontSize: 13.5, fontWeight: FontWeight.w600)),
                     const SizedBox(height: 3),
                     Text(
                       '${kOrderTypeLabel[order.type] ?? order.type} · ${_shortDate(order.date)}'
                       '${!isPreparer ? " · ${kOrderStatusLabel[order.status] ?? order.status}" : ""}',
-                      style: const TextStyle(color: AppColors.textFaint, fontSize: 11.5),
+                      style: TextStyle(color: AppColors.textFaint, fontSize: 11.5),
                     ),
                   ],
                 ),
@@ -300,7 +300,7 @@ class _DoneOrderTile extends StatelessWidget {
                           Text('${order.reviewStars}.0', style: const TextStyle(color: AppColors.textMuted, fontSize: 11)),
                         ],
                       )
-                    : const Text('baholanmagan', style: TextStyle(color: AppColors.textFaint, fontSize: 11)),
+                    : Text('baholanmagan', style: TextStyle(color: AppColors.textFaint, fontSize: 11)),
             ],
           ),
           if (isPreparer && (order.reviewComment ?? '').isNotEmpty) ...[

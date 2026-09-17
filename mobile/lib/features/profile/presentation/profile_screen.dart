@@ -133,8 +133,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 children: [
                                   Text(
                                     user.displayName,
-                                    style: const TextStyle(
-                                      color: Colors.white,
+                                    style: TextStyle(
+                                      color: AppColors.textPrimary,
                                       fontSize: 17,
                                       fontWeight: FontWeight.w600,
                                     ),
@@ -151,7 +151,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               onPressed: () => Navigator.of(context).push(
                                 MaterialPageRoute(builder: (_) => const EditProfileScreen()),
                               ),
-                              icon: const Icon(Icons.edit_outlined, color: AppColors.textSecondary, size: 20),
+                              icon: Icon(Icons.edit_outlined, color: AppColors.textSecondary, size: 20),
                             ),
                           ],
                         ),
@@ -190,7 +190,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   style: TextStyle(color: AppColors.textMuted, fontSize: 12)),
                               const SizedBox(height: 6),
                               Text(user.about!,
-                                  style: const TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.4)),
+                                  style: TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.4)),
                             ],
                           ),
                         ),
@@ -236,7 +236,7 @@ class _StatCard extends StatelessWidget {
           Text(label, style: const TextStyle(color: AppColors.textMuted, fontSize: 12)),
           const SizedBox(height: 4),
           Text(value,
-              style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
+              style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
         ],
       ),
     );

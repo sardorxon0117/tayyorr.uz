@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../core/theme/app_colors.dart';
 import 'glass_card.dart';
 
 /// Saytdagi `.skel` klassi bilan bir xil effekt: xira fon ustida chapdan
@@ -40,7 +41,7 @@ class _SkelState extends State<Skel> with SingleTickerProviderStateMixin {
         width: widget.width,
         height: widget.height,
         child: DecoratedBox(
-          decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.06)),
+          decoration: BoxDecoration(color: AppColors.tint(0.06)),
           child: LayoutBuilder(
             builder: (context, constraints) {
               return ClipRect(
@@ -49,17 +50,21 @@ class _SkelState extends State<Skel> with SingleTickerProviderStateMixin {
                   builder: (context, _) {
                     final w = constraints.maxWidth.isFinite ? constraints.maxWidth : widget.width ?? 100;
                     final dx = -w + _controller.value * 2 * w;
+                    // Saytdagidek: qorong'ida oq, yorug'da indigo suzuvchi chiziq.
+                    final sweepColor = AppColors.isLight
+                        ? AppColors.indigo.withValues(alpha: 0.2)
+                        : Colors.white.withValues(alpha: 0.16);
                     return Transform.translate(
                       offset: Offset(dx, 0),
                       child: Container(
                         width: w,
                         height: widget.height,
-                        decoration: const BoxDecoration(
+                        decoration: BoxDecoration(
                           gradient: LinearGradient(
                             begin: Alignment.centerLeft,
                             end: Alignment.centerRight,
-                            colors: [Colors.transparent, Color(0x29FFFFFF), Colors.transparent],
-                            stops: [0.2, 0.5, 0.8],
+                            colors: [Colors.transparent, sweepColor, Colors.transparent],
+                            stops: const [0.2, 0.5, 0.8],
                           ),
                         ),
                       ),

@@ -41,7 +41,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
       lastDate: DateTime.now().add(const Duration(days: 365)),
       builder: (context, child) => Theme(
         data: Theme.of(context).copyWith(
-          colorScheme: const ColorScheme.dark(
+          colorScheme: ColorScheme.dark(
             primary: AppColors.indigo,
             surface: AppColors.surface,
           ),
@@ -113,7 +113,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                     children: [
                       AppTextField(label: 'Nomi', controller: _title),
                       const SizedBox(height: 14),
-                      const Text('Turi', style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+                      Text('Turi', style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
                       const SizedBox(height: 8),
                       Wrap(
                         spacing: 8,
@@ -128,7 +128,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                               decoration: BoxDecoration(
                                 color: selected
                                     ? AppColors.indigo.withValues(alpha: 0.2)
-                                    : Colors.white.withValues(alpha: 0.04),
+                                    : AppColors.tint(0.04),
                                 borderRadius: BorderRadius.circular(10),
                                 border: Border.all(
                                   color: selected ? AppColors.indigo : AppColors.cardBorder,
@@ -160,7 +160,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.04),
+                            color: AppColors.tint(0.04),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(color: AppColors.cardBorder),
                           ),

@@ -66,9 +66,9 @@ class _TopUpSheetState extends State<_TopUpSheet> {
       padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       child: Container(
         padding: const EdgeInsets.fromLTRB(20, 14, 20, 28),
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: AppColors.surface,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           border: Border(top: BorderSide(color: AppColors.cardBorder)),
         ),
         child: Column(
@@ -88,19 +88,19 @@ class _TopUpSheetState extends State<_TopUpSheet> {
             const SizedBox(height: 16),
             Row(
               children: [
-                const Expanded(
+                Expanded(
                   child: Text(
                     "Hisobni to'ldirish",
-                    style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w700),
+                    style: TextStyle(color: AppColors.textPrimary, fontSize: 17, fontWeight: FontWeight.w700),
                   ),
                 ),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.06),
+                    color: AppColors.tint(0.06),
                     borderRadius: BorderRadius.circular(6),
                   ),
-                  child: const Text('Click orqali',
+                  child: Text('Click orqali',
                       style: TextStyle(color: AppColors.textSecondary, fontSize: 11, fontWeight: FontWeight.w600)),
                 ),
               ],
@@ -120,11 +120,11 @@ class _TopUpSheetState extends State<_TopUpSheet> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.05),
+                      color: AppColors.tint(0.05),
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(color: AppColors.cardBorder),
                     ),
-                    child: Text(formatSom(a), style: const TextStyle(color: Colors.white, fontSize: 12.5)),
+                    child: Text(formatSom(a), style: TextStyle(color: AppColors.textPrimary, fontSize: 12.5)),
                   ),
                 );
               }).toList(),

@@ -15,6 +15,7 @@ class UserModel {
   final int ratingCount;
   final bool needsOnboarding;
   final bool isAvailable;
+  final String theme;
 
   const UserModel({
     required this.id,
@@ -33,6 +34,7 @@ class UserModel {
     required this.ratingCount,
     this.needsOnboarding = false,
     this.isAvailable = true,
+    this.theme = 'dark',
   });
 
   bool get isPreparer => role == 'PREPARER';
@@ -64,6 +66,7 @@ class UserModel {
       ratingCount: (json['ratingCount'] as num?)?.toInt() ?? 0,
       needsOnboarding: json['needsOnboarding'] as bool? ?? false,
       isAvailable: json['isAvailable'] as bool? ?? true,
+      theme: json['theme'] as String? ?? 'dark',
     );
   }
 }

@@ -105,7 +105,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             height: 108,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: Colors.white.withValues(alpha: 0.05),
+                              color: AppColors.tint(0.05),
                               border: Border.all(color: AppColors.cardBorder),
                             ),
                             alignment: Alignment.center,
@@ -121,7 +121,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           Text(
                             p.body,
                             textAlign: TextAlign.center,
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: AppColors.textSecondary,
                               fontSize: 15,
                               height: 1.5,
