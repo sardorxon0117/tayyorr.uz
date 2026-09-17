@@ -23,4 +23,8 @@ class OrderDetailRepository {
   Future<void> setOrderStatus(String orderId, String status) async {
     await _api.patch('/mobile/orders/$orderId', data: {'status': status});
   }
+
+  Future<void> deleteOrder(String orderId) async {
+    await _api.delete('/mobile/orders/$orderId');
+  }
 }

@@ -5,10 +5,11 @@ import { db } from "@/lib/db";
 import { requireMobileAuth } from "@/lib/mobile-auth";
 import { mobileJson } from "@/lib/mobile-cors";
 import { getRestriction, restrictionText } from "@/lib/restriction";
-import { updateOrderChannelPost } from "@/lib/telegram";
+import { updateOrderChannelPost, markOrderRemovedInChannel } from "@/lib/telegram";
 import { logActivity } from "@/lib/activity";
 import { refundOfferStars } from "@/lib/stars";
 import { logToGroup, siteUrl } from "@/lib/telegram-log";
+import { softDeleteOrder } from "@/lib/order-delete";
 
 export { OPTIONS } from "@/lib/mobile-cors";
 
@@ -148,6 +149,38 @@ export async function PATCH(
     [`«${order.title}»`],
     siteUrl(`/sardorxon/admin/orders/${id}`),
   );
+
+  return mobileJson({ ok: true });
+}
+
+/** Buyurtmachi o'z buyurtmasini o'chiradi (soft) — web bilan bir xil mantiq. */
+export async function DELETE(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const auth = await requireMobileAuth(req);
+  if (auth instanceof NextResponse) return auth;
+  const { id } = await params;
+
+  const order = await db.order.findUnique({
+    where: { id },
+    select: { ordererId: true, deletedAt: true },
+  });
+  if (!order || order.ordererId !== auth.userId) {
+    return mobileJson({ error: "Topilmadi" }, { status: 404 });
+  }
+  if (order.deletedAt) {
+    return mobileJson({ error: "Allaqachon o'chirilgan" }, { status: 400 });
+  }
+
+  const full = await softDeleteOrder(id, "ORDERER", null);
+  if (full?.telegramMessageId) {
+    await markOrderRemovedInChannel(full.telegramMessageId, full.title, "Buyurtmachi", null);
+  }
+
+  await logActivity(auth.userId, "ORDER_DELETE", `Buyurtmani o'chirdi${full?.title ? `: «${full.title}»` : ""} (mobil ilova)`, {
+    orderId: id,
+  });
 
   return mobileJson({ ok: true });
 }

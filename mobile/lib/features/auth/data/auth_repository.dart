@@ -126,6 +126,15 @@ class AuthRepository {
     return UserModel.fromJson(res['user'] as Map<String, dynamic>);
   }
 
+  /// Username (login) va/yoki parolni tahrirlash — eski parol shart emas.
+  Future<UserModel> updateAccount({String? login, String? newPassword}) async {
+    await _api.patch('/mobile/me/account', data: {
+      if (login != null && login.isNotEmpty) 'login': login,
+      if (newPassword != null && newPassword.isNotEmpty) 'newPassword': newPassword,
+    });
+    return refreshMe();
+  }
+
   Future<void> logout() async {
     await _storage.clearToken();
     try {

@@ -283,7 +283,6 @@ class _DashboardViewState extends State<_DashboardView> {
           controller: _scrollController,
           slivers: [
             AppHeaderSliver(
-              onRefresh: () => context.read<DashboardCubit>().load(),
               heroImageUrl: user?.image,
               bottomHeight: user != null ? 228 : 92,
               bottom: Column(
@@ -584,7 +583,9 @@ class _OrderCard extends StatelessWidget {
           context.read<DashboardCubit>().load();
         }
       },
-      child: GlassCard(
+      child: Opacity(
+        opacity: order.deleted ? 0.55 : 1,
+        child: GlassCard(
       blur: false,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -603,6 +604,16 @@ class _OrderCard extends StatelessWidget {
                   ),
                 ),
               ),
+              if (order.deleted)
+                Container(
+                  margin: const EdgeInsets.only(right: 6),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: AppColors.textFaint.withValues(alpha: 0.14),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Text("O'chirilgan", style: TextStyle(color: AppColors.textFaint, fontSize: 10.5)),
+                ),
               _StatusBadge(status: order.status),
             ],
           ),
@@ -633,6 +644,7 @@ class _OrderCard extends StatelessWidget {
             ],
           ),
         ],
+      ),
       ),
       ),
     );

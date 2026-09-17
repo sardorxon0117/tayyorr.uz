@@ -6,6 +6,8 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/format.dart';
 import '../../../widgets/app_drawer.dart';
 import '../../../widgets/app_header_sliver.dart';
+import '../../../widgets/confirm_dialog.dart';
+import '../../../widgets/danger_button.dart';
 import '../../../widgets/glass_card.dart';
 import '../../../widgets/user_avatar.dart';
 import '../../auth/bloc/auth_bloc.dart';
@@ -172,15 +174,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                         ),
                       const SizedBox(height: 24),
-                      OutlinedButton(
-                        onPressed: () => context.read<AuthBloc>().add(const AuthLoggedOut()),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: AppColors.red,
-                          side: const BorderSide(color: Color(0x33F87171)),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                        ),
-                        child: const Text('Chiqish'),
+                      DangerButton(
+                        label: 'Chiqish',
+                        icon: Icons.logout_rounded,
+                        onPressed: () async {
+                          final ok = await confirmDialog(
+                            context,
+                            title: 'Chiqmoqchimisiz?',
+                            message: 'Hisobingizdan chiqasiz, qaytadan kirishingiz kerak bo\'ladi.',
+                            confirmLabel: 'Ha, chiqish',
+                          );
+                          if (ok == true && context.mounted) {
+                            context.read<AuthBloc>().add(const AuthLoggedOut());
+                          }
+                        },
                       ),
                     ]),
                   ),

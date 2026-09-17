@@ -39,9 +39,7 @@ class _OffersView extends StatelessWidget {
         backgroundColor: AppColors.surface,
         child: CustomScrollView(
           slivers: [
-            AppHeaderSliver(
-              onRefresh: () => context.read<OffersCubit>().load(),
-            ),
+            const AppHeaderSliver(),
             BlocBuilder<OffersCubit, OffersState>(
               builder: (context, state) {
                 if (state.status == OffersStatus.loading && state.offers.isEmpty) {

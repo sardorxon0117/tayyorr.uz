@@ -186,15 +186,18 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                         Text(_error!, style: const TextStyle(color: AppColors.red, fontSize: 12.5)),
                       ],
                       const SizedBox(height: 20),
-                      ElevatedButton(
-                        onPressed: _busy ? null : _submit,
-                        child: _busy
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2.4, color: Colors.black54),
-                              )
-                            : const Text('E\'lon qilish'),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: _busy ? null : _submit,
+                          child: _busy
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(strokeWidth: 2.4, color: Colors.black54),
+                                )
+                              : const Text('E\'lon qilish'),
+                        ),
                       ),
                     ],
                   ),

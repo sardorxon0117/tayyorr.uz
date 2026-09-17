@@ -37,9 +37,7 @@ class _MessagesListView extends StatelessWidget {
         backgroundColor: AppColors.surface,
         child: CustomScrollView(
           slivers: [
-            AppHeaderSliver(
-              onRefresh: () => context.read<ConversationsCubit>().load(),
-            ),
+            const AppHeaderSliver(),
             BlocBuilder<ConversationsCubit, ConversationsState>(
               builder: (context, state) {
                 if (state.status == ConversationsStatus.loading && state.conversations.isEmpty) {

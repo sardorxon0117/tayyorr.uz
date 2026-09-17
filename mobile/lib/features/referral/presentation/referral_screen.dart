@@ -62,7 +62,7 @@ class _ReferralViewState extends State<_ReferralView> {
         backgroundColor: AppColors.surface,
         child: CustomScrollView(
           slivers: [
-            AppHeaderSliver(onRefresh: () => context.read<ReferralCubit>().load()),
+            const AppHeaderSliver(),
             SliverPadding(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 40),
               sliver: SliverList(

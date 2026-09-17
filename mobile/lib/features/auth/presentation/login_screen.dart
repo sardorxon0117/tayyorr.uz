@@ -162,7 +162,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           onPressed: () => context
                               .read<AuthBloc>()
                               .add(const AuthGoogleSignInRequested()),
-                          child: const Text("Google bilan ro'yxatdan o'tish"),
+                          child: const Text("Ro'yxatdan o'tish"),
                         ),
                       ],
                     ),

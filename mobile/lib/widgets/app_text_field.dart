@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../core/theme/app_colors.dart';
 
-class AppTextField extends StatelessWidget {
+class AppTextField extends StatefulWidget {
   const AppTextField({
     super.key,
     required this.label,
@@ -23,23 +23,42 @@ class AppTextField extends StatelessWidget {
   final Iterable<String>? autofillHints;
 
   @override
+  State<AppTextField> createState() => _AppTextFieldState();
+}
+
+class _AppTextFieldState extends State<AppTextField> {
+  late bool _hidden = widget.obscureText;
+
+  @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          label,
+          widget.label,
           style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
         ),
         const SizedBox(height: 6),
         TextField(
-          controller: controller,
-          obscureText: obscureText,
-          keyboardType: keyboardType,
-          textInputAction: textInputAction,
-          maxLines: obscureText ? 1 : maxLines,
-          autofillHints: autofillHints,
+          controller: widget.controller,
+          obscureText: widget.obscureText && _hidden,
+          keyboardType: widget.keyboardType,
+          textInputAction: widget.textInputAction,
+          maxLines: widget.obscureText ? 1 : widget.maxLines,
+          autofillHints: widget.autofillHints,
           style: const TextStyle(color: Colors.white, fontSize: 15),
+          decoration: widget.obscureText
+              ? InputDecoration(
+                  suffixIcon: IconButton(
+                    onPressed: () => setState(() => _hidden = !_hidden),
+                    icon: Icon(
+                      _hidden ? Icons.visibility_off_rounded : Icons.visibility_rounded,
+                      size: 19,
+                      color: AppColors.textFaint,
+                    ),
+                  ),
+                )
+              : null,
         ),
       ],
     );

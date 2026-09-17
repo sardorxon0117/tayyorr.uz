@@ -40,9 +40,7 @@ class _WalletView extends StatelessWidget {
         backgroundColor: AppColors.surface,
         child: CustomScrollView(
           slivers: [
-            AppHeaderSliver(
-              onRefresh: () => context.read<WalletCubit>().load(),
-            ),
+            const AppHeaderSliver(),
             BlocBuilder<WalletCubit, WalletState>(
               builder: (context, state) {
                 if (state.status == WalletStatus.loading && state.wallet == null) {

@@ -5,6 +5,8 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/format.dart';
 import '../../../widgets/app_text_field.dart';
 import '../../../widgets/aurora_background.dart';
+import '../../../widgets/confirm_dialog.dart';
+import '../../../widgets/danger_button.dart';
 import '../../../widgets/glass_card.dart';
 import '../../../widgets/user_avatar.dart';
 import '../../auth/bloc/auth_bloc.dart';
@@ -58,11 +60,6 @@ class _OrderDetailView extends StatelessWidget {
                         ),
                         const Text('Buyurtma',
                             style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
-                        const Spacer(),
-                        IconButton(
-                          onPressed: () => context.read<OrderDetailCubit>().load(),
-                          icon: const Icon(Icons.refresh_rounded, size: 20, color: AppColors.textSecondary),
-                        ),
                       ],
                     ),
                   ),
@@ -198,44 +195,70 @@ class _Body extends StatelessWidget {
           // --- status action buttons ---
           if (isAssignedPreparer && order.status == 'IN_PROGRESS') ...[
             const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: state.busy ? null : () => context.read<OrderDetailCubit>().setStatus('DELIVERED'),
-              child: const Text('Ishni topshirish'),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: state.busy ? null : () => context.read<OrderDetailCubit>().setStatus('DELIVERED'),
+                child: const Text('Ishni topshirish'),
+              ),
             ),
           ],
           if (isOrderer && order.status == 'DELIVERED') ...[
             const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: state.busy ? null : () => context.read<OrderDetailCubit>().setStatus('DONE'),
-              style: ElevatedButton.styleFrom(backgroundColor: AppColors.emerald, foregroundColor: Colors.black),
-              child: const Text('Ishni yakunlash'),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: state.busy ? null : () => context.read<OrderDetailCubit>().setStatus('DONE'),
+                style: ElevatedButton.styleFrom(backgroundColor: AppColors.emerald, foregroundColor: Colors.black),
+                child: const Text('Ishni yakunlash'),
+              ),
             ),
           ],
-          if (isOrderer && (order.status == 'OPEN' || order.status == 'IN_PROGRESS')) ...[
+          if (isOrderer && !order.deleted && (order.status == 'OPEN' || order.status == 'IN_PROGRESS')) ...[
             const SizedBox(height: 10),
-            OutlinedButton(
+            DangerButton(
+              label: 'Bekor qilish',
               onPressed: state.busy
                   ? null
                   : () async {
-                      final ok = await showDialog<bool>(
-                        context: context,
-                        builder: (_) => AlertDialog(
-                          backgroundColor: AppColors.surface,
-                          title: const Text('Bekor qilinsinmi?', style: TextStyle(color: Colors.white)),
-                          content: const Text("Buyurtma bekor qilinadi, qaytarib bo'lmaydi.",
-                              style: TextStyle(color: AppColors.textMuted)),
-                          actions: [
-                            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Yo\'q')),
-                            TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Ha, bekor qilish')),
-                          ],
-                        ),
-                      );
+                      final ok = await confirmDialog(context,
+                          title: 'Bekor qilinsinmi?',
+                          message: "Buyurtma bekor qilinadi, qaytarib bo'lmaydi.",
+                          confirmLabel: 'Ha, bekor qilish');
                       if (ok == true && context.mounted) {
                         context.read<OrderDetailCubit>().setStatus('CANCELLED');
                       }
                     },
-              style: OutlinedButton.styleFrom(foregroundColor: AppColors.red, side: const BorderSide(color: Color(0x33F87171))),
-              child: const Text('Bekor qilish'),
+            ),
+          ],
+          if (isOrderer && !order.deleted) ...[
+            const SizedBox(height: 10),
+            DangerButton(
+              label: "Buyurtmani o'chirish",
+              icon: Icons.delete_outline_rounded,
+              onPressed: state.busy
+                  ? null
+                  : () async {
+                      final ok = await confirmDialog(context,
+                          title: "O'chirilsinmi?",
+                          message: "Buyurtma faqat sizda saqlanadi, boshqalarga ko'rinmay qoladi.",
+                          confirmLabel: "Ha, o'chirish");
+                      if (ok == true && context.mounted) {
+                        context.read<OrderDetailCubit>().deleteOrder();
+                      }
+                    },
+            ),
+          ],
+          if (order.deleted) ...[
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppColors.textFaint.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Text("O'chirilgan — faqat sizga ko'rinadi",
+                  style: TextStyle(color: AppColors.textFaint, fontSize: 12)),
             ),
           ],
 

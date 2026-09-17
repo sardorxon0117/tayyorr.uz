@@ -15,13 +15,11 @@ import 'app_logo.dart';
 class AppHeaderSliver extends StatelessWidget {
   const AppHeaderSliver({
     super.key,
-    this.onRefresh,
     this.bottom,
     this.bottomHeight = 80,
     this.heroImageUrl,
   });
 
-  final VoidCallback? onRefresh;
   final Widget? bottom;
   final String? heroImageUrl;
 
@@ -74,17 +72,22 @@ class AppHeaderSliver extends StatelessWidget {
                     // t=0 (to'liq pinned) bo'lganda rang butunlay yo'qoladi —
                     // faqat shaffof blur qoladi.
                     color: AppColors.bg.withValues(alpha: (hasHero ? 0.4 : 0.32) * t),
-                    child: hasBottom
-                        ? Padding(
-                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
-                            child: Align(
-                              alignment: Alignment.bottomCenter,
-                              child: Opacity(opacity: t, child: bottom),
-                            ),
-                          )
-                        : null,
                   ),
                 ),
+                // Pastki kontent 56dp'lik toolbar qatoridan darhol pastda,
+                // QOTIB turadi (pastga tekislanmaydi) — shu bois kichrayish
+                // paytida sarlavha qatoriga "yopishib" qolmaydi, faqat
+                // asta-sekin xiralashib, chetdan kesilib boradi.
+                if (hasBottom)
+                  Positioned(
+                    top: 56,
+                    left: 0,
+                    right: 0,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+                      child: Opacity(opacity: t, child: bottom),
+                    ),
+                  ),
               ],
             );
           },
@@ -94,11 +97,6 @@ class AppHeaderSliver extends StatelessWidget {
         children: [
           const AppLogo(height: 20),
           const Spacer(),
-          if (onRefresh != null)
-            IconButton(
-              onPressed: onRefresh,
-              icon: const Icon(Icons.refresh_rounded, size: 20, color: AppColors.textSecondary),
-            ),
           Builder(
             builder: (context) => IconButton(
               onPressed: () => Scaffold.of(context).openDrawer(),

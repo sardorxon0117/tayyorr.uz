@@ -89,4 +89,16 @@ class OrderDetailCubit extends Cubit<OrderDetailState> {
       return false;
     }
   }
+
+  Future<bool> deleteOrder() async {
+    emit(state.copyWith(busy: true, error: null));
+    try {
+      await _repo.deleteOrder(orderId);
+      await load();
+      return true;
+    } on ApiException catch (e) {
+      emit(state.copyWith(busy: false, error: e.message));
+      return false;
+    }
+  }
 }

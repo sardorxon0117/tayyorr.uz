@@ -20,9 +20,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   late final TextEditingController _firstName;
   late final TextEditingController _lastName;
   late final TextEditingController _about;
+  late final TextEditingController _login;
+  final _newPassword = TextEditingController();
+  final _newPassword2 = TextEditingController();
   final _repo = AuthRepository();
   bool _busy = false;
+  bool _busyAccount = false;
   String? _error;
+  String? _accountError;
 
   @override
   void initState() {
@@ -31,6 +36,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _firstName = TextEditingController(text: user?.firstName ?? '');
     _lastName = TextEditingController(text: user?.lastName ?? '');
     _about = TextEditingController(text: user?.about ?? '');
+    _login = TextEditingController(text: user?.login ?? '');
   }
 
   @override
@@ -38,6 +44,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _firstName.dispose();
     _lastName.dispose();
     _about.dispose();
+    _login.dispose();
+    _newPassword.dispose();
+    _newPassword2.dispose();
     super.dispose();
   }
 
@@ -64,6 +73,51 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       setState(() => _error = e.message);
     } finally {
       if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _submitAccount() async {
+    final user = context.read<AuthBloc>().state.user;
+    final newLogin = _login.text.trim();
+    final loginChanged = newLogin.isNotEmpty && newLogin != (user?.login ?? '');
+    final wantsPasswordChange = _newPassword.text.isNotEmpty || _newPassword2.text.isNotEmpty;
+
+    if (wantsPasswordChange) {
+      if (_newPassword.text.length < 6) {
+        setState(() => _accountError = "Parol kamida 6 ta belgidan iborat bo'lsin");
+        return;
+      }
+      if (_newPassword.text != _newPassword2.text) {
+        setState(() => _accountError = "Parollar mos kelmadi");
+        return;
+      }
+    }
+    if (!loginChanged && !wantsPasswordChange) {
+      setState(() => _accountError = "O'zgarish yo'q");
+      return;
+    }
+
+    setState(() {
+      _busyAccount = true;
+      _accountError = null;
+    });
+    try {
+      await _repo.updateAccount(
+        login: loginChanged ? newLogin : null,
+        newPassword: wantsPasswordChange ? _newPassword.text : null,
+      );
+      if (mounted) {
+        context.read<AuthBloc>().add(const AuthMeRefreshRequested());
+        _newPassword.clear();
+        _newPassword2.clear();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Saqlandi')),
+        );
+      }
+    } on ApiException catch (e) {
+      setState(() => _accountError = e.message);
+    } finally {
+      if (mounted) setState(() => _busyAccount = false);
     }
   }
 
@@ -106,15 +160,58 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         Text(_error!, style: const TextStyle(color: AppColors.red, fontSize: 12.5)),
                       ],
                       const SizedBox(height: 20),
-                      ElevatedButton(
-                        onPressed: _busy ? null : _submit,
-                        child: _busy
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2.4, color: Colors.black54),
-                              )
-                            : const Text('Saqlash'),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: _busy ? null : _submit,
+                          child: _busy
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(strokeWidth: 2.4, color: Colors.black54),
+                                )
+                              : const Text('Saqlash'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+                const Text('Hisob sozlamalari', style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w700)),
+                const SizedBox(height: 4),
+                const Text('Username va parolni bu yerdan o\'zgartirishingiz mumkin.',
+                    style: TextStyle(color: AppColors.textMuted, fontSize: 12.5)),
+                const SizedBox(height: 12),
+                GlassCard(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      AppTextField(label: 'Username (login)', controller: _login),
+                      const SizedBox(height: 14),
+                      AppTextField(label: 'Yangi parol', controller: _newPassword, obscureText: true),
+                      const SizedBox(height: 10),
+                      AppTextField(label: 'Yangi parol (tasdiqlash)', controller: _newPassword2, obscureText: true),
+                      const SizedBox(height: 4),
+                      const Text("Eski parolni kiritish shart emas.",
+                          style: TextStyle(color: AppColors.textFaint, fontSize: 11.5)),
+                      if (_accountError != null) ...[
+                        const SizedBox(height: 12),
+                        Text(_accountError!, style: const TextStyle(color: AppColors.red, fontSize: 12.5)),
+                      ],
+                      const SizedBox(height: 20),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: _busyAccount ? null : _submitAccount,
+                          child: _busyAccount
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(strokeWidth: 2.4, color: Colors.black54),
+                                )
+                              : const Text('Hisobni yangilash'),
+                        ),
                       ),
                     ],
                   ),
