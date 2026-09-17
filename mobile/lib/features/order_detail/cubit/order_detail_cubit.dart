@@ -113,4 +113,52 @@ class OrderDetailCubit extends Cubit<OrderDetailState> {
       return false;
     }
   }
+
+  Future<bool> sendContract({required String preparerId, required int amount, String? note, DateTime? deadline}) async {
+    emit(state.copyWith(busy: true, error: null));
+    try {
+      await _repo.sendContract(orderId, preparerId: preparerId, amount: amount, note: note, deadline: deadline);
+      await load();
+      return true;
+    } on ApiException catch (e) {
+      emit(state.copyWith(busy: false, error: e.message));
+      return false;
+    }
+  }
+
+  Future<bool> respondToContract(String contractId, {required String action}) async {
+    emit(state.copyWith(busy: true, error: null));
+    try {
+      await _repo.respondToContract(contractId, action: action);
+      await load();
+      return true;
+    } on ApiException catch (e) {
+      emit(state.copyWith(busy: false, error: e.message));
+      return false;
+    }
+  }
+
+  Future<bool> finalizeOrder() async {
+    emit(state.copyWith(busy: true, error: null));
+    try {
+      await _repo.finalizeOrder(orderId);
+      await load();
+      return true;
+    } on ApiException catch (e) {
+      emit(state.copyWith(busy: false, error: e.message));
+      return false;
+    }
+  }
+
+  Future<bool> submitReview({required int stars, String? comment}) async {
+    emit(state.copyWith(busy: true, error: null));
+    try {
+      await _repo.submitReview(orderId, stars: stars, comment: comment);
+      await load();
+      return true;
+    } on ApiException catch (e) {
+      emit(state.copyWith(busy: false, error: e.message));
+      return false;
+    }
+  }
 }

@@ -92,6 +92,52 @@ class OfferQueueEntry {
   }
 }
 
+class ContractModel {
+  final String id;
+  final String status;
+  final int amount;
+  final String? note;
+  final DateTime? deadline;
+  final String preparerId;
+  final String preparerName;
+  final DateTime createdAt;
+
+  const ContractModel({
+    required this.id,
+    required this.status,
+    required this.amount,
+    this.note,
+    this.deadline,
+    required this.preparerId,
+    required this.preparerName,
+    required this.createdAt,
+  });
+
+  factory ContractModel.fromJson(Map<String, dynamic> json) {
+    return ContractModel(
+      id: json['id'] as String,
+      status: json['status'] as String,
+      amount: (json['amount'] as num).toInt(),
+      note: json['note'] as String?,
+      deadline: json['deadline'] != null ? DateTime.parse(json['deadline'] as String) : null,
+      preparerId: json['preparerId'] as String,
+      preparerName: json['preparerName'] as String,
+      createdAt: DateTime.parse(json['createdAt'] as String),
+    );
+  }
+}
+
+class OrderReviewModel {
+  final int stars;
+  final String? comment;
+
+  const OrderReviewModel({required this.stars, this.comment});
+
+  factory OrderReviewModel.fromJson(Map<String, dynamic> json) {
+    return OrderReviewModel(stars: (json['stars'] as num).toInt(), comment: json['comment'] as String?);
+  }
+}
+
 class OrderDetailModel {
   final String id;
   final String title;
@@ -106,6 +152,8 @@ class OrderDetailModel {
   final OrderPartyModel? preparer;
   final List<OrderOfferModel> offers;
   final List<OfferQueueEntry> queue;
+  final List<ContractModel> contracts;
+  final OrderReviewModel? review;
 
   const OrderDetailModel({
     required this.id,
@@ -121,7 +169,21 @@ class OrderDetailModel {
     this.preparer,
     required this.offers,
     this.queue = const [],
+    this.contracts = const [],
+    this.review,
   });
+
+  /// Shartnoma DB'da "ACCEPTED" holatida qolib ketaveradi hatto ish
+  /// yakunlangandan (DONE) keyin ham — shuning uchun bu yerda buyurtma
+  /// holati ham tekshiriladi, aks holda tugagan ishga ham "bekor qilish"
+  /// tugmasi ko'rsatilib qolardi.
+  ContractModel? get activeContract {
+    if (status != 'OPEN' && status != 'IN_PROGRESS' && status != 'DELIVERED') return null;
+    for (final c in contracts) {
+      if (c.status == 'SENT' || c.status == 'ACCEPTED') return c;
+    }
+    return null;
+  }
 
   factory OrderDetailModel.fromJson(Map<String, dynamic> json) {
     return OrderDetailModel(
@@ -138,6 +200,8 @@ class OrderDetailModel {
       preparer: json['preparer'] != null ? OrderPartyModel.fromJson(json['preparer'] as Map<String, dynamic>) : null,
       offers: (json['offers'] as List).cast<Map<String, dynamic>>().map(OrderOfferModel.fromJson).toList(),
       queue: (json['queue'] as List? ?? []).cast<Map<String, dynamic>>().map(OfferQueueEntry.fromJson).toList(),
+      contracts: (json['contracts'] as List? ?? []).cast<Map<String, dynamic>>().map(ContractModel.fromJson).toList(),
+      review: json['review'] != null ? OrderReviewModel.fromJson(json['review'] as Map<String, dynamic>) : null,
     );
   }
 }

@@ -157,6 +157,26 @@ class _Body extends StatelessWidget {
             _PartyTile(party: order.preparer!, roleLabel: 'Tayyorlovchi'),
           ],
 
+          // --- faol shartnoma ---
+          if (order.activeContract != null) ...[
+            const SizedBox(height: 16),
+            _ContractCard(contract: order.activeContract!, myId: myId, busy: state.busy),
+          ],
+          if (order.review != null) ...[
+            const SizedBox(height: 12),
+            _ReviewCard(review: order.review!),
+          ] else if (isOrderer && order.status == 'DONE') ...[
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () => _showReviewSheet(context, orderId: order.id),
+                icon: const Icon(Icons.star_outline_rounded, size: 18),
+                label: const Text('Tayyorlovchiga baho bering'),
+              ),
+            ),
+          ],
+
           // --- status action buttons ---
           if (isAssignedPreparer && order.status == 'IN_PROGRESS') ...[
             const SizedBox(height: 16),
@@ -173,13 +193,29 @@ class _Body extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: state.busy ? null : () => context.read<OrderDetailCubit>().setStatus('DONE'),
+                onPressed: state.busy
+                    ? null
+                    : () async {
+                        final ok = await confirmDialog(context,
+                            title: 'Ish yakunlansinmi?',
+                            message:
+                                "Bloklangan mablag' to'liq tayyorlovchiga o'tkaziladi. Qaytarib bo'lmaydi.",
+                            confirmLabel: 'Ha, yakunlash');
+                        if (ok != true || !context.mounted) return;
+                        final done = await context.read<OrderDetailCubit>().finalizeOrder();
+                        if (done && context.mounted) {
+                          await _showReviewSheet(context, orderId: order.id);
+                        }
+                      },
                 style: ElevatedButton.styleFrom(backgroundColor: AppColors.emerald, foregroundColor: Colors.black),
                 child: const Text('Ishni yakunlash'),
               ),
             ),
           ],
-          if (isOrderer && !order.deleted && (order.status == 'OPEN' || order.status == 'IN_PROGRESS')) ...[
+          if (isOrderer &&
+              !order.deleted &&
+              order.status == 'OPEN' &&
+              order.activeContract == null) ...[
             const SizedBox(height: 10),
             DangerButton(
               label: 'Bekor qilish',
@@ -255,8 +291,9 @@ class _Body extends StatelessWidget {
                   padding: const EdgeInsets.only(bottom: 8),
                   child: _OfferTile(
                     offer: o,
-                    canRespond: order.status == 'OPEN' && o.status == 'PENDING',
+                    canRespond: order.status == 'OPEN' && o.status == 'PENDING' && order.activeContract == null,
                     busy: state.busy,
+                    orderId: order.id,
                   ),
                 )),
           ],
@@ -299,6 +336,206 @@ class _PartyTile extends StatelessWidget {
       ),
     );
   }
+}
+
+class _ContractCard extends StatelessWidget {
+  const _ContractCard({required this.contract, required this.myId, required this.busy});
+  final ContractModel contract;
+  final String? myId;
+  final bool busy;
+
+  @override
+  Widget build(BuildContext context) {
+    final isTargetPreparer = myId != null && myId == contract.preparerId;
+    final isSent = contract.status == 'SENT';
+    return GlassCard(
+      blur: false,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.description_rounded, size: 17, color: AppColors.indigo),
+              const SizedBox(width: 8),
+              Text(isSent ? 'Shartnoma yuborilgan' : 'Faol shartnoma',
+                  style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700)),
+              const Spacer(),
+              Text(formatSom(contract.amount),
+                  style: const TextStyle(color: AppColors.amber, fontSize: 14, fontWeight: FontWeight.w700)),
+            ],
+          ),
+          if ((contract.note ?? '').isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(contract.note!, style: const TextStyle(color: AppColors.textSecondary, fontSize: 13, height: 1.4)),
+          ],
+          if (contract.deadline != null) ...[
+            const SizedBox(height: 6),
+            Text(
+              'Muddat: ${contract.deadline!.day}.${contract.deadline!.month}.${contract.deadline!.year}',
+              style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+            ),
+          ],
+          if (isSent && isTargetPreparer) ...[
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: busy
+                        ? null
+                        : () => context.read<OrderDetailCubit>().respondToContract(contract.id, action: 'DECLINE'),
+                    style: OutlinedButton.styleFrom(foregroundColor: AppColors.red),
+                    child: const Text('Rad etish'),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: busy
+                        ? null
+                        : () => context.read<OrderDetailCubit>().respondToContract(contract.id, action: 'ACCEPT'),
+                    child: const Text('Qabul qilish'),
+                  ),
+                ),
+              ],
+            ),
+          ] else if (isSent && !isTargetPreparer) ...[
+            const SizedBox(height: 10),
+            const Text("Tayyorlovchi javobini kutilmoqda…", style: TextStyle(color: AppColors.textMuted, fontSize: 12)),
+            const SizedBox(height: 10),
+            DangerButton(
+              label: 'Shartnomani bekor qilish',
+              dense: true,
+              onPressed: busy
+                  ? null
+                  : () async {
+                      final ok = await confirmDialog(context,
+                          title: 'Bekor qilinsinmi?',
+                          message: "Bloklangan mablag' hisobingizga qaytariladi.",
+                          confirmLabel: 'Ha, bekor qilish');
+                      if (ok == true && context.mounted) {
+                        context.read<OrderDetailCubit>().respondToContract(contract.id, action: 'CANCEL');
+                      }
+                    },
+            ),
+          ] else if (!isSent && myId != null) ...[
+            const SizedBox(height: 10),
+            DangerButton(
+              label: 'Shartnomani bekor qilish',
+              dense: true,
+              onPressed: busy
+                  ? null
+                  : () async {
+                      final ok = await confirmDialog(context,
+                          title: 'Bekor qilinsinmi?',
+                          message: "Ish bekor qilinadi, bloklangan mablag' to'liq buyurtmachiga qaytariladi.",
+                          confirmLabel: 'Ha, bekor qilish');
+                      if (ok == true && context.mounted) {
+                        context.read<OrderDetailCubit>().respondToContract(contract.id, action: 'CANCEL');
+                      }
+                    },
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _ReviewCard extends StatelessWidget {
+  const _ReviewCard({required this.review});
+  final OrderReviewModel review;
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassCard(
+      blur: false,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Text('Baho', style: TextStyle(color: Colors.white, fontSize: 13.5, fontWeight: FontWeight.w700)),
+              const SizedBox(width: 8),
+              Row(
+                children: List.generate(
+                  5,
+                  (i) => Icon(
+                    i < review.stars ? Icons.star_rounded : Icons.star_outline_rounded,
+                    size: 15,
+                    color: AppColors.amber,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if ((review.comment ?? '').isNotEmpty) ...[
+            const SizedBox(height: 6),
+            Text('«${review.comment}»',
+                style: const TextStyle(color: AppColors.textMuted, fontSize: 12.5, fontStyle: FontStyle.italic)),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+Future<void> _showReviewSheet(BuildContext context, {required String orderId}) async {
+  final cubit = context.read<OrderDetailCubit>();
+  int stars = 5;
+  final comment = TextEditingController();
+  await showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (sheetContext) => StatefulBuilder(
+      builder: (sheetContext, setSheetState) => Padding(
+        padding: EdgeInsets.only(bottom: MediaQuery.of(sheetContext).viewInsets.bottom),
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
+          decoration: const BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            border: Border(top: BorderSide(color: AppColors.cardBorder)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Text('Tayyorlovchiga baho bering', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
+              const SizedBox(height: 14),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(5, (i) {
+                  final filled = i < stars;
+                  return GestureDetector(
+                    onTap: () => setSheetState(() => stars = i + 1),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      child: Icon(filled ? Icons.star_rounded : Icons.star_outline_rounded, size: 34, color: AppColors.amber),
+                    ),
+                  );
+                }),
+              ),
+              const SizedBox(height: 14),
+              AppTextField(label: 'Sharh (ixtiyoriy)', controller: comment, maxLines: 3),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    Navigator.of(sheetContext).pop();
+                    await cubit.submitReview(stars: stars, comment: comment.text.trim());
+                  },
+                  child: const Text('Yuborish'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
 }
 
 class _OfferForm extends StatefulWidget {
@@ -525,11 +762,112 @@ class _QueueSection extends StatelessWidget {
   }
 }
 
+Future<void> _showSendContractSheet(
+  BuildContext context, {
+  required String orderId,
+  required OrderOfferModel offer,
+}) async {
+  final cubit = context.read<OrderDetailCubit>();
+  final amount = TextEditingController(text: '${offer.price}');
+  final note = TextEditingController();
+  DateTime? deadline;
+  await showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (sheetContext) => StatefulBuilder(
+      builder: (sheetContext, setSheetState) => Padding(
+        padding: EdgeInsets.only(bottom: MediaQuery.of(sheetContext).viewInsets.bottom),
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
+          decoration: const BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            border: Border(top: BorderSide(color: AppColors.cardBorder)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Text('Shartnoma yuborish', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
+              const SizedBox(height: 4),
+              const Text(
+                "Summa hisobingizdan bloklanadi, ish yakunlangach tayyorlovchiga o'tadi.",
+                style: TextStyle(color: AppColors.textMuted, fontSize: 12.5, height: 1.35),
+              ),
+              const SizedBox(height: 14),
+              AppTextField(label: "Summa, so'm", controller: amount, keyboardType: TextInputType.number),
+              const SizedBox(height: 10),
+              AppTextField(label: 'Tavsif (ixtiyoriy)', controller: note, maxLines: 3),
+              const SizedBox(height: 10),
+              GestureDetector(
+                onTap: () async {
+                  final picked = await showDatePicker(
+                    context: sheetContext,
+                    initialDate: DateTime.now().add(const Duration(days: 3)),
+                    firstDate: DateTime.now(),
+                    lastDate: DateTime.now().add(const Duration(days: 365)),
+                  );
+                  if (picked != null) setSheetState(() => deadline = picked);
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.04),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.cardBorder),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.calendar_today_rounded, size: 16, color: AppColors.textMuted),
+                      const SizedBox(width: 10),
+                      Text(
+                        deadline != null
+                            ? '${deadline!.day}.${deadline!.month}.${deadline!.year}'
+                            : 'Muddat (ixtiyoriy)',
+                        style: TextStyle(color: deadline != null ? Colors.white : AppColors.textMuted, fontSize: 13.5),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    final amt = int.tryParse(amount.text.trim());
+                    if (amt == null || amt <= 0) {
+                      ScaffoldMessenger.of(sheetContext).showSnackBar(
+                        const SnackBar(content: Text("Summani to'g'ri kiriting")),
+                      );
+                      return;
+                    }
+                    Navigator.of(sheetContext).pop();
+                    await cubit.sendContract(
+                      preparerId: offer.preparer.id,
+                      amount: amt,
+                      note: note.text.trim(),
+                      deadline: deadline,
+                    );
+                  },
+                  child: const Text('Yuborish'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
 class _OfferTile extends StatelessWidget {
-  const _OfferTile({required this.offer, required this.canRespond, required this.busy});
+  const _OfferTile({required this.offer, required this.canRespond, required this.busy, this.orderId});
   final OrderOfferModel offer;
   final bool canRespond;
   final bool busy;
+  final String? orderId;
 
   @override
   Widget build(BuildContext context) {
@@ -581,20 +919,31 @@ class _OfferTile extends StatelessWidget {
               _OfferStatusBadge(status: offer.status),
               const SizedBox(width: 8),
               Text('${offer.starsSpent} ⭐', style: const TextStyle(color: AppColors.amber, fontSize: 11.5, fontWeight: FontWeight.w600)),
-              const Spacer(),
-              if (canRespond) ...[
-                TextButton(
-                  onPressed: busy ? null : () => context.read<OrderDetailCubit>().respondToOffer(offer.id, accept: false),
-                  child: const Text('Rad etish', style: TextStyle(color: AppColors.red)),
-                ),
-                ElevatedButton(
-                  onPressed: busy ? null : () => context.read<OrderDetailCubit>().respondToOffer(offer.id, accept: true),
-                  style: ElevatedButton.styleFrom(minimumSize: const Size(0, 34), padding: const EdgeInsets.symmetric(horizontal: 14)),
-                  child: const Text('Qabul qilish'),
-                ),
-              ],
             ],
           ),
+          if (canRespond) ...[
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: busy ? null : () => context.read<OrderDetailCubit>().respondToOffer(offer.id, accept: false),
+                    style: OutlinedButton.styleFrom(foregroundColor: AppColors.red),
+                    child: const Text('Rad etish'),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: busy || orderId == null
+                        ? null
+                        : () => _showSendContractSheet(context, orderId: orderId!, offer: offer),
+                    child: const Text('Shartnoma yuborish'),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ],
       ),
     );

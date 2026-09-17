@@ -47,6 +47,11 @@ export async function GET(
         // yuborgan yuqorida — web bilan bir xil.
         orderBy: [{ starsSpent: "desc" }, { createdAt: "asc" }],
       },
+      contracts: {
+        orderBy: { createdAt: "desc" },
+        include: { preparer: { select: { name: true, login: true } } },
+      },
+      review: true,
     },
   });
   if (!order) return mobileJson({ error: "Topilmadi" }, { status: 404 });
@@ -95,6 +100,19 @@ export async function GET(
       orderer: order.orderer,
       preparer: order.preparer,
       queue,
+      contracts: order.contracts.map((c) => ({
+        id: c.id,
+        status: c.status,
+        amount: c.amount,
+        note: c.note,
+        deadline: c.deadline?.toISOString() ?? null,
+        preparerId: c.preparerId,
+        preparerName: c.preparer.name ?? c.preparer.login ?? "Tayyorlovchi",
+        createdAt: c.createdAt.toISOString(),
+      })),
+      review: order.review
+        ? { stars: order.review.stars, comment: order.review.comment }
+        : null,
       offers: offers.map((o) => ({
         id: o.id,
         price: o.price,
@@ -116,9 +134,16 @@ export async function GET(
   });
 }
 
-const patchSchema = z.object({ status: z.enum(["DELIVERED", "DONE", "CANCELLED"]) });
+const patchSchema = z.object({ status: z.enum(["DELIVERED", "CANCELLED"]) });
 
-/** Holatni o'zgartirish: tayyorlovchi topshiradi, buyurtmachi yakunlaydi/bekor qiladi. */
+/**
+ * Holatni o'zgartirish: tayyorlovchi topshiradi (DELIVERED), buyurtmachi
+ * hali hech kimga topshirilmagan (OPEN) buyurtmasini bekor qiladi.
+ * Diqqat: ish YAKUNLASH endi shu yerda emas — /finalize orqali (eskroudan
+ * tayyorlovchiga pul o'tishi kerak). Faol shartnoma bor IN_PROGRESS/
+ * DELIVERED buyurtmani bekor qilish ham shu yerda emas — /contracts/[id]
+ * CANCEL orqali (bloklangan pulni to'g'ri qaytarish uchun).
+ */
 export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ id: string }> },
@@ -145,16 +170,17 @@ export async function PATCH(
   if (status === "DELIVERED" && !isPreparer) {
     return mobileJson({ error: "Ruxsat yo'q" }, { status: 403 });
   }
-  if ((status === "DONE" || status === "CANCELLED") && !isOrderer) {
-    return mobileJson({ error: "Ruxsat yo'q" }, { status: 403 });
+  if (status === "CANCELLED") {
+    if (!isOrderer) return mobileJson({ error: "Ruxsat yo'q" }, { status: 403 });
+    if (order.status !== "OPEN") {
+      return mobileJson(
+        { error: "Ish boshlangan buyurtmani shartnoma orqali bekor qiling" },
+        { status: 400 },
+      );
+    }
   }
 
-  await db.$transaction(async (tx) => {
-    const o = await tx.order.update({ where: { id }, data: { status } });
-    if (status === "DONE" && o.preparerId) {
-      await tx.user.update({ where: { id: o.preparerId }, data: { isAvailable: true } });
-    }
-  });
+  await db.order.update({ where: { id }, data: { status } });
 
   await updateOrderChannelPost(id);
 
@@ -164,13 +190,13 @@ export async function PATCH(
 
   await logActivity(
     auth.userId,
-    status === "DELIVERED" ? "ORDER_DELIVER" : status === "DONE" ? "ORDER_FINALIZE" : "ORDER_CANCEL",
+    status === "DELIVERED" ? "ORDER_DELIVER" : "ORDER_CANCEL",
     `Buyurtma holati: ${status} — «${order.title}» (mobil ilova)`,
     { orderId: id },
   );
   await logToGroup(
     "orders",
-    status === "DELIVERED" ? "📦 Ish topshirildi" : status === "DONE" ? "✅ Buyurtma yakunlandi" : "🚫 Buyurtma bekor qilindi",
+    status === "DELIVERED" ? "📦 Ish topshirildi" : "🚫 Buyurtma bekor qilindi",
     [`«${order.title}»`],
     siteUrl(`/sardorxon/admin/orders/${id}`),
   );

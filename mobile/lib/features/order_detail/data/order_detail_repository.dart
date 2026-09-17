@@ -32,4 +32,34 @@ class OrderDetailRepository {
   Future<void> deleteOrder(String orderId) async {
     await _api.delete('/mobile/orders/$orderId');
   }
+
+  Future<void> sendContract(
+    String orderId, {
+    required String preparerId,
+    required int amount,
+    String? note,
+    DateTime? deadline,
+  }) async {
+    await _api.post('/mobile/orders/$orderId/contract', data: {
+      'preparerId': preparerId,
+      'amount': amount,
+      if (note != null && note.isNotEmpty) 'note': note,
+      if (deadline != null) 'deadline': deadline.toUtc().toIso8601String(),
+    });
+  }
+
+  Future<void> respondToContract(String contractId, {required String action}) async {
+    await _api.post('/mobile/contracts/$contractId', data: {'action': action});
+  }
+
+  Future<void> finalizeOrder(String orderId) async {
+    await _api.post('/mobile/orders/$orderId/finalize');
+  }
+
+  Future<void> submitReview(String orderId, {required int stars, String? comment}) async {
+    await _api.post('/mobile/orders/$orderId/review', data: {
+      'stars': stars,
+      if (comment != null && comment.isNotEmpty) 'comment': comment,
+    });
+  }
 }
