@@ -6,6 +6,7 @@ import '../../../core/utils/format.dart';
 import '../../../widgets/app_drawer.dart';
 import '../../../widgets/app_header_sliver.dart';
 import '../../../widgets/glass_card.dart';
+import '../../order_detail/presentation/order_detail_screen.dart';
 import '../cubit/offers_cubit.dart';
 import '../data/offer_model.dart';
 import '../data/offers_repository.dart';
@@ -85,7 +86,11 @@ class _OfferCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GlassCard(
+    return GestureDetector(
+      onTap: () => Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => OrderDetailScreen(orderId: offer.order.id)),
+      ),
+      child: GlassCard(
       blur: false,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -126,6 +131,7 @@ class _OfferCard extends StatelessWidget {
             ],
           ),
         ],
+      ),
       ),
     );
   }

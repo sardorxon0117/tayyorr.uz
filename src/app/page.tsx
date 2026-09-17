@@ -335,7 +335,7 @@ export default async function Home() {
                       Android uchun
                     </span>
                     <span className="block text-sm font-semibold">
-                      APK yuklab olish
+                      Ilovani yuklab olish
                     </span>
                   </span>
                 </a>
