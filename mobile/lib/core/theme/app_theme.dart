@@ -93,6 +93,23 @@ class AppTheme {
           ),
         ),
       ),
+      // ElevatedButton bilan bir xil balandlik/burchak — aks holda
+      // qatorma-qator turganda ikkisi turlicha ko'rinadi (masalan
+      // shartnomani "qabul qilish"/"rad etish" tugmalari).
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: AppColors.textPrimary,
+          side: BorderSide(color: AppColors.cardBorder),
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+          textStyle: const TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 15.5,
+          ),
+        ),
+      ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: AppColors.textSecondary,

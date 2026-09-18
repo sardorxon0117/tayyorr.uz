@@ -428,7 +428,10 @@ class _ContractCard extends StatelessWidget {
                     onPressed: busy
                         ? null
                         : () => context.read<OrderDetailCubit>().respondToContract(contract.id, action: 'DECLINE'),
-                    style: OutlinedButton.styleFrom(foregroundColor: AppColors.red),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.red,
+                      side: BorderSide(color: AppColors.red.withValues(alpha: 0.4)),
+                    ),
                     child: const Text('Rad etish'),
                   ),
                 ),
@@ -972,7 +975,10 @@ class _OfferTile extends StatelessWidget {
                 Expanded(
                   child: OutlinedButton(
                     onPressed: busy ? null : () => context.read<OrderDetailCubit>().respondToOffer(offer.id, accept: false),
-                    style: OutlinedButton.styleFrom(foregroundColor: AppColors.red),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.red,
+                      side: BorderSide(color: AppColors.red.withValues(alpha: 0.4)),
+                    ),
                     child: const Text('Rad etish'),
                   ),
                 ),
