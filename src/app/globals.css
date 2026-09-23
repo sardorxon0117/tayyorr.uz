@@ -361,11 +361,11 @@ select.input option {
 .animate-float-c { animation: float-c 25s ease-in-out infinite; }
 .animate-rise { animation: rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
 
-@keyframes phone-float {
-  0%, 100% { transform: translate3d(0, 0, 0) rotate(-1.5deg); }
-  50% { transform: translate3d(0, -14px, 0) rotate(1.5deg); }
+@keyframes phone-3d-float {
+  0%, 100% { transform: rotateY(-16deg) rotateX(6deg) translateY(0); }
+  50% { transform: rotateY(-9deg) rotateX(2deg) translateY(-16px); }
 }
-.phone-float { animation: phone-float 6s ease-in-out infinite; }
+.phone-3d { animation: phone-3d-float 7s ease-in-out infinite; }
 
 .glass {
   background: rgba(255, 255, 255, 0.04);
@@ -739,7 +739,7 @@ html.js-reveal .blur-in.reveal-in {
   .animate-float-b,
   .animate-float-c,
   .animate-rise,
-  .phone-float,
+  .phone-3d,
   .text-sheen,
   .menu-panel,
   .menu-panel.closing,
