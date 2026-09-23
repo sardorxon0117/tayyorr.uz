@@ -338,6 +338,24 @@ model LandingVideo {
   @@index([active, order])
 }
 
+/**
+ * Landingdagi "yuklab olish"dan oldingi scroll-hikoya bo'limi uchun
+ * har bir slayd — sarlavha + submatn + telefon ekranida ko'rinadigan rasm.
+ */
+model LandingPhoneSlide {
+  id        String   @id @default(cuid())
+  title     String
+  subtitle  String
+  imageUrl  String
+  imageKey  String?
+  order     Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([active, order])
+}
+
 model PushSubscription {
   id        String   @id @default(cuid())
   userId    String

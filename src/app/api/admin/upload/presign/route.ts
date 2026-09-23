@@ -13,7 +13,14 @@ import {
 
 const schema = z.object({
   kind: z
-    .enum(["CHAT", "AVATAR", "BROADCAST", "LANDING_VIDEO", "HERO_VIDEO"])
+    .enum([
+      "CHAT",
+      "AVATAR",
+      "BROADCAST",
+      "LANDING_VIDEO",
+      "HERO_VIDEO",
+      "LANDING_PHONE_SLIDE",
+    ])
     .default("CHAT"),
   conversationId: z.string().optional(),
   filename: z.string().min(1).max(200),
@@ -26,6 +33,8 @@ const VIDEO_TYPES = [
   "video/ogg",
   "video/quicktime",
 ];
+
+const IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp"];
 
 export async function POST(req: Request) {
   const denied = await adminApiGuard();
@@ -52,6 +61,25 @@ export async function POST(req: Request) {
     const key = buildKey("broadcast", filename);
     const uploadUrl = await presignPut({ bucket: PRIVATE_BUCKET, key, contentType });
     return NextResponse.json({ uploadUrl, key, bucket: "private" });
+  }
+
+  if (kind === "LANDING_PHONE_SLIDE") {
+    if (!IMAGE_TYPES.includes(contentType)) {
+      return NextResponse.json({ error: "Faqat rasm fayl yuklang" }, { status: 400 });
+    }
+    const key = buildKey("landing/phone-slides", filename);
+    const uploadUrl = await presignPut({
+      bucket: PUBLIC_BUCKET,
+      key,
+      contentType,
+      expiresIn: 900,
+    });
+    return NextResponse.json({
+      uploadUrl,
+      key,
+      bucket: "public",
+      publicUrl: publicUrl(key),
+    });
   }
 
   if (kind === "LANDING_VIDEO" || kind === "HERO_VIDEO") {

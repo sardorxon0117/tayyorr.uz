@@ -9,6 +9,7 @@ import { HeroMockup } from "@/components/hero-mockup";
 import { HeroBgVideo } from "@/components/hero-bg-video";
 import { LandingVideos } from "@/components/landing-videos";
 import { LandingFaq } from "@/components/landing-faq";
+import { PhoneScrollShowcase } from "@/components/phone-scroll-showcase";
 import { TelegramIcon, InstagramIcon } from "@/components/icons";
 import { SERVICES } from "@/lib/services";
 import { db } from "@/lib/db";
@@ -25,7 +26,7 @@ export default async function Home() {
   const session = await auth();
   const loggedIn = !!session?.user;
 
-  const [heroVideo, videoRows, faqRows] = await Promise.all([
+  const [heroVideo, videoRows, faqRows, phoneSlideRows] = await Promise.all([
     db.heroVideo.findUnique({ where: { id: "hero" } }),
     db.landingVideo.findMany({
       where: { active: true },
@@ -33,6 +34,10 @@ export default async function Home() {
       take: 4,
     }),
     db.landingFaq.findMany({
+      where: { active: true },
+      orderBy: [{ order: "asc" }, { createdAt: "asc" }],
+    }),
+    db.landingPhoneSlide.findMany({
       where: { active: true },
       orderBy: [{ order: "asc" }, { createdAt: "asc" }],
     }),
@@ -295,6 +300,16 @@ export default async function Home() {
           />
         </div>
       </section>
+
+      {/* ---------- telefon scroll-hikoya (yuklab olishdan oldin) ---------- */}
+      <PhoneScrollShowcase
+        slides={phoneSlideRows.map((s) => ({
+          id: s.id,
+          title: s.title,
+          subtitle: s.subtitle,
+          imageUrl: s.imageUrl,
+        }))}
+      />
 
       {/* ---------- mobil ilova ---------- */}
       <section id="ilova" className="relative z-10 mx-auto max-w-5xl px-6 py-20">
