@@ -194,7 +194,7 @@ export function PhoneScrollShowcase({ slides }: { slides: PhoneSlideData[] }) {
                 ? { position: "fixed", top: pin.top, left: pin.left, width: pin.width }
                 : pin.mode === "after"
                   ? { position: "absolute", left: 0, right: 0, bottom: 0 }
-                  : { position: "absolute", left: 0, right: 0, top: pin.top }
+                  : { position: "absolute", left: 0, right: 0, top: 0 }
             }
           >
             <PhoneFrame slides={slides} activeIndex={desktopIndex} />
