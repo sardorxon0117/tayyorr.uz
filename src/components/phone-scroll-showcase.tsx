@@ -19,77 +19,51 @@ function PhoneFrame({
   className?: string;
 }) {
   return (
-    <div className={`relative ${className}`} style={{ perspective: "1400px" }}>
+    <div className={`phone-float relative w-56 sm:w-64 ${className}`}>
+      {/* tashqi metall ramka */}
       <div
-        className="phone-3d relative w-56 sm:w-64"
-        style={{ aspectRatio: "9 / 19.5", transformStyle: "preserve-3d" }}
+        className="relative rounded-[3.1rem] p-[10px]"
+        style={{
+          aspectRatio: "9 / 19.5",
+          background:
+            "linear-gradient(160deg, #3d3d40 0%, #141416 40%, #0a0a0b 60%, #141416 100%)",
+          boxShadow:
+            "0 35px 60px -18px rgba(0,0,0,0.6), 0 10px 24px -10px rgba(0,0,0,0.45), inset 0 0 0 1px rgba(255,255,255,0.07)",
+        }}
       >
-        {/* o'ng qirra — telefonning qalinligi hissi (3D burilganda ko'rinadi) */}
-        <div
-          className="absolute inset-y-0 right-0 w-2.5 rounded-r-[3px]"
-          style={{
-            transform: "rotateY(90deg) translateZ(5px)",
-            transformOrigin: "right center",
-            background: "linear-gradient(180deg,#8a8a90,#3a3a3f 45%,#0f0f11 100%)",
-          }}
-        />
-        {/* chap qirra */}
-        <div
-          className="absolute inset-y-0 left-0 w-2.5 rounded-l-[3px]"
-          style={{
-            transform: "rotateY(-90deg) translateZ(5px)",
-            transformOrigin: "left center",
-            background: "linear-gradient(180deg,#5c5c62,#232326 45%,#0a0a0b 100%)",
-          }}
-        />
-        {/* yon tugmalar */}
-        <span
-          className="absolute -left-[2px] top-[22%] h-7 w-[3px] rounded-l bg-zinc-600"
-          style={{ transform: "translateZ(4px)" }}
-        />
-        <span
-          className="absolute -left-[2px] top-[29%] h-12 w-[3px] rounded-l bg-zinc-600"
-          style={{ transform: "translateZ(4px)" }}
-        />
-        <span
-          className="absolute -right-[2px] top-[26%] h-14 w-[3px] rounded-r bg-zinc-600"
-          style={{ transform: "translateZ(4px)" }}
-        />
+        {/* chap tomondagi tugmalar (jim rejim + ovoz) */}
+        <span className="absolute -left-[3px] top-[15%] h-5 w-[3px] rounded-l-sm bg-gradient-to-b from-zinc-400 via-zinc-600 to-zinc-800" />
+        <span className="absolute -left-[3px] top-[23%] h-9 w-[3px] rounded-l-sm bg-gradient-to-b from-zinc-400 via-zinc-600 to-zinc-800" />
+        <span className="absolute -left-[3px] top-[33%] h-9 w-[3px] rounded-l-sm bg-gradient-to-b from-zinc-400 via-zinc-600 to-zinc-800" />
+        {/* o'ng tomondagi tugma (quvvat) */}
+        <span className="absolute -right-[3px] top-[21%] h-16 w-[3px] rounded-r-sm bg-gradient-to-b from-zinc-400 via-zinc-600 to-zinc-800" />
 
-        {/* old tomon — ramka + ekran */}
-        <div
-          className="absolute inset-0 rounded-[3rem] p-[3px]"
-          style={{
-            transform: "translateZ(5px)",
-            background:
-              "linear-gradient(150deg, #6b6b73 0%, #2c2c30 32%, #0a0a0c 58%, #47474e 100%)",
-            boxShadow:
-              "0 45px 80px -20px rgba(0,0,0,0.65), 0 15px 32px -12px rgba(0,0,0,0.55)",
-          }}
-        >
-          <div className="relative h-full w-full overflow-hidden rounded-[2.7rem] bg-black">
-            {/* dynamic island */}
-            <div className="absolute left-1/2 top-2.5 z-20 h-6 w-24 -translate-x-1/2 rounded-full bg-black ring-1 ring-white/10" />
+        {/* ekran */}
+        <div className="relative h-full w-full overflow-hidden rounded-[2.4rem] bg-black">
+          {/* notch (kamera/dinamik) */}
+          <div className="absolute left-1/2 top-0 z-20 h-[22px] w-[38%] -translate-x-1/2 rounded-b-[1.1rem] bg-black" />
+          <div className="absolute left-1/2 top-[6px] z-20 h-1.5 w-1.5 -translate-x-8 rounded-full bg-zinc-800" />
 
-            {slides.map((slide, i) => (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                key={slide.id}
-                src={slide.imageUrl}
-                alt={slide.title}
-                className="absolute inset-0 h-full w-full object-cover"
-                style={{
-                  opacity: i === activeIndex ? 1 : 0,
-                  transition: "opacity 0.6s linear",
-                }}
-              />
-            ))}
+          {slides.map((slide, i) => (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              key={slide.id}
+              src={slide.imageUrl}
+              alt={slide.title}
+              className="absolute inset-0 h-full w-full object-cover"
+              style={{
+                opacity: i === activeIndex ? 1 : 0,
+                transition: "opacity 0.6s linear",
+              }}
+            />
+          ))}
 
-            {/* shisha yaltirashi */}
-            <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-br from-white/15 via-transparent to-transparent" />
-            {/* ekran atrofidagi ichki soya — chuqurlik hissi uchun */}
-            <div className="pointer-events-none absolute inset-0 z-10 rounded-[2.7rem] ring-1 ring-inset ring-black/40" />
-          </div>
+          {/* shisha yaltirashi */}
+          <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-br from-white/10 via-transparent to-transparent" />
+          {/* ekran atrofidagi ichki soya — chuqurlik hissi uchun */}
+          <div className="pointer-events-none absolute inset-0 z-10 rounded-[2.4rem] ring-1 ring-inset ring-black/40" />
+          {/* pastdagi home indikatori */}
+          <div className="absolute bottom-1.5 left-1/2 z-20 h-[5px] w-[34%] -translate-x-1/2 rounded-full bg-white/70" />
         </div>
       </div>
     </div>
