@@ -160,7 +160,7 @@ export function VideoCard({
                   type="button"
                   onClick={replay}
                   aria-label="Qayta boshlash"
-                  className="absolute inset-0 flex items-center justify-center bg-black/50"
+                  className="backdrop-blur-sm absolute inset-0 flex items-center justify-center bg-black/50"
                 >
                   <span className="hover-pill">
                     <ReplayIcon className="h-4 w-4" />

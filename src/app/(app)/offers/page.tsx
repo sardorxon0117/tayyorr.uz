@@ -89,7 +89,7 @@ export default async function MyOffersPage({
           <Link
             key={f.value}
             href={f.value === "ALL" ? "/offers" : `/offers?status=${f.value}`}
-            className={`rounded-full px-3 py-1.5 text-xs font-medium transition ${
+            className={`backdrop-blur-sm rounded-full px-3 py-1.5 text-xs font-medium transition ${
               filter === f.value
                 ? "bg-indigo-500/20 text-indigo-300"
                 : "bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-white"

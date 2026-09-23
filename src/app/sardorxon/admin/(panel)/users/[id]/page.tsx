@@ -261,7 +261,7 @@ export default async function AdminUserDetail({
                   <li key={c.id}>
                     <Link
                       href={`/sardorxon/admin/chats/${c.id}`}
-                      className="flex justify-between rounded-lg px-2 py-1.5 hover:bg-white/5"
+                      className="backdrop-blur-sm flex justify-between rounded-lg px-2 py-1.5 hover:bg-white/5"
                     >
                       <span className="text-zinc-200">
                         {other.isSupport

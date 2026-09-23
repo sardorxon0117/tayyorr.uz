@@ -110,7 +110,7 @@ export function AppSidebar({
               <Link
                 key={l.href}
                 href={l.href}
-                className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition ${
+                className={`backdrop-blur-sm flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition ${
                   active
                     ? "bg-indigo-500/15 text-white"
                     : "text-zinc-400 hover:bg-white/5 hover:text-white"

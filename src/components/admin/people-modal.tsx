@@ -64,7 +64,7 @@ export function PeopleModal({
               href={`/sardorxon/admin/users/${p.id}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-3 rounded-xl px-2 py-2 hover:bg-white/5"
+              className="backdrop-blur-sm flex items-center gap-3 rounded-xl px-2 py-2 hover:bg-white/5"
             >
               {p.avatar ? (
                 // eslint-disable-next-line @next/next/no-img-element

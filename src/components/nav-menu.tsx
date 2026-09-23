@@ -73,7 +73,7 @@ export function NavMenu({
         onClick={() => (open ? close() : openMenu())}
         aria-label="Menyu"
         aria-expanded={open}
-        className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-zinc-200 transition hover:bg-white/10"
+        className="backdrop-blur-sm relative flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-zinc-200 transition hover:bg-white/10"
       >
         {hasBadge && !open && (
           <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-indigo-500 ring-2 ring-[#0b0b12]" />
@@ -126,7 +126,7 @@ export function NavMenu({
                     href={l.href}
                     onClick={close}
                     style={{ ["--i" as string]: i }}
-                    className={`menu-item flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition ${
+                    className={`backdrop-blur-sm menu-item flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition ${
                       active
                         ? "bg-indigo-500/15 text-white"
                         : "text-zinc-300 hover:bg-white/5 hover:pl-4"

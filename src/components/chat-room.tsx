@@ -612,7 +612,7 @@ export function ChatRoom({
           <button
             type="button"
             onClick={() => router.push("/messages")}
-            className="-ml-1 rounded-lg px-1.5 py-1 text-lg text-zinc-400 transition hover:bg-white/5 hover:text-white"
+            className="backdrop-blur-sm -ml-1 rounded-lg px-1.5 py-1 text-lg text-zinc-400 transition hover:bg-white/5 hover:text-white"
             aria-label="Orqaga"
           >
             ‹
@@ -665,7 +665,7 @@ export function ChatRoom({
                 ref={hdrBtnRef}
                 type="button"
                 onClick={toggleHdrMenu}
-                className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-zinc-300 hover:bg-white/10"
+                className="backdrop-blur-sm flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-zinc-300 hover:bg-white/10"
                 aria-label="Menyu"
               >
                 ⋮
@@ -703,7 +703,7 @@ export function ChatRoom({
               <button
                 type="button"
                 onClick={() => setPinIdx((i) => (i + 1) % orders.length)}
-                className="shrink-0 rounded-full bg-white/10 px-2 py-0.5 text-[11px] font-medium text-zinc-300 transition hover:bg-white/20"
+                className="backdrop-blur-sm shrink-0 rounded-full bg-white/10 px-2 py-0.5 text-[11px] font-medium text-zinc-300 transition hover:bg-white/20"
                 aria-label="Keyingi loyiha"
               >
                 {pinIdx + 1}/{orders.length}
@@ -729,14 +729,14 @@ export function ChatRoom({
                     setHdrMenu(null);
                     setReportHdr(true);
                   }}
-                  className="block w-full px-3 py-2.5 text-left text-amber-300 hover:bg-white/5"
+                  className="backdrop-blur-sm block w-full px-3 py-2.5 text-left text-amber-300 hover:bg-white/5"
                 >
                   ⚠︎ Shikoyat qilish
                 </button>
                 <button
                   type="button"
                   onClick={toggleBlock}
-                  className="block w-full px-3 py-2.5 text-left text-zinc-200 hover:bg-white/5"
+                  className="backdrop-blur-sm block w-full px-3 py-2.5 text-left text-zinc-200 hover:bg-white/5"
                 >
                   {iBlocked ? "✓ Blokdan chiqarish" : "🚫 Bloklash"}
                 </button>
@@ -746,7 +746,7 @@ export function ChatRoom({
               <button
                 type="button"
                 onClick={deleteConversation}
-                className="block w-full px-3 py-2.5 text-left text-red-400 hover:bg-white/5"
+                className="backdrop-blur-sm block w-full px-3 py-2.5 text-left text-red-400 hover:bg-white/5"
               >
                 🗑 Suhbatni o'chirish
               </button>
@@ -819,7 +819,7 @@ export function ChatRoom({
                 <button
                   type="button"
                   onClick={(e) => openMenu(m, e.currentTarget)}
-                  className="flex h-7 w-7 shrink-0 items-center justify-center self-end rounded-lg border border-white/15 bg-white/10 text-zinc-300 opacity-100 transition hover:bg-white/20 hover:text-white [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100"
+                  className="backdrop-blur-sm flex h-7 w-7 shrink-0 items-center justify-center self-end rounded-lg border border-white/15 bg-white/10 text-zinc-300 opacity-100 transition hover:bg-white/20 hover:text-white [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100"
                   aria-label="Xabar menyusi"
                 >
                   ⋮
@@ -848,7 +848,7 @@ export function ChatRoom({
                         <button
                           type="button"
                           onClick={() => scrollToMessage(m.replyTo!.id)}
-                          className={`block w-full rounded-md border-l-2 py-1 pl-2 pr-1 text-left text-xs ${
+                          className={`backdrop-blur-sm block w-full rounded-md border-l-2 py-1 pl-2 pr-1 text-left text-xs ${
                             m.mine
                               ? "border-white/60 bg-white/15"
                               : "border-indigo-400/70 bg-indigo-500/10"
@@ -888,7 +888,7 @@ export function ChatRoom({
                                 key={v}
                                 type="button"
                                 onClick={() => react(m, v)}
-                                className={`flex items-center gap-1 rounded-full px-2 py-1 text-sm transition ${
+                                className={`backdrop-blur-sm flex items-center gap-1 rounded-full px-2 py-1 text-sm transition ${
                                   on
                                     ? m.mine
                                       ? "bg-white/25 text-white ring-1 ring-white/40"
@@ -946,7 +946,7 @@ export function ChatRoom({
                   <button
                     type="button"
                     onClick={toggleBlock}
-                    className="shrink-0 rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-xs text-zinc-200 hover:bg-white/10"
+                    className="backdrop-blur-sm shrink-0 rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-xs text-zinc-200 hover:bg-white/10"
                   >
                     Blokdan chiqarish
                   </button>
@@ -1091,7 +1091,7 @@ export function ChatRoom({
                         react(menu.msg, v);
                         setMenu(null);
                       }}
-                      className={`flex-1 rounded-lg py-1.5 text-lg transition ${
+                      className={`backdrop-blur-sm flex-1 rounded-lg py-1.5 text-lg transition ${
                         on ? "bg-indigo-500/30" : "hover:bg-white/10"
                       }`}
                     >
@@ -1103,7 +1103,7 @@ export function ChatRoom({
               <button
                 type="button"
                 onClick={() => startReply(menu.msg)}
-                className="block w-full px-3 py-2.5 text-left text-zinc-200 hover:bg-white/5"
+                className="backdrop-blur-sm block w-full px-3 py-2.5 text-left text-zinc-200 hover:bg-white/5"
               >
                 ↩︎ Javob berish
               </button>
@@ -1112,14 +1112,14 @@ export function ChatRoom({
                   <button
                     type="button"
                     onClick={() => startEdit(menu.msg)}
-                    className="block w-full px-3 py-2.5 text-left text-zinc-200 hover:bg-white/5"
+                    className="backdrop-blur-sm block w-full px-3 py-2.5 text-left text-zinc-200 hover:bg-white/5"
                   >
                     ✎ Tahrirlash
                   </button>
                   <button
                     type="button"
                     onClick={() => del(menu.msg)}
-                    className="block w-full px-3 py-2.5 text-left text-red-400 hover:bg-white/5"
+                    className="backdrop-blur-sm block w-full px-3 py-2.5 text-left text-red-400 hover:bg-white/5"
                   >
                     🗑 O'chirish
                   </button>
@@ -1129,7 +1129,7 @@ export function ChatRoom({
                   <button
                     type="button"
                     onClick={() => reportMsg(menu.msg)}
-                    className="block w-full px-3 py-2.5 text-left text-amber-300 hover:bg-white/5"
+                    className="backdrop-blur-sm block w-full px-3 py-2.5 text-left text-amber-300 hover:bg-white/5"
                   >
                     ⚠︎ Shikoyat qilish
                   </button>

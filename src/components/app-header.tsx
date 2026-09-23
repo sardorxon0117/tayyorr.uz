@@ -40,7 +40,7 @@ export function AppHeader({
         <div className="ml-auto flex items-center gap-2.5">
           <Link
             href="/profile"
-            className="h-9 w-9 overflow-hidden rounded-full border border-white/15 bg-white/5 transition hover:border-white/30"
+            className="backdrop-blur-sm h-9 w-9 overflow-hidden rounded-full border border-white/15 bg-white/5 transition hover:border-white/30"
             aria-label="Profil"
           >
             {image && (
@@ -55,7 +55,7 @@ export function AppHeader({
               starBalance !== null ? (
                 <Link
                   href="/wallet"
-                  className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-amber-300 transition hover:bg-white/5"
+                  className="backdrop-blur-sm flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-amber-300 transition hover:bg-white/5"
                 >
                   <span className="text-base">⭐</span>
                   <span className="flex-1">Stars</span>

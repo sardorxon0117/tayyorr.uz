@@ -63,7 +63,7 @@ function Chip({
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-full border px-3 py-1.5 text-sm transition ${
+      className={`backdrop-blur-sm rounded-full border px-3 py-1.5 text-sm transition ${
         active
           ? "border-indigo-400 bg-indigo-500/20 text-white"
           : "border-white/10 bg-white/5 text-zinc-300 hover:bg-white/10"
