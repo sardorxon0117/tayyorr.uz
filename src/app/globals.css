@@ -520,14 +520,13 @@ html.light .skel::after {
   align-items: center;
   border-radius: 9999px;
   background: rgba(255, 255, 255, 0.16);
-  -webkit-backdrop-filter: blur(14px);
-  backdrop-filter: blur(14px);
   border: 1px solid rgba(255, 255, 255, 0.25);
   color: #fff;
   padding: 0.9rem;
   transition:
     padding 0.35s cubic-bezier(0.22, 1, 0.36, 1),
-    background-color 0.3s ease;
+    background-color 0.3s ease,
+    backdrop-filter 0.3s ease;
 }
 .hover-pill-label {
   display: inline-block;
@@ -546,6 +545,8 @@ html.light .skel::after {
 button:hover .hover-pill {
   padding-right: 1.15rem;
   background: rgba(255, 255, 255, 0.24);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
 }
 button:hover .hover-pill-label {
   max-width: 9rem;
