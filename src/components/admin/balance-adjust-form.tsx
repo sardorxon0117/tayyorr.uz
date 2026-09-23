@@ -50,7 +50,7 @@ export function BalanceAdjustForm({ userId }: { userId: string }) {
         <button
           type="button"
           onClick={() => setCurrency("SOM")}
-          className={`flex-1 rounded-xl px-3 py-2 text-sm font-medium transition ${
+          className={`backdrop-blur-sm flex-1 rounded-xl px-3 py-2 text-sm font-medium transition ${
             currency === "SOM"
               ? "bg-indigo-500/20 text-indigo-300"
               : "bg-white/5 text-zinc-400 hover:bg-white/10"
@@ -61,7 +61,7 @@ export function BalanceAdjustForm({ userId }: { userId: string }) {
         <button
           type="button"
           onClick={() => setCurrency("STAR")}
-          className={`flex-1 rounded-xl px-3 py-2 text-sm font-medium transition ${
+          className={`backdrop-blur-sm flex-1 rounded-xl px-3 py-2 text-sm font-medium transition ${
             currency === "STAR"
               ? "bg-amber-500/20 text-amber-300"
               : "bg-white/5 text-zinc-400 hover:bg-white/10"
@@ -74,7 +74,7 @@ export function BalanceAdjustForm({ userId }: { userId: string }) {
         <button
           type="button"
           onClick={() => setDirection("ADD")}
-          className={`flex-1 rounded-xl px-3 py-2 text-sm font-medium transition ${
+          className={`backdrop-blur-sm flex-1 rounded-xl px-3 py-2 text-sm font-medium transition ${
             direction === "ADD"
               ? "bg-emerald-500/20 text-emerald-300"
               : "bg-white/5 text-zinc-400 hover:bg-white/10"
@@ -85,7 +85,7 @@ export function BalanceAdjustForm({ userId }: { userId: string }) {
         <button
           type="button"
           onClick={() => setDirection("SUBTRACT")}
-          className={`flex-1 rounded-xl px-3 py-2 text-sm font-medium transition ${
+          className={`backdrop-blur-sm flex-1 rounded-xl px-3 py-2 text-sm font-medium transition ${
             direction === "SUBTRACT"
               ? "bg-red-500/20 text-red-300"
               : "bg-white/5 text-zinc-400 hover:bg-white/10"

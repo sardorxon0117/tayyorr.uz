@@ -296,7 +296,7 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
               type="button"
               onClick={(e) => openMenu(it, e.currentTarget)}
               title="Amallar"
-              className="mb-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-white/15 bg-white/10 text-zinc-300 opacity-100 transition hover:bg-white/20 hover:text-white [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100"
+              className="backdrop-blur-sm mb-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-white/15 bg-white/10 text-zinc-300 opacity-100 transition hover:bg-white/20 hover:text-white [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100"
             >
               ⋮
             </button>
@@ -328,7 +328,7 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
                     <button
                       type="button"
                       onClick={() => openPeople(it, "likes")}
-                      className="flex items-center gap-1 rounded-full bg-white/15 px-2 py-0.5 text-xs hover:bg-white/25"
+                      className="backdrop-blur-sm flex items-center gap-1 rounded-full bg-white/15 px-2 py-0.5 text-xs hover:bg-white/25"
                     >
                       👍 {it.likeCount}
                     </button>
@@ -337,7 +337,7 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
                     <button
                       type="button"
                       onClick={() => openPeople(it, "dislikes")}
-                      className="flex items-center gap-1 rounded-full bg-white/15 px-2 py-0.5 text-xs hover:bg-white/25"
+                      className="backdrop-blur-sm flex items-center gap-1 rounded-full bg-white/15 px-2 py-0.5 text-xs hover:bg-white/25"
                     >
                       👎 {it.dislikeCount}
                     </button>
@@ -443,21 +443,21 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
               <button
                 type="button"
                 onClick={() => openPeople(menu.item, "reads")}
-                className="block w-full px-3 py-2 text-left text-zinc-200 hover:bg-white/5"
+                className="backdrop-blur-sm block w-full px-3 py-2 text-left text-zinc-200 hover:bg-white/5"
               >
                 👁 {menu.item.readCount ?? 0} kishi ko'rdi
               </button>
               <button
                 type="button"
                 onClick={() => editItem(menu.item)}
-                className="block w-full px-3 py-2 text-left text-zinc-200 hover:bg-white/5"
+                className="backdrop-blur-sm block w-full px-3 py-2 text-left text-zinc-200 hover:bg-white/5"
               >
                 Tahrirlash
               </button>
               <button
                 type="button"
                 onClick={() => delItem(menu.item.id)}
-                className="block w-full px-3 py-2 text-left text-red-400 hover:bg-white/5"
+                className="backdrop-blur-sm block w-full px-3 py-2 text-left text-red-400 hover:bg-white/5"
               >
                 Hamma uchun o'chirish
               </button>

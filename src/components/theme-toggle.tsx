@@ -52,7 +52,7 @@ export function ThemeToggle({
           type="button"
           onClick={() => pick(m)}
           aria-pressed={mode === m}
-          className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg px-2 py-1.5 text-xs transition ${
+          className={`backdrop-blur-sm flex flex-1 items-center justify-center gap-1.5 rounded-lg px-2 py-1.5 text-xs transition ${
             mode === m
               ? "bg-white/10 text-white"
               : "text-zinc-400 hover:text-white"

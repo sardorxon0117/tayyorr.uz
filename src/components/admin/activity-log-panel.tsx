@@ -88,7 +88,7 @@ export function ActivityLogPanel({ userId }: { userId: string }) {
                 setGroupIdx(i);
                 setAction("");
               }}
-              className={`rounded-lg px-2.5 py-1 text-xs transition ${
+              className={`backdrop-blur-sm rounded-lg px-2.5 py-1 text-xs transition ${
                 i === groupIdx
                   ? "bg-indigo-500/20 text-indigo-200"
                   : "bg-white/5 text-zinc-400 hover:bg-white/10"

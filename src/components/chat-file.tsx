@@ -59,14 +59,14 @@ function Lightbox({ file, onClose }: { file: ChatFile; onClose: () => void }) {
             e.stopPropagation();
             downloadFile(file.url, file.name);
           }}
-          className="flex h-9 items-center gap-1.5 rounded-full bg-white/10 px-3 text-sm text-white hover:bg-white/20"
+          className="backdrop-blur-sm flex h-9 items-center gap-1.5 rounded-full bg-white/10 px-3 text-sm text-white hover:bg-white/20"
         >
           ↓ Yuklab olish
         </button>
         <button
           type="button"
           onClick={onClose}
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-lg text-white hover:bg-white/20"
+          className="backdrop-blur-sm flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-lg text-white hover:bg-white/20"
           aria-label="Yopish"
         >
           ✕
@@ -161,7 +161,7 @@ export function ChatFileView({ file, mine }: { file: ChatFile; mine: boolean }) 
     <button
       type="button"
       onClick={() => downloadFile(file.url, file.name)}
-      className={`flex max-w-full items-center gap-3 rounded-lg px-3 py-2 text-left ${
+      className={`backdrop-blur-sm flex max-w-full items-center gap-3 rounded-lg px-3 py-2 text-left ${
         mine ? "bg-white/15" : "bg-white/10"
       }`}
     >

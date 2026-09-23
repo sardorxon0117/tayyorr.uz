@@ -72,7 +72,7 @@ function TermsModal({ onClose }: { onClose: () => void }) {
           <h2 className="font-semibold text-white">Ommaviy oferta</h2>
           <button
             type="button"
-            className="rounded-lg px-2 py-1 text-sm text-zinc-400 hover:bg-white/5 hover:text-white"
+            className="backdrop-blur-sm rounded-lg px-2 py-1 text-sm text-zinc-400 hover:bg-white/5 hover:text-white"
             onClick={onClose}
           >
             ✕

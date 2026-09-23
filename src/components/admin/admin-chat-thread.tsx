@@ -335,7 +335,7 @@ export function AdminChatThread({
               type="button"
               onClick={(e) => openMenu(m, e.currentTarget)}
               aria-label="Xabar menyusi"
-              className="flex h-7 w-7 shrink-0 items-center justify-center self-end rounded-lg border border-white/15 bg-white/10 text-zinc-300 opacity-100 transition hover:bg-white/20 hover:text-white [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100"
+              className="backdrop-blur-sm flex h-7 w-7 shrink-0 items-center justify-center self-end rounded-lg border border-white/15 bg-white/10 text-zinc-300 opacity-100 transition hover:bg-white/20 hover:text-white [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100"
             >
               ⋮
             </button>
@@ -387,7 +387,7 @@ export function AdminChatThread({
                         <button
                           type="button"
                           onClick={() => showReactors(m, "LIKE")}
-                          className={`rounded-full px-2 py-0.5 text-xs ${
+                          className={`backdrop-blur-sm rounded-full px-2 py-0.5 text-xs ${
                             m.mine ? "bg-white/15" : "bg-white/10"
                           } hover:bg-white/25`}
                         >
@@ -398,7 +398,7 @@ export function AdminChatThread({
                         <button
                           type="button"
                           onClick={() => showReactors(m, "DISLIKE")}
-                          className={`rounded-full px-2 py-0.5 text-xs ${
+                          className={`backdrop-blur-sm rounded-full px-2 py-0.5 text-xs ${
                             m.mine ? "bg-white/15" : "bg-white/10"
                           } hover:bg-white/25`}
                         >
@@ -550,7 +550,7 @@ export function AdminChatThread({
                       key={v}
                       type="button"
                       onClick={() => react(menu.msg, v)}
-                      className={`flex-1 rounded-lg py-1.5 text-lg transition ${
+                      className={`backdrop-blur-sm flex-1 rounded-lg py-1.5 text-lg transition ${
                         on ? "bg-indigo-500/30" : "hover:bg-white/10"
                       }`}
                     >
@@ -562,7 +562,7 @@ export function AdminChatThread({
               <button
                 type="button"
                 onClick={() => startReply(menu.msg)}
-                className="block w-full px-3 py-2.5 text-left text-zinc-200 hover:bg-white/5"
+                className="backdrop-blur-sm block w-full px-3 py-2.5 text-left text-zinc-200 hover:bg-white/5"
               >
                 ↩︎ Javob berish
               </button>
@@ -570,7 +570,7 @@ export function AdminChatThread({
                 <button
                   type="button"
                   onClick={() => startEdit(menu.msg)}
-                  className="block w-full px-3 py-2.5 text-left text-zinc-200 hover:bg-white/5"
+                  className="backdrop-blur-sm block w-full px-3 py-2.5 text-left text-zinc-200 hover:bg-white/5"
                 >
                   ✎ Tahrirlash
                 </button>
@@ -579,7 +579,7 @@ export function AdminChatThread({
                 <button
                   type="button"
                   onClick={() => flagMsg(menu.msg)}
-                  className="block w-full px-3 py-2.5 text-left text-amber-300 hover:bg-white/5"
+                  className="backdrop-blur-sm block w-full px-3 py-2.5 text-left text-amber-300 hover:bg-white/5"
                 >
                   ⚠︎ Shikoyat / belgilash
                 </button>
@@ -587,7 +587,7 @@ export function AdminChatThread({
               <button
                 type="button"
                 onClick={() => delMsg(menu.msg)}
-                className="block w-full px-3 py-2.5 text-left text-red-400 hover:bg-white/5"
+                className="backdrop-blur-sm block w-full px-3 py-2.5 text-left text-red-400 hover:bg-white/5"
               >
                 🗑 O'chirish
               </button>

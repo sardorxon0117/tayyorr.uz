@@ -80,7 +80,7 @@ export function WalletTopUp({ myCode }: { myCode: string }) {
             key={q}
             type="button"
             onClick={() => setAmount(String(q))}
-            className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-zinc-300 transition hover:bg-white/10 hover:text-white"
+            className="backdrop-blur-sm rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-zinc-300 transition hover:bg-white/10 hover:text-white"
           >
             +{q.toLocaleString("ru-RU").replace(/,/g, " ")}
           </button>
