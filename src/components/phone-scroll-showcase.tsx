@@ -20,23 +20,43 @@ function PhoneFrame({
 }) {
   return (
     <div
-      className={`phone-float relative w-56 overflow-hidden rounded-[2.4rem] border-[7px] border-zinc-800 bg-zinc-950 shadow-2xl shadow-black/50 sm:w-64 ${className}`}
-      style={{ aspectRatio: "9 / 19.5" }}
+      className={`phone-float relative w-56 rounded-[3rem] p-[3px] sm:w-64 ${className}`}
+      style={{
+        aspectRatio: "9 / 19.5",
+        background:
+          "linear-gradient(150deg, #6b6b73 0%, #2c2c30 32%, #0a0a0c 58%, #47474e 100%)",
+        boxShadow:
+          "0 40px 70px -20px rgba(0,0,0,0.65), 0 10px 25px -10px rgba(0,0,0,0.5)",
+      }}
     >
-      <div className="absolute left-1/2 top-0 z-10 h-4 w-24 -translate-x-1/2 rounded-b-2xl bg-zinc-800" />
-      {slides.map((slide, i) => (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          key={slide.id}
-          src={slide.imageUrl}
-          alt={slide.title}
-          className="absolute inset-0 h-full w-full object-cover"
-          style={{
-            opacity: i === activeIndex ? 1 : 0,
-            transition: "opacity 0.6s linear",
-          }}
-        />
-      ))}
+      {/* yon tugmalar */}
+      <span className="absolute -left-[2px] top-[22%] h-7 w-[3px] rounded-l bg-zinc-600" />
+      <span className="absolute -left-[2px] top-[29%] h-12 w-[3px] rounded-l bg-zinc-600" />
+      <span className="absolute -right-[2px] top-[26%] h-14 w-[3px] rounded-r bg-zinc-600" />
+
+      <div className="relative h-full w-full overflow-hidden rounded-[2.7rem] bg-black">
+        {/* dynamic island */}
+        <div className="absolute left-1/2 top-2.5 z-20 h-6 w-24 -translate-x-1/2 rounded-full bg-black ring-1 ring-white/10" />
+
+        {slides.map((slide, i) => (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            key={slide.id}
+            src={slide.imageUrl}
+            alt={slide.title}
+            className="absolute inset-0 h-full w-full object-cover"
+            style={{
+              opacity: i === activeIndex ? 1 : 0,
+              transition: "opacity 0.6s linear",
+            }}
+          />
+        ))}
+
+        {/* shisha yaltirashi */}
+        <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-br from-white/15 via-transparent to-transparent" />
+        {/* ekran atrofidagi ichki soya — chuqurlik hissi uchun */}
+        <div className="pointer-events-none absolute inset-0 z-10 rounded-[2.7rem] ring-1 ring-inset ring-black/40" />
+      </div>
     </div>
   );
 }
@@ -48,7 +68,7 @@ function PhoneFrame({
  * mobil kenglikda telefon tepada turadi, matn esa pastda gorizontal
  * swipe-karusel bo'lib qoladi.
  */
-const PIN_TOP = 112; // top-28
+const HEADER_CLEARANCE = 104; // header balandligidan pastroqda tursin
 
 export function PhoneScrollShowcase({ slides }: { slides: PhoneSlideData[] }) {
   const [desktopIndex, setDesktopIndex] = useState(0);
@@ -62,12 +82,14 @@ export function PhoneScrollShowcase({ slides }: { slides: PhoneSlideData[] }) {
     mode: "before" | "pinned" | "after";
     left: number;
     width: number;
-    height: number;
-  }>({ mode: "before", left: 0, width: 0, height: 0 });
+    top: number;
+  }>({ mode: "before", left: 0, width: 0, top: 0 });
 
   // `<main>`da overflow-hidden borligi sababli CSS position:sticky ishlamaydi
   // (overflow-hidden ota-element sticky'ni buzadi) — shuning uchun telefonni
-  // scroll asosida o'zimiz position:fixed bilan "pin" qilamiz.
+  // scroll asosida o'zimiz position:fixed bilan "pin" qilamiz. Telefon
+  // headerga yopishib qolmasligi uchun ekran balandligining o'rtasiga (lekin
+  // headerdan pastroqqa) qadab qo'yamiz.
   useEffect(() => {
     function update() {
       const wrap = wrapRef.current;
@@ -75,12 +97,13 @@ export function PhoneScrollShowcase({ slides }: { slides: PhoneSlideData[] }) {
       if (!wrap || !box) return;
       const rect = wrap.getBoundingClientRect();
       const boxH = box.offsetHeight || 0;
-      if (rect.top > PIN_TOP) {
-        setPin({ mode: "before", left: rect.left, width: rect.width, height: boxH });
-      } else if (rect.bottom - boxH < PIN_TOP) {
-        setPin({ mode: "after", left: rect.left, width: rect.width, height: boxH });
+      const centerTop = Math.max(HEADER_CLEARANCE, (window.innerHeight - boxH) / 2);
+      if (rect.top > centerTop) {
+        setPin({ mode: "before", left: rect.left, width: rect.width, top: centerTop });
+      } else if (rect.bottom - boxH < centerTop) {
+        setPin({ mode: "after", left: rect.left, width: rect.width, top: centerTop });
       } else {
-        setPin({ mode: "pinned", left: rect.left, width: rect.width, height: boxH });
+        setPin({ mode: "pinned", left: rect.left, width: rect.width, top: centerTop });
       }
     }
     update();
@@ -156,13 +179,13 @@ export function PhoneScrollShowcase({ slides }: { slides: PhoneSlideData[] }) {
         <div ref={wrapRef} className="relative">
           <div
             ref={phoneBoxRef}
-            className="flex h-[65vh] items-center justify-center"
+            className="flex justify-center"
             style={
               pin.mode === "pinned"
-                ? { position: "fixed", top: PIN_TOP, left: pin.left, width: pin.width }
+                ? { position: "fixed", top: pin.top, left: pin.left, width: pin.width }
                 : pin.mode === "after"
                   ? { position: "absolute", left: 0, right: 0, bottom: 0 }
-                  : { position: "absolute", left: 0, right: 0, top: PIN_TOP }
+                  : { position: "absolute", left: 0, right: 0, top: pin.top }
             }
           >
             <PhoneFrame slides={slides} activeIndex={desktopIndex} />
