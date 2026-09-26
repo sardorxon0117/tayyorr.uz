@@ -155,6 +155,7 @@ export async function handleIncomingMessage(
       telegramChatId: chatIdStr,
       telegramUsername: from.username || null,
       telegramLinkedAt: new Date(),
+      telegramBlockedAt: null,
     },
     select: { name: true, firstName: true, login: true },
   });

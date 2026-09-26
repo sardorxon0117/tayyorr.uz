@@ -69,6 +69,14 @@ export default async function AdminUsers({
                       {u.name ?? "—"}{" "}
                       <span className="text-zinc-500">@{u.login ?? "—"}</span>
                     </Link>
+                    {!u.telegramChatId && u.telegramBlockedAt && (
+                      <span
+                        className="ml-1.5 text-amber-400"
+                        title={`Telegram botni bloklagan · ${u.telegramBlockedAt.toLocaleString("uz-UZ")}`}
+                      >
+                        🚫
+                      </span>
+                    )}
                   </td>
                   <td className="px-4 py-2 text-zinc-400">
                     {u.role === "PREPARER"

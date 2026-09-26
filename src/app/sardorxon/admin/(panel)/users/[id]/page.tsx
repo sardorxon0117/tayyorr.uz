@@ -181,6 +181,13 @@ export default async function AdminUserDetail({
                 className="rounded-full bg-red-500/15 px-3 py-1.5 text-sm text-red-300 hover:bg-red-500/25"
               />
             </div>
+          ) : user.telegramBlockedAt ? (
+            <p className="text-sm text-amber-300">
+              🚫 Botni bloklagan
+              {user.telegramUsername ? ` — @${user.telegramUsername}` : ""}
+              {" · "}
+              {shortDateTime(user.telegramBlockedAt)}
+            </p>
           ) : (
             <p className="text-sm text-zinc-500">Ulanmagan</p>
           )}

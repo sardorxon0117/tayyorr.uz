@@ -82,10 +82,15 @@ export async function sendTelegramToUser(userId: string, payload: TelegramNotify
         reply_markup,
       });
 
-      // 403 — foydalanuvchi botni bloklagan yoki chatni o'chirgan: ulanishni tozalaymiz
+      // 403 — foydalanuvchi botni bloklagan yoki chatni o'chirgan: chatId'ni
+      // tozalaymiz (xabar yubormaymiz), lekin username va qachon bloklaganini
+      // admin ko'rishi uchun saqlab qolamiz.
       if (res && res.status === 403) {
         await db.user
-          .update({ where: { id: userId }, data: { telegramChatId: null, telegramUsername: null } })
+          .update({
+            where: { id: userId },
+            data: { telegramChatId: null, telegramBlockedAt: new Date() },
+          })
           .catch(() => {});
       }
     } catch {

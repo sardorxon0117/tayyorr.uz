@@ -139,9 +139,10 @@ model User {
   referredUsers User[] @relation("PeerReferrals")
 
   // shaxsiy bildirishnoma boti bilan bog'langan Telegram chat
-  telegramChatId   String?
-  telegramUsername String?
-  telegramLinkedAt DateTime?
+  telegramChatId    String?
+  telegramUsername  String?
+  telegramLinkedAt  DateTime?
+  telegramBlockedAt DateTime? // foydalanuvchi botni bloklagan (xabar 403 qaytarganda qayd qilinadi)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -14,7 +14,12 @@ export async function POST(
   const { id } = await params;
   await db.user.update({
     where: { id },
-    data: { telegramChatId: null, telegramUsername: null, telegramLinkedAt: null },
+    data: {
+      telegramChatId: null,
+      telegramUsername: null,
+      telegramLinkedAt: null,
+      telegramBlockedAt: null,
+    },
   });
 
   return NextResponse.json({ ok: true });
