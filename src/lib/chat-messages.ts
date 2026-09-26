@@ -33,6 +33,7 @@ export interface ClientMessage {
   mine: boolean;
   edited: boolean;
   deleted: boolean;
+  readAt: number | null;
   replyTo: ReplyPreview | null;
   reactions: { like: number; dislike: number; mine: "LIKE" | "DISLIKE" | null };
   file: null | {
@@ -96,6 +97,7 @@ export async function toClientMessage(
     mine: m.senderId === meId,
     edited: !!m.editedAt,
     deleted,
+    readAt: m.readAt ? m.readAt.getTime() : null,
     replyTo: await replyPreview(m.replyToId),
     reactions: reactionSummary(m as WithReactions, meId),
     file,

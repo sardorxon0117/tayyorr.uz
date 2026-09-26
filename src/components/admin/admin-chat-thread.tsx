@@ -29,6 +29,7 @@ interface Msg {
   mine: boolean;
   edited?: boolean;
   deleted?: boolean;
+  readAt?: number | null;
   reactions?: { like: number; dislike: number; mine: "LIKE" | "DISLIKE" | null };
   replyTo?: ReplyPreview | null;
   file?: ChatFile | null;
@@ -414,6 +415,14 @@ export function AdminChatThread({
                   >
                     {m.edited && "tahrirlangan · "}
                     {m.mine ? "support" : "foydalanuvchi"} · {fmt(m.createdAt)}
+                    {m.mine && !m.deleted && (
+                      <span
+                        className={m.readAt ? "ml-1 text-white" : "ml-1 text-indigo-200/50"}
+                        title={m.readAt ? `Foydalanuvchi ko'rdi · ${fmt(m.readAt)}` : "Hali ko'rilmagan"}
+                      >
+                        {m.readAt ? "✓✓" : "✓"}
+                      </span>
+                    )}
                   </div>
                 </div>
                 {!m.mine && MenuBtn}
