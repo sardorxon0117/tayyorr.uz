@@ -168,6 +168,7 @@ model User {
   payoutRequests    PayoutRequest[]
   reactions         MessageReaction[]
   activityLogs      ActivityLog[]
+  announcementClicks AnnouncementClick[]
 
   @@index([role, isAvailable])
 }
@@ -282,7 +283,23 @@ model Announcement {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
+  clicks AnnouncementClick[]
+
   @@index([active, createdAt])
+}
+
+/** E'lon bannerdagi tugmani kim bosgani (admin ko'rishi uchun). */
+model AnnouncementClick {
+  id             String       @id @default(cuid())
+  announcementId String
+  announcement   Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([announcementId, userId])
+  @@index([announcementId, createdAt])
 }
 
 /** Hero bo'limining fon videosi — bitta faol video (singleton). */

@@ -14,10 +14,18 @@ function readMs(text: string) {
 }
 
 interface Resolved {
+  id?: string;
   title: string;
   body: string;
   buttonText: string | null;
   buttonUrl: string | null;
+}
+
+function trackClick(id?: string) {
+  if (!id) return;
+  fetch(`/api/announcement/${id}/click`, { method: "POST", keepalive: true }).catch(
+    () => {},
+  );
 }
 
 /** Bitta e'lon kartasi. Indikator karta ichida, pastda turadi. */
@@ -47,6 +55,7 @@ export function AnnouncementBanner({
         {a.buttonText && a.buttonUrl && (
           <Link
             href={a.buttonUrl}
+            onClick={() => trackClick(a.id)}
             {...(external
               ? { target: "_blank", rel: "noopener noreferrer" }
               : {})}
@@ -75,6 +84,7 @@ export function AnnouncementCarousel({ items }: { items: AnnItem[] }) {
   const raw = n ? items[idx] : null;
   const cur: Resolved = raw
     ? {
+        id: raw.id,
         title: raw.title[locale] || raw.title.uz,
         body: raw.body[locale] || raw.body.uz,
         buttonText: raw.buttonText[locale] || raw.buttonText.uz || null,

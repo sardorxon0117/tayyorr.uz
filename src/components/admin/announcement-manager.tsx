@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 import { AnnouncementBanner } from "@/components/announcement-banner";
 
@@ -111,6 +112,74 @@ function payload(v: Draft) {
   return { ...v, role: v.role || null };
 }
 
+interface Click {
+  userId: string;
+  name: string | null;
+  login: string | null;
+  role: string | null;
+  clickedAt: number;
+}
+
+function ClickList({ announcementId }: { announcementId: string }) {
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [clicks, setClicks] = useState<Click[] | null>(null);
+
+  async function toggle() {
+    if (open) {
+      setOpen(false);
+      return;
+    }
+    setOpen(true);
+    if (clicks) return;
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/admin/announcement/${announcementId}/clicks`);
+      const data = await res.json();
+      setClicks(data.clicks ?? []);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="mt-3">
+      <button
+        type="button"
+        onClick={toggle}
+        className="btn-ghost text-xs"
+      >
+        {open ? "Yashirish" : "Kimlar bosgan"}
+        {clicks ? ` (${clicks.length})` : ""}
+      </button>
+      {open && (
+        <div className="mt-2 rounded-lg border border-white/10 p-2">
+          {loading && <div className="p-2 text-xs text-zinc-500">Yuklanmoqda...</div>}
+          {!loading && clicks && clicks.length === 0 && (
+            <div className="p-2 text-xs text-zinc-500">Hali hech kim bosmagan</div>
+          )}
+          {!loading &&
+            clicks?.map((c) => (
+              <Link
+                key={c.userId}
+                href={`/sardorxon/admin/users/${c.userId}`}
+                className="flex items-center justify-between rounded-md px-2 py-1.5 text-sm text-zinc-200 hover:bg-white/5"
+              >
+                <span>
+                  {c.name ?? "—"}{" "}
+                  <span className="text-zinc-500">@{c.login ?? "—"}</span>
+                </span>
+                <span className="text-xs text-zinc-500">
+                  {new Date(c.clickedAt).toLocaleString("uz-UZ")}
+                </span>
+              </Link>
+            ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Row({ b }: { b: Banner }) {
   const router = useRouter();
   const { id: _bid, ...bFields } = b;
@@ -175,6 +244,7 @@ function Row({ b }: { b: Banner }) {
         </button>
       </div>
       <Fields v={v} set={(p) => setV((s) => ({ ...s, ...p }))} />
+      {v.buttonText.trim() && v.buttonUrl.trim() && <ClickList announcementId={b.id} />}
       {dirty && (
         <button
           type="button"
