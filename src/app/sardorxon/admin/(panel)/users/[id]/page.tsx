@@ -88,6 +88,14 @@ export default async function AdminUserDetail({
       "Shikoyatlar (yozgan / ustidan)",
       `${user._count.complaintsMade} / ${user._count.complaintsAgainst}`,
     ],
+    [
+      "Telegram bot",
+      user.telegramChatId
+        ? `✅ ulangan${user.telegramUsername ? ` (@${user.telegramUsername})` : ""}`
+        : user.telegramBlockedAt
+          ? `🚫 bloklagan · ${shortDate(user.telegramBlockedAt)}`
+          : "ulanmagan",
+    ],
   ];
 
   return (
