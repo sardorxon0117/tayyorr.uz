@@ -35,8 +35,8 @@ export default async function AdminUserVisits({
       </h2>
       <p className="mb-4 text-xs text-zinc-500">
         Login qilish emas — foydalanuvchi allaqachon tizimga kirgan holda
-        saytda faol bo'lgan har bir alohida tashrifi (bir tashrif ichida ~20
-        daqiqadan yaqin bo'lgan harakatlar bitta qator sifatida hisoblanadi).
+        saytni har ochishi (yangi brauzer sessiyasi/tab) bitta qator. Bitta
+        tab necha soat ochiq tursa ham faqat bir marta yoziladi.
         {total > TAKE ? ` So'nggi ${TAKE} tasi ko'rsatilgan.` : ""}
       </p>
       {visits.length === 0 ? (

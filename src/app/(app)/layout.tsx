@@ -8,6 +8,7 @@ import { AuroraBackground } from "@/components/aurora-background";
 import { AppHeader } from "@/components/app-header";
 import { AppSidebar } from "@/components/app-sidebar";
 import { PresencePing } from "@/components/presence-ping";
+import { VisitPing } from "@/components/visit-ping";
 import { NavHistoryTracker } from "@/components/nav-history";
 import { ThemeSync } from "@/components/theme-sync";
 import { RevealOnScroll } from "@/components/reveal-on-scroll";
@@ -83,6 +84,7 @@ export default async function AppLayout({
           role={u?.role ?? null}
         />
         <PresencePing />
+        <VisitPing />
         <NavHistoryTracker />
         <RevealOnScroll />
         <ThemeSync serverTheme={u?.theme ?? null} />
