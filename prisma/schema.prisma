@@ -170,6 +170,7 @@ model User {
   reactions         MessageReaction[]
   activityLogs      ActivityLog[]
   announcementClicks AnnouncementClick[]
+  siteVisits         SiteVisit[]
 
   @@index([role, isAvailable])
 }
@@ -189,6 +190,22 @@ model ActivityLog {
 
   @@index([userId, createdAt])
   @@index([action, createdAt])
+}
+
+/**
+ * Foydalanuvchi saytga (allaqachon tizimga kirgan holda) tashrif buyurgani —
+ * login emas, oddiy ko'rib chiqish. /api/me/ping orqali throttling bilan
+ * yoziladi (bitta "tashrif" ~20 daqiqadan keyin qayta hisoblanadi).
+ */
+model SiteVisit {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ip        String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
 }
 
 // ----------------- Tashriflar (referral havolalar) -----------------
