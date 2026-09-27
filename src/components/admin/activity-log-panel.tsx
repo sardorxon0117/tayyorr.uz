@@ -10,6 +10,7 @@ interface LogRow {
   action: string;
   summary: string;
   ip: string | null;
+  device: string | null;
   createdAt: string;
 }
 
@@ -131,6 +132,7 @@ export function ActivityLogPanel({ userId }: { userId: string }) {
                   <div className="text-zinc-200">{r.summary}</div>
                   <div className="mt-0.5 text-xs text-zinc-500">
                     {shortDateTime(r.createdAt)}
+                    {r.device ? ` · ${r.device}` : ""}
                     {r.ip ? ` · ${r.ip}` : ""}
                   </div>
                 </div>

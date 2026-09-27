@@ -47,6 +47,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
   callbacks: {
     ...authConfig.callbacks,
+    async signIn({ user, account }) {
+      // Credentials kirishi authorize() ichida allaqachon qayd qilinadi —
+      // bu yerda faqat Google orqali kirishni (u orqali qayd qilinmagani
+      // uchun) yozamiz, ikki marta yozilmasin.
+      if (user?.id && account?.provider === "google") {
+        await logActivity(user.id, "AUTH_LOGIN", "Google bilan kirdi");
+      }
+      return true;
+    },
     async jwt({ token, user, trigger }) {
       if (user?.id) token.sub = user.id;
 

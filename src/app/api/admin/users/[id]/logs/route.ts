@@ -3,6 +3,7 @@ import type { Prisma } from "@prisma/client";
 
 import { db } from "@/lib/db";
 import { adminApiGuard } from "@/lib/admin";
+import { describeDevice } from "@/lib/user-agent";
 
 const PAGE_SIZE = 30;
 
@@ -39,6 +40,7 @@ export async function GET(
       action: r.action,
       summary: r.summary,
       ip: r.ip,
+      device: describeDevice(r.userAgent),
       createdAt: r.createdAt,
     })),
     total,

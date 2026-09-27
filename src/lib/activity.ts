@@ -41,12 +41,14 @@ export async function logActivity(
 ): Promise<void> {
   try {
     let ip: string | null = null;
+    let userAgent: string | null = null;
     try {
       const h = await headers();
       ip =
         h.get("x-forwarded-for")?.split(",")[0]?.trim() ||
         h.get("x-real-ip") ||
         null;
+      userAgent = h.get("user-agent");
     } catch {
       /* headers() ba'zi kontekstda mavjud emas */
     }
@@ -57,6 +59,7 @@ export async function logActivity(
         summary,
         meta: meta ? (meta as object) : undefined,
         ip,
+        userAgent,
       },
     });
   } catch {

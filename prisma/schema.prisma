@@ -184,6 +184,7 @@ model ActivityLog {
   summary   String // inson o'qiy oladigan qisqa tavsif (uz)
   meta      Json? // qo'shimcha kontekst (orderId, amount, ...)
   ip        String?
+  userAgent String? // brauzer/qurilma (User-Agent, xom holda)
   createdAt DateTime @default(now())
 
   @@index([userId, createdAt])
