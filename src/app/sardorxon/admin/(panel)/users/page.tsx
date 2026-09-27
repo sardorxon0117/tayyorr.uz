@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { db } from "@/lib/db";
 import { formatSom } from "@/lib/wallet";
+import { shortDateTime } from "@/lib/date";
 
 export default async function AdminUsers({
   searchParams,
@@ -72,7 +73,7 @@ export default async function AdminUsers({
                     {!u.telegramChatId && u.telegramBlockedAt && (
                       <span
                         className="ml-1.5 text-amber-400"
-                        title={`Telegram botni bloklagan · ${u.telegramBlockedAt.toLocaleString("uz-UZ")}`}
+                        title={`Telegram botni bloklagan · ${shortDateTime(u.telegramBlockedAt)}`}
                       >
                         🚫
                       </span>
